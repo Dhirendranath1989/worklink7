@@ -188,21 +188,22 @@ const WorkPortfolio = () => {
 
       {/* Image Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full">
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-50" onClick={closeImageModal}>
+          <div className="relative w-full h-full flex items-center justify-center">
             <button
               onClick={closeImageModal}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+              className="absolute top-6 right-6 text-white hover:text-gray-300 z-20 bg-black bg-opacity-50 rounded-full p-2 transition-colors"
             >
-              <XMarkIcon className="h-8 w-8" />
+              <XMarkIcon className="h-6 w-6" />
             </button>
             <img
               src={selectedImage.src}
               alt={selectedImage.name}
-              className="max-w-full max-h-full object-contain rounded-lg"
+              className="max-w-full max-h-full object-contain"
               onError={handleImageError}
+              onClick={(e) => e.stopPropagation()}
             />
-            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4 rounded-b-lg">
+            <div className="absolute bottom-6 left-6 right-6 bg-black bg-opacity-70 text-white p-4 rounded-lg backdrop-blur-sm">
               <h3 className="font-medium text-lg">{selectedImage.name}</h3>
               <p className="text-sm opacity-75">{selectedImage.uploadDate} • {selectedImage.category}</p>
             </div>

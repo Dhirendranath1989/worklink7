@@ -256,75 +256,60 @@ const Certificates = () => {
 
       {/* Certificate Modal */}
       {selectedCertificate && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full bg-white rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{selectedCertificate.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{selectedCertificate.type} • {selectedCertificate.issuer}</p>
-              </div>
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-50" onClick={closeCertificateModal}>
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-60"
+            onClick={closeCertificateModal}
+          >
+            <XMarkIcon className="h-8 w-8" />
+          </button>
+          {selectedCertificate.isPDF ? (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-center" onClick={(e) => e.stopPropagation()}>
+              <DocumentTextIcon className="h-16 w-16 text-red-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">{selectedCertificate.name}</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">PDF files cannot be previewed here</p>
               <button
-                onClick={closeCertificateModal}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
+                onClick={() => window.open(selectedCertificate.src, '_blank')}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2"
               >
-                <XMarkIcon className="h-6 w-6" />
+                Open in New Tab
+              </button>
+              <button
+                onClick={() => downloadCertificate(selectedCertificate)}
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+              >
+                Download
               </button>
             </div>
-            
-            <div className="p-4">
-              {selectedCertificate.isPDF ? (
-                <div className="text-center py-12">
-                  <DocumentTextIcon className="h-16 w-16 mx-auto text-red-600 mb-4" />
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">PDF documents cannot be previewed in the browser.</p>
-                  <button
-                    onClick={() => window.open(selectedCertificate.src, '_blank')}
-                    className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    Open PDF in New Tab
-                  </button>
-                </div>
-              ) : selectedCertificate.isImage ? (
-                <img
-                  src={selectedCertificate.src}
-                  alt={selectedCertificate.name}
-                  className="max-w-full max-h-96 object-contain mx-auto"
-                  onError={handleFileError}
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <DocumentIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">This file type cannot be previewed.</p>
-                  <button
-                    onClick={() => downloadCertificate(selectedCertificate)}
-                    className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    Download File
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 border-t bg-gray-50">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  <p>Uploaded: {selectedCertificate.uploadDate}</p>
-                  {selectedCertificate.issueDate !== 'Not specified' && (
-                    <p>Issued: {selectedCertificate.issueDate}</p>
-                  )}
-                  {selectedCertificate.expiryDate !== 'No expiry' && (
-                    <p>Expires: {selectedCertificate.expiryDate}</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => downloadCertificate(selectedCertificate)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                >
-                  <DocumentIcon className="h-4 w-4 mr-2" />
-                  Download
-                </button>
+          ) : selectedCertificate.isImage ? (
+            <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={selectedCertificate.src}
+                alt={selectedCertificate.name}
+                className="max-w-full max-h-screen object-contain"
+                onError={handleFileError}
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white p-4">
+                <h3 className="font-medium text-lg">{selectedCertificate.name}</h3>
+                <p className="text-sm opacity-75">{selectedCertificate.uploadDate} • {selectedCertificate.type}</p>
+                {selectedCertificate.issuer !== 'Not specified' && (
+                  <p className="text-sm opacity-75">Issued by: {selectedCertificate.issuer}</p>
+                )}
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-center" onClick={(e) => e.stopPropagation()}>
+              <DocumentIcon className="h-16 w-16 text-gray-600 dark:text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">{selectedCertificate.name}</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">This file type cannot be previewed</p>
+              <button
+                onClick={() => downloadCertificate(selectedCertificate)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Download
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
