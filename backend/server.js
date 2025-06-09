@@ -756,6 +756,22 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
         updateData.role = profileData.userType;
       }
       
+      // Ensure fullName is properly set
+      if (profileData.firstName && profileData.lastName) {
+        updateData.fullName = `${profileData.firstName} ${profileData.lastName}`;
+      } else if (profileData.fullName) {
+        updateData.fullName = profileData.fullName;
+      }
+      
+      // Map mobile field variations
+      if (profileData.mobile) {
+        updateData.mobile = profileData.mobile;
+        updateData.phoneNumber = profileData.mobile;
+      } else if (profileData.phoneNumber) {
+        updateData.mobile = profileData.phoneNumber;
+        updateData.phoneNumber = profileData.phoneNumber;
+      }
+      
       updatedUser = await User.findByIdAndUpdate(
         userId,
         updateData,
@@ -785,6 +801,22 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
         updateData.role = profileData.userType;
       }
       
+      // Ensure fullName is properly set
+      if (profileData.firstName && profileData.lastName) {
+        updateData.fullName = `${profileData.firstName} ${profileData.lastName}`;
+      } else if (profileData.fullName) {
+        updateData.fullName = profileData.fullName;
+      }
+      
+      // Map mobile field variations
+      if (profileData.mobile) {
+        updateData.mobile = profileData.mobile;
+        updateData.phoneNumber = profileData.mobile;
+      } else if (profileData.phoneNumber) {
+        updateData.mobile = profileData.phoneNumber;
+        updateData.phoneNumber = profileData.phoneNumber;
+      }
+      
       inMemoryUsers[userIndex] = updateData;
       
       updatedUser = inMemoryUsers[userIndex];
@@ -801,23 +833,31 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
         email: updatedUser.email,
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
-        fullName: updatedUser.fullName,
+        fullName: updatedUser.fullName || (updatedUser.firstName && updatedUser.lastName ? `${updatedUser.firstName} ${updatedUser.lastName}` : ''),
         mobile: updatedUser.mobile,
+        phoneNumber: updatedUser.phoneNumber || updatedUser.mobile,
         address: updatedUser.address,
         pincode: updatedUser.pincode,
         userType: updatedUser.userType,
         role: updatedUser.role,
         profileCompleted: updatedUser.profileCompleted,
+        bio: updatedUser.bio,
+        description: updatedUser.description,
         skills: updatedUser.skills,
         workExperience: updatedUser.workExperience,
         languagesSpoken: updatedUser.languagesSpoken,
         availabilityStatus: updatedUser.availabilityStatus,
         hourlyRate: updatedUser.hourlyRate,
-        description: updatedUser.description,
         businessName: updatedUser.businessName,
+        businessType: updatedUser.businessType,
+        companyName: updatedUser.companyName,
+        website: updatedUser.website,
         profilePhoto: updatedUser.profilePhoto,
         certificates: updatedUser.certificates,
         workPhotos: updatedUser.workPhotos,
+        averageRating: updatedUser.averageRating || 0,
+        totalReviews: updatedUser.totalReviews || 0,
+        completedJobs: updatedUser.completedJobs || 0,
         updatedAt: new Date().toISOString()
       };
       
@@ -922,6 +962,22 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
         updateData.role = profileData.userType;
       }
       
+      // Ensure fullName is properly set
+      if (profileData.firstName && profileData.lastName) {
+        updateData.fullName = `${profileData.firstName} ${profileData.lastName}`;
+      } else if (profileData.fullName) {
+        updateData.fullName = profileData.fullName;
+      }
+      
+      // Map mobile field variations
+      if (profileData.mobile) {
+        updateData.mobile = profileData.mobile;
+        updateData.phoneNumber = profileData.mobile;
+      } else if (profileData.phoneNumber) {
+        updateData.mobile = profileData.phoneNumber;
+        updateData.phoneNumber = profileData.phoneNumber;
+      }
+      
       updatedUser = await User.findByIdAndUpdate(
         userId,
         updateData,
@@ -951,6 +1007,22 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
         updateData.role = profileData.userType;
       }
       
+      // Ensure fullName is properly set
+      if (profileData.firstName && profileData.lastName) {
+        updateData.fullName = `${profileData.firstName} ${profileData.lastName}`;
+      } else if (profileData.fullName) {
+        updateData.fullName = profileData.fullName;
+      }
+      
+      // Map mobile field variations
+      if (profileData.mobile) {
+        updateData.mobile = profileData.mobile;
+        updateData.phoneNumber = profileData.mobile;
+      } else if (profileData.phoneNumber) {
+        updateData.mobile = profileData.phoneNumber;
+        updateData.phoneNumber = profileData.phoneNumber;
+      }
+      
       inMemoryUsers[userIndex] = updateData;
       
       updatedUser = inMemoryUsers[userIndex];
@@ -964,24 +1036,31 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
         email: updatedUser.email,
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
-        fullName: updatedUser.fullName,
+        fullName: updatedUser.fullName || (updatedUser.firstName && updatedUser.lastName ? `${updatedUser.firstName} ${updatedUser.lastName}` : ''),
         mobile: updatedUser.mobile,
+        phoneNumber: updatedUser.phoneNumber || updatedUser.mobile,
         address: updatedUser.address,
         pincode: updatedUser.pincode,
         userType: updatedUser.userType,
         role: updatedUser.role,
         profileCompleted: updatedUser.profileCompleted,
+        bio: updatedUser.bio,
+        description: updatedUser.description,
         skills: updatedUser.skills,
         workExperience: updatedUser.workExperience,
         languagesSpoken: updatedUser.languagesSpoken,
         availabilityStatus: updatedUser.availabilityStatus,
         hourlyRate: updatedUser.hourlyRate,
-        description: updatedUser.description,
         businessName: updatedUser.businessName,
         businessType: updatedUser.businessType,
+        companyName: updatedUser.companyName,
+        website: updatedUser.website,
         profilePhoto: updatedUser.profilePhoto,
         certificates: updatedUser.certificates,
         workPhotos: updatedUser.workPhotos,
+        averageRating: updatedUser.averageRating || 0,
+        totalReviews: updatedUser.totalReviews || 0,
+        completedJobs: updatedUser.completedJobs || 0,
         updatedAt: new Date().toISOString()
       };
       

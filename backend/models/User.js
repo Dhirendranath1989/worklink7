@@ -7,17 +7,25 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, unique: true, sparse: true },
   firstName: { type: String },
   lastName: { type: String },
-  userType: { type: String, enum: ['owner', 'worker'], default: 'worker' }, // Changed from 'role' to match Firestore
-  role: { type: String, enum: ['owner', 'worker'], default: 'worker' }, // Keep for backward compatibility
+  fullName: { type: String },
+  userType: { type: String, enum: ['owner', 'worker'], default: 'worker' },
+  role: { type: String, enum: ['owner', 'worker'], default: 'worker' },
   isEmailVerified: { type: Boolean, default: false },
   isPhoneVerified: { type: Boolean, default: false },
   firebaseUid: { type: String, unique: true, sparse: true },
   profileCompleted: { type: Boolean, default: false },
-  savedWorkers: [{ type: String }], // Array of worker IDs that this user has saved
+  savedWorkers: [{ type: String }],
   
   // Profile information
   profilePhoto: { type: String },
   bio: { type: String },
+  description: { type: String },
+  
+  // Contact information
+  mobile: { type: String },
+  phoneNumber: { type: String },
+  address: { type: String },
+  pincode: { type: String },
   location: {
     address: { type: String },
     city: { type: String },
@@ -29,7 +37,46 @@ const userSchema = new mongoose.Schema({
     }
   },
   
-  // Contact information
+  // Professional information (for workers)
+  skills: [{ type: String }],
+  workExperience: { type: String },
+  hourlyRate: { type: Number },
+  languagesSpoken: [{ type: String }],
+  availabilityStatus: { type: String },
+  availability: {
+    monday: { available: Boolean, hours: String },
+    tuesday: { available: Boolean, hours: String },
+    wednesday: { available: Boolean, hours: String },
+    thursday: { available: Boolean, hours: String },
+    friday: { available: Boolean, hours: String },
+    saturday: { available: Boolean, hours: String },
+    sunday: { available: Boolean, hours: String }
+  },
+  
+  // Portfolio
+  workPhotos: [{ type: String }],
+  certificates: [{ type: String }],
+  
+  // Business information (for owners)
+  businessName: { type: String },
+  businessType: { type: String },
+  companyName: { type: String },
+  companyDescription: { type: String },
+  website: { type: String },
+  
+  // Ratings and Reviews
+  averageRating: { type: Number, default: 0 },
+  totalReviews: { type: Number, default: 0 },
+  rating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
+  completedJobs: { type: Number, default: 0 },
+  jobsCompleted: { type: Number, default: 0 },
+  
+  // Status
+  isActive: { type: Boolean, default: true },
+  isVerified: { type: Boolean, default: false },
+  
+  // Contact information (legacy)
   contactInfo: {
     phone: { type: String },
     email: { type: String },

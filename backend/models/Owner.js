@@ -5,16 +5,23 @@ const ownerSchema = new mongoose.Schema({
   uid: { type: String, required: true, unique: true }, // Firebase UID
   email: { type: String, required: true },
   userType: { type: String, default: 'owner' },
+  role: { type: String, default: 'owner' },
   profileCompleted: { type: Boolean, default: false },
   
   // Personal Information
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
+  fullName: { type: String },
   profilePhoto: { type: String },
   bio: { type: String },
+  description: { type: String },
   
   // Contact Information
   phone: { type: String },
+  mobile: { type: String },
+  phoneNumber: { type: String },
+  address: { type: String },
+  pincode: { type: String },
   website: { type: String },
   
   // Location
@@ -31,8 +38,10 @@ const ownerSchema = new mongoose.Schema({
   
   // Business Information
   companyName: { type: String },
+  businessName: { type: String },
   businessType: { type: String },
   businessDescription: { type: String },
+  companyDescription: { type: String },
   
   // Preferences
   preferredWorkerTypes: [{ type: String }],
