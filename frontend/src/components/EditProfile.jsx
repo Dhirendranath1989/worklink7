@@ -278,7 +278,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
           <div className="text-center">
             <div className="relative inline-block">
               <img
-                src={previewProfilePhoto || 'https://via.placeholder.com/150x150/cccccc/666666?text=No+Photo'}
+                src={previewProfilePhoto || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjQ0NDQ0NDIiByeD0iNzUiLz4KPHN2ZyB4PSI0NSIgeT0iNDUiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY2NjY2Ij4KPHBhdGggZD0iTTEyIDJDMTMuMSAyIDE0IDIuOSAxNCA0QzE0IDUuMSAxMy4xIDYgMTIgNkMxMC45IDYgMTAgNS4xIDEwIDRDMTAgMi45IDEwLjkgMiAxMiAyWk0yMSA5VjIySDNWOUMzIDguNDUgMy40NSA4IDQgOEg2QzYuNTUgOCA3IDguNDUgNyA5VjEwSDEwVjlDMTAgOC40NSAxMC40NSA4IDExIDhIMTNDMTMuNTUgOCAxNCA4LjQ1IDE0IDlWMTBIMTdWOUMxNyA4LjQ1IDE3LjQ1IDggMTggOEgyMEMyMC41NSA4IDIxIDguNDUgMjEgOVoiLz4KPC9zdmc+Cg=='}
                 alt="Profile"
                 className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
               />

@@ -133,8 +133,72 @@ const FacebookLikeDashboard = () => {
     }
     fetchPosts();
     fetchReviews();
-  }, [dispatch, user]);
+    
+    // Refresh user data from backend to ensure we have the latest profile information
+    const refreshUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch('http://localhost:5000/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.user) {
+              // Update Redux state with fresh user data
+              dispatch(setCredentials({ user: data.user, token }));
+              localStorage.setItem('user', JSON.stringify(data.user));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing user data:', error);
+      }
+    };
+    
+    refreshUserData();
+  }, [dispatch]);
 
+  // Separate useEffect to handle profile completion refresh
+  useEffect(() => {
+    // Check if we just completed profile (from URL params or localStorage flag)
+    const urlParams = new URLSearchParams(window.location.search);
+    const justCompleted = urlParams.get('profileCompleted') || localStorage.getItem('justCompletedProfile');
+    
+    if (justCompleted) {
+      // Clear the flag
+      localStorage.removeItem('justCompletedProfile');
+      
+      // Force refresh user data after a short delay
+      setTimeout(async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const response = await fetch('http://localhost:5000/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.user) {
+                dispatch(setCredentials({ user: data.user, token }));
+                localStorage.setItem('user', JSON.stringify(data.user));
+                toast.success('Profile data refreshed!');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error force refreshing user data:', error);
+        }
+      }, 500);
+    }
+  }, [dispatch]);
+  
   // Separate useEffect for real-time review updates
   useEffect(() => {
     if (!user?._id) return;
@@ -150,7 +214,7 @@ const FacebookLikeDashboard = () => {
     return () => {
       clearInterval(reviewsInterval);
     };
-  }, [user?._id, reviewsLoading, fetchReviews]);
+  }, [user?._id]);
 
   // Handle review click to show details
   const handleReviewClick = (review) => {
@@ -158,37 +222,109 @@ const FacebookLikeDashboard = () => {
     setShowReviewDetails(true);
   };
 
+  // Manual refresh function for debugging profile data issues
+  const manualRefreshUserData = async () => {
+    console.log('🔄 Manual refresh triggered');
+    console.log('Current user data before refresh:', user);
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('❌ No token found');
+        toast.error('No authentication token found');
+        return;
+      }
+      
+      console.log('📡 Fetching user data from /api/auth/me...');
+      const response = await fetch('http://localhost:5000/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log('📡 Response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Fresh user data received:', data.user);
+        
+        if (data.user) {
+          // Update Redux state
+          dispatch(setCredentials({ user: data.user, token }));
+          
+          // Update localStorage
+          localStorage.setItem('user', JSON.stringify(data.user));
+          
+          console.log('✅ Redux and localStorage updated');
+          toast.success('Profile data refreshed successfully!');
+          
+          // Also refresh profile in Redux store
+          if (data.user._id) {
+            dispatch(fetchProfile(data.user._id));
+          }
+        } else {
+          console.error('❌ No user data in response');
+          toast.error('No user data received from server');
+        }
+      } else {
+        console.error('❌ Failed to fetch user data:', response.status);
+        toast.error('Failed to refresh profile data');
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing user data:', error);
+      toast.error('Error refreshing profile data');
+    }
+  };
+
   // Debug logging
   console.log('DashboardNew - User data:', user);
   console.log('DashboardNew - ProfilePhoto:', user?.profilePhoto);
   console.log('DashboardNew - Profile data:', profile);
+  console.log('DashboardNew - User fields check:', {
+    fullName: user?.fullName,
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    email: user?.email,
+    phoneNumber: user?.phoneNumber,
+    mobile: user?.mobile,
+    address: user?.address,
+    bio: user?.bio,
+    description: user?.description,
+    skills: user?.skills,
+    workExperience: user?.workExperience,
+    hourlyRate: user?.hourlyRate,
+    availabilityStatus: user?.availabilityStatus
+  });
 
   // Get user profile data
   const userProfile = {
     name: user?.fullName || (user?.firstName && user?.lastName ? `${String(user.firstName)} ${String(user.lastName)}` : (user?.firstName ? String(user.firstName) : (user?.lastName ? String(user.lastName) : 'User'))),
     profilePhoto: user?.profilePhoto ? 
       (user.profilePhoto.startsWith('http') ? user.profilePhoto : `http://localhost:5000${user.profilePhoto}`) : 
-      'https://via.placeholder.com/150x150/cccccc/666666?text=No+Photo',
+      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9Ijc1IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBQaG90bzwvdGV4dD4KPC9zdmc+',
     email: String(user?.email || ''),
-    mobile: String(user?.phoneNumber || user?.mobile || 'Not provided'),
-    address: String(user?.address || 'Not specified'),
-    pincode: String(user?.pincode || 'Not specified'),
-    location: String(user?.address || 'Not specified'),
-    bio: String(user?.bio || user?.description || 'No bio available'),
-    description: String(user?.description || user?.bio || 'No description available'),
-    skills: Array.isArray(user?.skills) ? user.skills : [],
-    languagesSpoken: Array.isArray(user?.languagesSpoken) ? user.languagesSpoken : [],
-    workExperience: String(user?.workExperience || 'Not specified'),
-    rating: Number(user?.rating) || 0,
-    totalReviews: Number(user?.totalReviews) || 0,
-    completedJobs: Number(user?.completedJobs) || 0,
-    memberSince: user?.createdAt || new Date().toISOString(),
-    hourlyRate: Number(user?.hourlyRate) || 0,
-    workPhotos: Array.isArray(user?.workPhotos) ? user.workPhotos : [],
-    certificates: Array.isArray(user?.certificates) ? user.certificates : [],
-    availabilityStatus: String(user?.availabilityStatus || 'Not specified'),
-    businessName: String(user?.businessName || ''),
-    businessType: String(user?.businessType || '')
+    // Map backend fields correctly: mobile -> mobile, phoneNumber -> mobile
+    mobile: String(user?.mobile || user?.phoneNumber || user?.phone || 'Not provided'),
+    // Map backend fields correctly: location -> address, address -> address
+    address: String(user?.location || user?.address || 'Not specified'),
+    pincode: String(user?.pincode || user?.zipCode || user?.postalCode || 'Not specified'),
+    location: String(user?.location || user?.address || 'Not specified'),
+    bio: String(user?.bio || user?.description || user?.about || 'No bio available'),
+    description: String(user?.description || user?.bio || user?.about || 'No description available'),
+    skills: Array.isArray(user?.skills) ? user.skills : (user?.skills ? [user.skills] : []),
+    languagesSpoken: Array.isArray(user?.languagesSpoken) ? user.languagesSpoken : (user?.languages ? (Array.isArray(user.languages) ? user.languages : [user.languages]) : []),
+    workExperience: String(user?.workExperience || user?.experience || 'Not specified'),
+    rating: Number(user?.rating || user?.averageRating) || 0,
+    totalReviews: Number(user?.totalReviews || user?.reviewCount) || 0,
+    completedJobs: Number(user?.completedJobs || user?.jobsCompleted) || 0,
+    memberSince: user?.createdAt || user?.joinedAt || new Date().toISOString(),
+    hourlyRate: Number(user?.hourlyRate || user?.rate) || 0,
+    workPhotos: Array.isArray(user?.workPhotos) ? user.workPhotos : (user?.portfolio ? (Array.isArray(user.portfolio) ? user.portfolio : [user.portfolio]) : []),
+    certificates: Array.isArray(user?.certificates) ? user.certificates : (user?.certifications ? (Array.isArray(user.certifications) ? user.certifications : [user.certifications]) : []),
+    // Map backend fields correctly: availability -> availabilityStatus
+    availabilityStatus: String(user?.availability || user?.availabilityStatus || user?.status || 'Not specified'),
+    businessName: String(user?.businessName || user?.companyName || ''),
+    businessType: String(user?.businessType || user?.companyType || '')
   };
 
   // Handle profile photo upload
@@ -609,7 +745,7 @@ const FacebookLikeDashboard = () => {
               )}
 
               {/* Edit Profile Button */}
-              <div className="mt-6 pt-4 border-t">
+              <div className="mt-6 pt-4 border-t space-y-3">
                 <button
                   onClick={() => setShowEditProfile(true)}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -617,6 +753,32 @@ const FacebookLikeDashboard = () => {
                   <PencilIcon className="h-4 w-4" />
                   <span>Edit Profile</span>
                 </button>
+                
+                {/* Debug Section - Add this after the basic information section */}
+                <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Debug Info</h4>
+                    <button
+                      onClick={manualRefreshUserData}
+                      className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md transition-colors flex items-center space-x-1"
+                    >
+                      <ArrowUpIcon className="h-3 w-3" />
+                      <span>Refresh User Data</span>
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                    <div>User ID: {user?._id || user?.id || 'Not found'}</div>
+                    <div>Profile Loaded: {profile ? 'Yes' : 'No'}</div>
+                    <div>User Fields: {Object.keys(user || {}).length} fields</div>
+                    <div>Missing Fields: {[
+                      !user?.phoneNumber && !user?.mobile && !user?.phone ? 'phone' : null,
+                      !user?.address && !user?.location ? 'address' : null,
+                      !user?.workExperience && !user?.experience ? 'experience' : null,
+                      !user?.hourlyRate && !user?.rate ? 'rate' : null,
+                      !user?.availabilityStatus && !user?.availability && !user?.status ? 'availability' : null
+                    ].filter(Boolean).join(', ') || 'None'}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -782,12 +944,12 @@ const FacebookLikeDashboard = () => {
                                 ? (review.reviewerProfilePicture.startsWith('http')
                                   ? review.reviewerProfilePicture
                                   : `http://localhost:5000${review.reviewerProfilePicture}`)
-                                : review.reviewerAvatar || review.reviewer?.profilePhoto || 'https://via.placeholder.com/40x40/cccccc/666666?text=U'
+                                : review.reviewerAvatar || review.reviewer?.profilePhoto || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5VPC90ZXh0Pgo8L3N2Zz4='
                             }
                             alt={review.reviewerName || review.reviewer?.fullName || 'Reviewer'}
                             className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
                             onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/40x40/cccccc/666666?text=U';
+                              e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5VPC90ZXh0Pgo8L3N2Zz4=';
                             }}
                           />
                           <div className="flex-1 min-w-0">
@@ -982,12 +1144,12 @@ const FacebookLikeDashboard = () => {
                        ? (selectedReview.reviewerProfilePicture.startsWith('http')
                          ? selectedReview.reviewerProfilePicture
                          : `http://localhost:5000${selectedReview.reviewerProfilePicture}`)
-                       : selectedReview.reviewerAvatar || selectedReview.reviewer?.profilePhoto || 'https://via.placeholder.com/80x80/cccccc/666666?text=U'
+                       : selectedReview.reviewerAvatar || selectedReview.reviewer?.profilePhoto || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5VPC90ZXh0Pgo8L3N2Zz4='
                    }
                    alt={selectedReview.reviewerName || selectedReview.reviewer?.fullName || 'Reviewer'}
                    className="w-16 h-16 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                    onError={(e) => {
-                     e.target.src = 'https://via.placeholder.com/80x80/cccccc/666666?text=U';
+                     e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5VPC90ZXh0Pgo8L3N2Zz4=';
                    }}
                  />
                 <div className="flex-1">

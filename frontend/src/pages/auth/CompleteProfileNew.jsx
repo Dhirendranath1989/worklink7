@@ -424,6 +424,12 @@ const CompleteProfile = () => {
         userType: userType
       };
       
+      // Update localStorage with the complete user data
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem('userType', userType);
+      localStorage.setItem('profileCompleted', 'true');
+      localStorage.setItem('justCompletedProfile', 'true'); // Flag for dashboard refresh
+      
       // Update Redux state
       dispatch(setCredentials({ user: updatedUser, token }));
       dispatch(setProfileCompleted(true));
@@ -431,8 +437,11 @@ const CompleteProfile = () => {
       // Show success message
       toast.success('Profile completed successfully!');
       
+      // Force a small delay to ensure state updates are processed
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Navigate to dashboard immediately
-      const dashboardPath = userType === 'owner' ? '/owner/dashboard' : '/worker/dashboard';
+      const dashboardPath = userType === 'owner' ? '/owner/dashboard?profileCompleted=true' : '/worker/dashboard?profileCompleted=true';
       console.log('🚀 Navigating to dashboard:', dashboardPath);
       console.log('🔍 User type:', userType);
       console.log('🔍 Updated user:', updatedUser);

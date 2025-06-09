@@ -140,7 +140,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, editPost = null }) =>
                 ? (user.profilePhoto.startsWith('http') 
                     ? user.profilePhoto 
                     : `http://localhost:5000${user.profilePhoto}`)
-                : 'https://via.placeholder.com/40x40/cccccc/666666?text=U'
+                : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMjAiLz4KPHRleHQgeD0iMjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'
               }
               alt="Profile"
               className="w-10 h-10 rounded-full object-cover"
@@ -414,7 +414,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId }) => {
               ? (post.author.profilePhoto.startsWith('http') 
                   ? post.author.profilePhoto 
                   : `http://localhost:5000${post.author.profilePhoto}`)
-              : 'https://via.placeholder.com/40x40/cccccc/666666?text=U'
+              : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMjAiLz4KPHRleHQgeD0iMjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'
             }
             alt={post.author?.fullName || 'User'}
             className="w-10 h-10 rounded-full object-cover"
@@ -537,7 +537,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId }) => {
           <form onSubmit={handleAddComment} className="mt-4 mb-4">
             <div className="flex space-x-3">
               <img
-                src={`https://via.placeholder.com/32x32/cccccc/666666?text=U`}
+                src={'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMTYiLz4KPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'}
                 alt="Your avatar"
                 className="w-8 h-8 rounded-full object-cover"
               />
@@ -576,7 +576,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId }) => {
                     ? (comment.author.profilePhoto.startsWith('http') 
                         ? comment.author.profilePhoto 
                         : `http://localhost:5000${comment.author.profilePhoto}`)
-                    : 'https://via.placeholder.com/32x32/cccccc/666666?text=U'
+                    : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMTYiLz4KPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'
                   }
                   alt={comment.author?.fullName || 'User'}
                   className="w-8 h-8 rounded-full object-cover"

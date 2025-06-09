@@ -16,6 +16,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 
+// Default avatar constants
+const DEFAULT_AVATAR_60 = "data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='60' height='60' fill='%23CCCCCC' rx='30'/%3E%3Cpath d='M30 20c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6zm0 28c-6.6 0-12-3.4-12-8 0-4.6 5.4-8 12-8s12 3.4 12 8c0 4.6-5.4 8-12 8z' fill='%23666666'/%3E%3C/svg%3E";
+const DEFAULT_AVATAR_150 = "data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='150' height='150' fill='%23CCCCCC' rx='75'/%3E%3Cpath d='M75 50c8.25 0 15 6.75 15 15s-6.75 15-15 15-15-6.75-15-15 6.75-15 15-15zm0 70c-16.5 0-30-8.5-30-20 0-11.5 13.5-20 30-20s30 8.5 30 20c0 11.5-13.5 20-30 20z' fill='%23666666'/%3E%3C/svg%3E";
+
 const SearchWorkers = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -97,7 +101,7 @@ const SearchWorkers = ({ isOpen, onClose }) => {
                   ? (selectedWorker.profilePicture.startsWith('http') 
                       ? selectedWorker.profilePicture 
                       : `http://localhost:5000${selectedWorker.profilePicture}`)
-                  : 'https://via.placeholder.com/150x150/cccccc/666666?text=No+Photo'
+                  : DEFAULT_AVATAR_150
                 }
                 alt={selectedWorker.name || selectedWorker.fullName}
                 className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
@@ -341,7 +345,7 @@ const SearchWorkers = ({ isOpen, onClose }) => {
                           ? (worker.profilePicture.startsWith('http') 
                               ? worker.profilePicture 
                               : `http://localhost:5000${worker.profilePicture}`)
-                          : 'https://via.placeholder.com/60x60/cccccc/666666?text=No+Photo'
+                          : DEFAULT_AVATAR_60
                         }
                         alt={worker.name || worker.fullName}
                         className="w-16 h-16 rounded-full object-cover"

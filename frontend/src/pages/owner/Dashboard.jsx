@@ -37,11 +37,16 @@ import {
 import { fetchJobs } from '../../features/jobs/jobsSlice';
 import { createConversation } from '../../features/chat/chatSlice';
 import { fetchSavedWorkers } from '../../features/savedWorkers/savedWorkersSlice';
+import { setCredentials } from '../../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
 import EditProfile from '../../components/EditProfile';
 import SearchWorkers from '../../components/SearchWorkers';
 import { CreatePostModal, PostCard } from '../../components/Post';
 import { useChatPopup } from '../../hooks/useChatPopup';
+
+// Default avatar constants
+const DEFAULT_AVATAR_128 = "data:image/svg+xml,%3Csvg width='128' height='128' viewBox='0 0 128 128' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='128' height='128' fill='%23CCCCCC' rx='64'/%3E%3Cpath d='M64 42.67c7.04 0 12.8 5.76 12.8 12.8s-5.76 12.8-12.8 12.8-12.8-5.76-12.8-12.8 5.76-12.8 12.8-12.8zm0 59.73c-14.08 0-25.6-7.25-25.6-17.07 0-9.81 11.52-17.06 25.6-17.06s25.6 7.25 25.6 17.06c0 9.82-11.52 17.07-25.6 17.07z' fill='%23666666'/%3E%3C/svg%3E";
+const DEFAULT_AVATAR_60 = "data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='60' height='60' fill='%23CCCCCC' rx='30'/%3E%3Cpath d='M30 20c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6zm0 28c-6.6 0-12-3.4-12-8 0-4.6 5.4-8 12-8s12 3.4 12 8c0 4.6-5.4 8-12 8z' fill='%23666666'/%3E%3C/svg%3E";
 
 const OwnerDashboard = () => {
   const dispatch = useDispatch();
@@ -268,6 +273,70 @@ const OwnerDashboard = () => {
     dispatch(fetchJobs());
     dispatch(fetchSavedWorkers());
     fetchPosts();
+    
+    // Refresh user data from backend to ensure we have the latest profile information
+    const refreshUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch('http://localhost:5000/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.user) {
+              // Update Redux state with fresh user data
+              dispatch(setCredentials({ user: data.user, token }));
+              localStorage.setItem('user', JSON.stringify(data.user));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing user data:', error);
+      }
+    };
+    
+    refreshUserData();
+  }, [dispatch]);
+
+  // Separate useEffect to handle profile completion refresh
+  useEffect(() => {
+    // Check if we just completed profile (from URL params or localStorage flag)
+    const urlParams = new URLSearchParams(window.location.search);
+    const justCompleted = urlParams.get('profileCompleted') || localStorage.getItem('justCompletedProfile');
+    
+    if (justCompleted) {
+      // Clear the flag
+      localStorage.removeItem('justCompletedProfile');
+      
+      // Force refresh user data after a short delay
+      setTimeout(async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const response = await fetch('http://localhost:5000/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.user) {
+                dispatch(setCredentials({ user: data.user, token }));
+                localStorage.setItem('user', JSON.stringify(data.user));
+                toast.success('Profile data refreshed!');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error force refreshing user data:', error);
+        }
+      }, 500);
+    }
   }, [dispatch]);
 
   // Note: Theme is now handled by ThemeContext globally
@@ -753,7 +822,7 @@ const OwnerDashboard = () => {
                       ? URL.createObjectURL(profileData.profilePhoto)
                       : profileData.profilePhoto 
                         ? `http://localhost:5000${profileData.profilePhoto}` 
-                        : 'https://via.placeholder.com/128x128/cccccc/666666?text=No+Photo'
+                        : DEFAULT_AVATAR_128
                   }
                   alt="Profile"
                 />
@@ -1079,7 +1148,7 @@ const OwnerDashboard = () => {
                       ? (worker.profilePicture.startsWith('http') 
                           ? worker.profilePicture 
                           : `http://localhost:5000${worker.profilePicture}`)
-                      : 'https://via.placeholder.com/60x60/cccccc/666666?text=No+Photo'
+                      : DEFAULT_AVATAR_60
                     }
                     alt={worker.name}
                     className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
@@ -1710,7 +1779,7 @@ const OwnerDashboard = () => {
                           ? (worker.profilePicture.startsWith('http') 
                               ? worker.profilePicture 
                               : `http://localhost:5000${worker.profilePicture}`)
-                          : 'https://via.placeholder.com/60x60/cccccc/666666?text=No+Photo'
+                          : DEFAULT_AVATAR_60
                         }
                         alt={worker.name}
                         className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
