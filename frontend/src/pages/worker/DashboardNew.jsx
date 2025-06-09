@@ -71,6 +71,15 @@ const FacebookLikeDashboard = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [showReviewDetails, setShowReviewDetails] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
+  const [showWorkPhotosModal, setShowWorkPhotosModal] = useState(false);
+  const [showCertificatesModal, setShowCertificatesModal] = useState(false);
+  const [selectedWorkPhoto, setSelectedWorkPhoto] = useState(null);
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [workPhotosFiles, setWorkPhotosFiles] = useState([]);
+  const [certificatesFiles, setCertificatesFiles] = useState([]);
+  const [isUploadingWorkPhotos, setIsUploadingWorkPhotos] = useState(false);
+  const [isUploadingCertificates, setIsUploadingCertificates] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   // Fetch posts from backend
   const fetchPosts = async () => {
@@ -430,9 +439,115 @@ const FacebookLikeDashboard = () => {
 
 
   // Handle image preview
-  const handleImagePreview = (imageUrl) => {
-    setPreviewImage(imageUrl);
+  const handleImagePreview = (imageSrc) => {
+    setPreviewImage(imageSrc);
     setShowImagePreview(true);
+  };
+
+  // Handle work photos upload
+  const handleWorkPhotosUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    
+    setIsUploadingWorkPhotos(true);
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('workPhotos', file);
+      });
+      
+      const response = await fetch('http://localhost:5000/api/auth/upload-work-photos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Update user data in Redux
+        const updatedUser = { ...user, workPhotos: [...(user.workPhotos || []), ...data.workPhotos] };
+        dispatch(setCredentials({
+          user: updatedUser,
+          token: localStorage.getItem('token'),
+          isAuthenticated: true,
+          profileCompleted: true,
+          userType: updatedUser.userType
+        }));
+        
+        toast.success('Work photos uploaded successfully!');
+        await manualRefreshUserData();
+      } else {
+        toast.error(data.message || 'Failed to upload work photos');
+      }
+    } catch (error) {
+      console.error('Work photos upload error:', error);
+      toast.error('An error occurred while uploading work photos');
+    } finally {
+      setIsUploadingWorkPhotos(false);
+    }
+  };
+
+  // Handle certificates upload
+  const handleCertificatesUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    
+    setIsUploadingCertificates(true);
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('certificates', file);
+      });
+      
+      const response = await fetch('http://localhost:5000/api/auth/upload-certificates', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Update user data in Redux
+        const updatedUser = { ...user, certificates: [...(user.certificates || []), ...data.certificates] };
+        dispatch(setCredentials({
+          user: updatedUser,
+          token: localStorage.getItem('token'),
+          isAuthenticated: true,
+          profileCompleted: true,
+          userType: updatedUser.userType
+        }));
+        
+        toast.success('Certificates uploaded successfully!');
+        await manualRefreshUserData();
+      } else {
+        toast.error(data.message || 'Failed to upload certificates');
+      }
+    } catch (error) {
+      console.error('Certificates upload error:', error);
+      toast.error('An error occurred while uploading certificates');
+    } finally {
+      setIsUploadingCertificates(false);
+    }
+  };
+
+  // Handle work photo selection for full screen view
+  const handleWorkPhotoView = (photo) => {
+    const photoSrc = typeof photo === 'string' 
+      ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
+      : (photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`);
+    setSelectedWorkPhoto(photoSrc);
+  };
+
+  // Handle certificate view
+  const handleCertificateView = (cert) => {
+    const certUrl = typeof cert === 'string'
+      ? (cert.startsWith('http') ? cert : `http://localhost:5000${cert}`)
+      : (cert.path ? (cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`) : '#');
+    setSelectedCertificate({ url: certUrl, name: typeof cert === 'string' ? cert.split('/').pop() : (cert.originalName || cert.path?.split('/').pop() || 'Certificate') });
   };
 
   // Stats data
@@ -633,19 +748,46 @@ const FacebookLikeDashboard = () => {
                 </div>
               )}
 
-              {/* Work Photos */}
-              {userProfile.workPhotos && userProfile.workPhotos.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Work Portfolio</h4>
-                    <Link 
-                      to="/worker/portfolio"
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
-                    >
-                      View All
-                      <ChevronRightIcon className="h-3 w-3 ml-1" />
-                    </Link>
+              {/* Work Photos Section */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                    <PhotoIcon className="h-4 w-4 mr-2 text-blue-600" />
+                    Work Portfolio
+                  </h4>
+                  <div className="flex items-center space-x-2">
+                    <label className="cursor-pointer text-xs text-green-600 hover:text-green-800 font-medium flex items-center">
+                      <PlusIcon className="h-3 w-3 mr-1" />
+                      Add Photos
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => handleWorkPhotosUpload(e.target.files)}
+                        className="hidden"
+                        disabled={isUploadingWorkPhotos}
+                      />
+                    </label>
+                    {userProfile.workPhotos && userProfile.workPhotos.length > 0 && (
+                      <button
+                        onClick={() => setShowWorkPhotosModal(true)}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                      >
+                        View All
+                        <EyeIcon className="h-3 w-3 ml-1" />
+                      </button>
+                    )}
                   </div>
+                </div>
+                
+                {isUploadingWorkPhotos && (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Uploading...</span>
+                  </div>
+                )}
+                
+                {userProfile.workPhotos && userProfile.workPhotos.length > 0 ? (
                   <div className="grid grid-cols-2 gap-2">
                     {userProfile.workPhotos
                       .filter(photo => {
@@ -659,45 +801,83 @@ const FacebookLikeDashboard = () => {
                           ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
                           : (photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`);
                         return (
-                          <img
-                            key={index}
-                            src={photoSrc}
-                            alt={`Work ${index + 1}`}
-                            className="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => handleImagePreview(photoSrc)}
-                          />
+                          <div key={index} className="relative group">
+                            <img
+                              src={photoSrc}
+                              alt={`Work ${index + 1}`}
+                              className="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => handleWorkPhotoView(photo)}
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+                              <EyeIcon className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
                         );
                       })}
                   </div>
-                  {userProfile.workPhotos.filter(photo => {
-                    if (typeof photo === 'string') return true;
-                    if (typeof photo === 'object' && photo.path) return true;
-                    return false;
-                  }).length > 4 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                      +{userProfile.workPhotos.filter(photo => {
-                        if (typeof photo === 'string') return true;
-                        if (typeof photo === 'object' && photo.path) return true;
-                        return false;
-                      }).length - 4} more photos
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Certificates */}
-              {userProfile.certificates && userProfile.certificates.length > 0 && (
-                <div className="mt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Certificates</h4>
-                    <Link 
-                      to="/worker/certificates"
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
-                    >
-                      View All
-                      <ChevronRightIcon className="h-3 w-3 ml-1" />
-                    </Link>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                    <PhotoIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No work photos yet</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Upload photos to showcase your work</p>
                   </div>
+                )}
+                
+                {userProfile.workPhotos && userProfile.workPhotos.filter(photo => {
+                  if (typeof photo === 'string') return true;
+                  if (typeof photo === 'object' && photo.path) return true;
+                  return false;
+                }).length > 4 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                    +{userProfile.workPhotos.filter(photo => {
+                      if (typeof photo === 'string') return true;
+                      if (typeof photo === 'object' && photo.path) return true;
+                      return false;
+                    }).length - 4} more photos
+                  </p>
+                )}
+              </div>
+
+              {/* Certificates Section */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                    <AcademicCapIcon className="h-4 w-4 mr-2 text-green-600" />
+                    Certificates
+                  </h4>
+                  <div className="flex items-center space-x-2">
+                    <label className="cursor-pointer text-xs text-green-600 hover:text-green-800 font-medium flex items-center">
+                      <PlusIcon className="h-3 w-3 mr-1" />
+                      Add Certificate
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf"
+                        onChange={(e) => handleCertificatesUpload(e.target.files)}
+                        className="hidden"
+                        disabled={isUploadingCertificates}
+                      />
+                    </label>
+                    {userProfile.certificates && userProfile.certificates.length > 0 && (
+                      <button
+                        onClick={() => setShowCertificatesModal(true)}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                      >
+                        View All
+                        <EyeIcon className="h-3 w-3 ml-1" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                {isUploadingCertificates && (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Uploading...</span>
+                  </div>
+                )}
+                
+                {userProfile.certificates && userProfile.certificates.length > 0 ? (
                   <div className="space-y-2">
                     {userProfile.certificates
                       .filter(cert => {
@@ -710,39 +890,46 @@ const FacebookLikeDashboard = () => {
                         const certName = typeof cert === 'string' 
                           ? cert.split('/').pop()
                           : (cert.originalName || cert.path?.split('/').pop() || 'Certificate');
-                        const certUrl = typeof cert === 'string'
-                          ? (cert.startsWith('http') ? cert : `http://localhost:5000${cert}`)
-                          : (cert.path ? (cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`) : '#');
                         return (
-                          <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
-                            <AcademicCapIcon className="h-4 w-4 text-blue-600" />
-                            <a
-                              href={certUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-800 truncate"
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                            <div className="flex items-center">
+                              <AcademicCapIcon className="h-5 w-5 text-green-600 mr-3" />
+                              <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                {certName}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handleCertificateView(cert)}
+                              className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
                             >
-                              {certName}
-                            </a>
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
                           </div>
                         );
                       })}
                   </div>
-                  {userProfile.certificates.filter(cert => {
-                    if (typeof cert === 'string') return true;
-                    if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
-                    return false;
-                  }).length > 3 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                      +{userProfile.certificates.filter(cert => {
-                        if (typeof cert === 'string') return true;
-                        if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
-                        return false;
-                      }).length - 3} more certificates
-                    </p>
-                  )}
-                </div>
-              )}
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                    <AcademicCapIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No certificates yet</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Upload certificates to showcase your qualifications</p>
+                  </div>
+                )}
+                
+                {userProfile.certificates && userProfile.certificates.filter(cert => {
+                  if (typeof cert === 'string') return true;
+                  if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
+                  return false;
+                }).length > 3 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                    +{userProfile.certificates.filter(cert => {
+                      if (typeof cert === 'string') return true;
+                      if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
+                      return false;
+                    }).length - 3} more certificates
+                  </p>
+                )}
+              </div>
 
               {/* Edit Profile Button */}
               <div className="mt-6 pt-4 border-t space-y-3">
@@ -754,31 +941,7 @@ const FacebookLikeDashboard = () => {
                   <span>Edit Profile</span>
                 </button>
                 
-                {/* Debug Section - Add this after the basic information section */}
-                <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Debug Info</h4>
-                    <button
-                      onClick={manualRefreshUserData}
-                      className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md transition-colors flex items-center space-x-1"
-                    >
-                      <ArrowUpIcon className="h-3 w-3" />
-                      <span>Refresh User Data</span>
-                    </button>
-                  </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                    <div>User ID: {user?._id || user?.id || 'Not found'}</div>
-                    <div>Profile Loaded: {profile ? 'Yes' : 'No'}</div>
-                    <div>User Fields: {Object.keys(user || {}).length} fields</div>
-                    <div>Missing Fields: {[
-                      !user?.phoneNumber && !user?.mobile && !user?.phone ? 'phone' : null,
-                      !user?.address && !user?.location ? 'address' : null,
-                      !user?.workExperience && !user?.experience ? 'experience' : null,
-                      !user?.hourlyRate && !user?.rate ? 'rate' : null,
-                      !user?.availabilityStatus && !user?.availability && !user?.status ? 'availability' : null
-                    ].filter(Boolean).join(', ') || 'None'}</div>
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
@@ -1261,6 +1424,111 @@ const FacebookLikeDashboard = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Work Photos Modal */}
+      {showWorkPhotosModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="relative max-w-6xl max-h-[90vh] w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-white">Work Portfolio</h3>
+              <button
+                onClick={() => setShowWorkPhotosModal(false)}
+                className="text-white hover:text-gray-300 p-2"
+              >
+                <XMarkIcon className="h-8 w-8" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[80vh] overflow-y-auto">
+              {userProfile.workPhotos && userProfile.workPhotos
+                .filter(photo => {
+                  if (typeof photo === 'string') return true;
+                  if (typeof photo === 'object' && photo.path) return true;
+                  return false;
+                })
+                .map((photo, index) => {
+                  const photoSrc = typeof photo === 'string' 
+                    ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
+                    : (photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`);
+                  return (
+                    <div key={index} className="relative group cursor-pointer" onClick={() => handleWorkPhotoView(photo)}>
+                      <img
+                        src={photoSrc}
+                        alt={`Work ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+                        <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Certificates Modal */}
+      {showCertificatesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-white">Certificates</h3>
+              <button
+                onClick={() => setShowCertificatesModal(false)}
+                className="text-white hover:text-gray-300 p-2"
+              >
+                <XMarkIcon className="h-8 w-8" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[80vh] overflow-y-auto">
+              {userProfile.certificates && userProfile.certificates
+                .filter(cert => {
+                  if (typeof cert === 'string') return true;
+                  if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
+                  return false;
+                })
+                .map((cert, index) => {
+                  const certName = typeof cert === 'string' 
+                    ? cert.split('/').pop()
+                    : (cert.originalName || cert.path?.split('/').pop() || 'Certificate');
+                  return (
+                    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onClick={() => handleCertificateView(cert)}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <AcademicCapIcon className="h-8 w-8 text-green-600 mr-3" />
+                          <div>
+                            <h4 className="font-medium text-gray-900 dark:text-white">{certName}</h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Certificate {index + 1}</p>
+                          </div>
+                        </div>
+                        <EyeIcon className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Photo/Certificate Viewer */}
+      {selectedPhoto && (
+        <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
+          <div className="relative max-w-full max-h-full">
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
+            >
+              <XMarkIcon className="h-8 w-8" />
+            </button>
+            <img
+              src={selectedPhoto}
+              alt="Full screen view"
+              className="max-w-[95vw] max-h-[95vh] object-contain"
+            />
           </div>
         </div>
       )}
