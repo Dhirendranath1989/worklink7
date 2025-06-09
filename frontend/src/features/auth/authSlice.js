@@ -121,17 +121,7 @@ export const registerWithEmail = createAsyncThunk(
       
       console.log('Backend registration successful:', data.user);
       
-      const userData = {
-        ...data.user,
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        emailVerified: firebaseUser.emailVerified,
-        isNewUser: !data.user.profileCompleted
-      };
-      
-      // Note: Removed localStorage dependency - data will be fetched from backend on app initialization
-      
-      return { user: userData, token: data.token };
+      return response.data;
     } catch (error) {
       console.error('Email registration error:', error);
       
@@ -164,65 +154,29 @@ export const loginWithEmail = createAsyncThunk(
   'auth/loginWithEmail',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      console.log('Attempting Firebase email login for:', email);
+      console.log('Attempting email login for:', email);
       
-      // Sign in with Firebase Auth
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+      // Login with backend API
+      const response = await api.post('/auth/login', { email, password });
       
-      console.log('Firebase login successful:', firebaseUser.uid);
+      console.log('Backend login successful:', response.data.user);
       
-      // Get user data from backend
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, firebaseUid: firebaseUser.uid }),
-      });
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-      
-      console.log('Backend Google auth successful:', data.user);
-      
-      const userData = {
-        ...data.user,
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        emailVerified: firebaseUser.emailVerified,
-        isNewUser: !data.user.profileCompleted
-      };
-      
-      // Note: Removed localStorage dependency - data will be fetched from backend on app initialization
-      
-      return { user: userData, token: data.token };
+      return response.data;
     } catch (error) {
       console.error('Email login error:', error);
       
       let errorMessage = 'Login failed';
       
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'No account found with this email';
-          break;
-        case 'auth/wrong-password':
-          errorMessage = 'Incorrect password';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'Invalid email address';
-          break;
-        case 'auth/user-disabled':
-          errorMessage = 'This account has been disabled';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Too many failed attempts. Please try again later';
-          break;
-        default:
-          errorMessage = error.message || 'Login failed';
+      if (error.response) {
+        // Backend API error
+        errorMessage = error.response.data?.message || error.response.data?.error || 'Login failed';
+      } else if (error.message) {
+        // Network or other error
+        errorMessage = error.message;
       }
       
       return rejectWithValue(errorMessage);
@@ -293,35 +247,16 @@ export const loginWithGoogle = createAsyncThunk(
         emailVerified: user.emailVerified,
       };
       
-      // Send to backend without ID token for demo purposes
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/auth/google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userData }),
-      });
+      // Send to backend
+      const response = await api.post('/auth/google', { userData });
       
-      const data = await response.json();
+      console.log('Backend Google login successful:', response.data.user);
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Google login failed');
-      }
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      console.log('Backend Google login successful:', data.user);
-      
-      const finalUserData = {
-        ...data.user,
-        uid: user.uid,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        photoURL: user.photoURL,
-        isNewUser: !data.user.profileCompleted
-      };
-      
-      // Note: Removed localStorage dependency - data will be fetched from backend on app initialization
-      
-      return { user: finalUserData, token: data.token };
+      return response.data;
     } catch (error) {
       console.error('Google login error:', error);
       
@@ -331,7 +266,7 @@ export const loginWithGoogle = createAsyncThunk(
         console.warn('ℹ️ This warning is caused by Google\'s accounts.google.com sending report-only COOP headers.');
       }
       
-      let errorMessage = 'Google login failed';
+      let errorMessage = error.response?.data?.error || error.message || 'Google login failed';
       
       switch (error.code) {
         case 'auth/popup-closed-by-user':

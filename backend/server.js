@@ -139,9 +139,23 @@ if (process.env.MONGODB_URI) {
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: function() { return !this.firebaseUid; } },
   userType: { type: String, enum: ['worker', 'employer'], required: true },
+  firebaseUid: { type: String, unique: true, sparse: true },
+  emailVerified: { type: Boolean, default: false },
+  profileCompleted: { type: Boolean, default: false },
   profilePhoto: { type: String, default: '' },
+  
+  // Contact Information
+  mobile: { type: String },
+  address: { type: String },
+  pincode: { type: String },
+  
+  // Business Information (for employers/owners)
+  businessName: { type: String },
+  businessType: { type: String },
+  
+  // Work-related files and media
   workPhotos: [{
     path: String,
     originalName: String,
@@ -154,6 +168,8 @@ const userSchema = new mongoose.Schema({
     size: Number,
     mimetype: String
   }],
+  
+  // Professional Information
   skills: [String],
   workExperience: [{
     jobTitle: String,
@@ -163,9 +179,10 @@ const userSchema = new mongoose.Schema({
   }],
   languages: [String],
   availability: String,
-  hourlyRate: Number,
-  description: String,
-  businessName: String,
+  hourlyRate: { type: Number, default: 0 },
+  description: { type: String },
+  
+  // Rating and Reviews
   rating: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },
   reviews: [{
@@ -332,6 +349,119 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Google authentication endpoint
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { userData } = req.body;
+
+    if (!userData || !userData.email) {
+      return res.status(400).json({ error: 'User data is required' });
+    }
+
+    // Find or create user
+    let user;
+    if (isMongoConnected) {
+      user = await User.findOne({ email: userData.email });
+      
+      if (!user) {
+        // Create new user
+        user = new User({
+          fullName: `${userData.firstName} ${userData.lastName}`.trim(),
+          email: userData.email,
+          password: '', // Empty password for Google users
+          userType: 'worker', // Default to worker, can be changed later
+          profilePhoto: userData.photoURL || '',
+          emailVerified: userData.emailVerified || false,
+          firebaseUid: userData.uid,
+          profileCompleted: false
+        });
+        await user.save();
+      } else {
+        // Update existing user with Google data if needed
+        if (userData.photoURL && !user.profilePhoto) {
+          user.profilePhoto = userData.photoURL;
+        }
+        if (userData.uid && !user.firebaseUid) {
+          user.firebaseUid = userData.uid;
+        }
+        user.emailVerified = userData.emailVerified || user.emailVerified;
+        await user.save();
+      }
+    } else {
+      // In-memory storage
+      user = inMemoryUsers.find(u => u.email === userData.email);
+      
+      if (!user) {
+        user = {
+          id: Date.now().toString(),
+          fullName: `${userData.firstName} ${userData.lastName}`.trim(),
+          email: userData.email,
+          userType: 'worker',
+          profilePhoto: userData.photoURL || '',
+          emailVerified: userData.emailVerified || false,
+          firebaseUid: userData.uid,
+          profileCompleted: false,
+          skills: [],
+          workExperience: [],
+          languages: [],
+          availability: '',
+          hourlyRate: 0,
+          description: '',
+          businessName: '',
+          rating: 0,
+          reviewCount: 0,
+          certificates: [],
+          workPhotos: []
+        };
+        inMemoryUsers.push(user);
+      } else {
+        // Update existing user
+        if (userData.photoURL && !user.profilePhoto) {
+          user.profilePhoto = userData.photoURL;
+        }
+        if (userData.uid && !user.firebaseUid) {
+          user.firebaseUid = userData.uid;
+        }
+        user.emailVerified = userData.emailVerified || user.emailVerified;
+      }
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id || user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback_secret',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      message: 'Google login successful',
+      token,
+      user: {
+        id: user._id || user.id,
+        fullName: user.fullName,
+        email: user.email,
+        userType: user.userType,
+        profilePhoto: user.profilePhoto,
+        workPhotos: user.workPhotos,
+        certificates: user.certificates,
+        skills: user.skills,
+        workExperience: user.workExperience,
+        languages: user.languages,
+        availability: user.availability,
+        hourlyRate: user.hourlyRate,
+        description: user.description,
+        businessName: user.businessName,
+        rating: user.rating,
+        reviewCount: user.reviewCount,
+        profileCompleted: user.profileCompleted || false
+      }
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({ error: 'Failed to process Google login' });
+  }
+});
+
 // Upload work photos endpoint
 app.post('/api/auth/upload-work-photos', upload.array('workPhotos', 10), async (req, res) => {
   try {
@@ -461,6 +591,153 @@ app.post('/api/auth/upload-certificates', upload.array('certificates', 10), asyn
   } catch (error) {
     console.error('Error uploading certificates:', error);
     res.status(500).json({ error: 'Failed to upload certificates' });
+  }
+});
+
+// Middleware to authenticate token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Update profile endpoint
+app.put('/api/auth/update-profile', authenticateToken, upload.fields([
+  { name: 'profilePhoto', maxCount: 1 },
+  { name: 'workPhotos', maxCount: 10 },
+  { name: 'certificates', maxCount: 10 }
+]), async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const updateData = { ...req.body };
+
+    // Handle file uploads
+    if (req.files) {
+      // Handle profile photo
+      if (req.files.profilePhoto && req.files.profilePhoto[0]) {
+        updateData.profilePhoto = `/uploads/${req.files.profilePhoto[0].filename}`;
+      }
+
+      // Handle work photos
+      if (req.files.workPhotos && req.files.workPhotos.length > 0) {
+        const workPhotos = req.files.workPhotos.map(file => ({
+          path: `/uploads/${file.filename}`,
+          originalName: file.originalname,
+          size: file.size,
+          mimetype: file.mimetype
+        }));
+        updateData.workPhotos = workPhotos;
+      }
+
+      // Handle certificates
+      if (req.files.certificates && req.files.certificates.length > 0) {
+        const certificates = req.files.certificates.map(file => ({
+          path: `/uploads/${file.filename}`,
+          originalName: file.originalname,
+          size: file.size,
+          mimetype: file.mimetype
+        }));
+        updateData.certificates = certificates;
+      }
+    }
+
+    // Parse JSON fields if they come as strings
+    if (typeof updateData.skills === 'string') {
+      try {
+        updateData.skills = JSON.parse(updateData.skills);
+      } catch (e) {
+        updateData.skills = updateData.skills.split(',').map(s => s.trim());
+      }
+    }
+
+    if (typeof updateData.languages === 'string') {
+      try {
+        updateData.languages = JSON.parse(updateData.languages);
+      } catch (e) {
+        updateData.languages = updateData.languages.split(',').map(s => s.trim());
+      }
+    }
+
+    if (typeof updateData.workExperience === 'string') {
+      try {
+        updateData.workExperience = JSON.parse(updateData.workExperience);
+      } catch (e) {
+        updateData.workExperience = [];
+      }
+    }
+
+    // Convert hourlyRate to number if it's a string
+    if (updateData.hourlyRate && typeof updateData.hourlyRate === 'string') {
+      updateData.hourlyRate = parseFloat(updateData.hourlyRate);
+    }
+
+    // Update user in database or memory
+    let updatedUser;
+    if (isMongoConnected) {
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      ).select('-password');
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+    } else {
+      // In-memory storage
+      const userIndex = inMemoryUsers.findIndex(u => (u._id || u.id) === userId);
+      if (userIndex === -1) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      inMemoryUsers[userIndex] = { ...inMemoryUsers[userIndex], ...updateData };
+      updatedUser = inMemoryUsers[userIndex];
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      updatedUser = userWithoutPassword;
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser._id || updatedUser.id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        userType: updatedUser.userType,
+        profilePhoto: updatedUser.profilePhoto,
+        workPhotos: updatedUser.workPhotos || [],
+        certificates: updatedUser.certificates || [],
+        skills: updatedUser.skills || [],
+        workExperience: updatedUser.workExperience || [],
+        languages: updatedUser.languages || [],
+        availability: updatedUser.availability || '',
+        hourlyRate: updatedUser.hourlyRate || 0,
+        description: updatedUser.description || '',
+        businessName: updatedUser.businessName || '',
+        businessType: updatedUser.businessType || '',
+        mobile: updatedUser.mobile || '',
+        address: updatedUser.address || '',
+        pincode: updatedUser.pincode || '',
+        rating: updatedUser.rating || 0,
+        reviewCount: updatedUser.reviewCount || 0,
+        profileCompleted: updatedUser.profileCompleted || false
+      }
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 
