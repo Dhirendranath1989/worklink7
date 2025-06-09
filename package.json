@@ -1,0 +1,29 @@
+{
+  "name": "worklink",
+  "version": "1.0.0",
+  "description": "WorkLink - Connecting Skill with Need",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "install-deps": "npm install && cd frontend && npm install && cd ../backend && npm install"
+  },
+  "keywords": [
+    "local-services",
+    "workers",
+    "marketplace",
+    "react",
+    "nodejs"
+  ],
+  "author": "WorkLink Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "dependencies": {
+    "multer": "^2.0.0",
+    "react-icons": "^5.5.0"
+  }
+}

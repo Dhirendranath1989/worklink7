@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Search Workers</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input, button { padding: 8px; margin: 5px 0; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .results { margin-top: 20px; }
+        .worker-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Search Workers</h1>
+        
+        <div class="form-group">
+            <h3>Step 1: Login to get token</h3>
+            <input type="email" id="email" placeholder="Email" value="client@test.com">
+            <button onclick="login()">Login</button>
+            <div id="loginResult"></div>
+        </div>
+        
+        <div class="form-group">
+            <h3>Step 2: Search Workers</h3>
+            <input type="text" id="skills" placeholder="Skills (e.g., plumbing, cleaning, gardening)" value="plumbing">
+            <button onclick="searchWorkers()">Search</button>
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/debug/test-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    resultDiv.innerHTML = `<div class="success">Login successful! Token: ${data.token.substring(0, 20)}...</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Login error: ${error.message}</div>`;
+            }
+        }
+        
+        async function searchWorkers() {
+            const skills = document.getElementById('skills').value;
+            const resultsDiv = document.getElementById('results');
+            
+            if (!authToken) {
+                resultsDiv.innerHTML = '<div class="error">Please login first to get authentication token</div>';
+                return;
+            }
+            
+            if (!skills.trim()) {
+                resultsDiv.innerHTML = '<div class="error">Please enter skills to search for</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/search/workers?skills=${encodeURIComponent(skills)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.workers && data.workers.length > 0) {
+                        let html = `<h3>Found ${data.workers.length} workers:</h3>`;
+                        data.workers.forEach(worker => {
+                            html += `
+                                <div class="worker-card">
+                                    <h4>${worker.name || worker.fullName}</h4>
+                                    <p><strong>Skills:</strong> ${worker.skills ? worker.skills.join(', ') : 'N/A'}</p>
+                                    <p><strong>Location:</strong> ${worker.address || 'N/A'}</p>
+                                    <p><strong>Rate:</strong> $${worker.hourlyRate || 'N/A'}/hr</p>
+                                    <p><strong>Rating:</strong> ${worker.rating || 'N/A'}/5</p>
+                                    <p><strong>Experience:</strong> ${worker.workExperience || 'N/A'}</p>
+                                </div>
+                            `;
+                        });
+                        resultsDiv.innerHTML = html;
+                    } else {
+                        resultsDiv.innerHTML = '<div>No workers found matching your search criteria</div>';
+                    }
+                } else {
+                    resultsDiv.innerHTML = `<div class="error">Search failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Search error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
