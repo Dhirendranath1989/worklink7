@@ -186,7 +186,7 @@ const ImageViewer = ({
       )}
 
       {/* Main Content */}
-      <div className="w-full h-full flex items-center justify-center p-0">
+      <div className="w-full h-full flex items-center justify-center p-0 m-0">
         {isImage ? (
           <div className="relative w-full h-full flex items-center justify-center">
             {isLoading && (
@@ -198,7 +198,7 @@ const ImageViewer = ({
               <img
                 src={currentImage.src}
                 alt={currentImage.name}
-                className="max-w-full max-h-full object-contain"
+                className="w-full h-full object-contain"
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 onClick={(e) => e.stopPropagation()}

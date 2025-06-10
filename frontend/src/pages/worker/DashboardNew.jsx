@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   BriefcaseIcon,
   CurrencyDollarIcon,
@@ -51,6 +51,7 @@ import { reviewAPI } from '../../services/api';
 
 const FacebookLikeDashboard = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { viewedProfile: profile, earnings, loading } = useSelector((state) => state.profiles);
   
@@ -71,8 +72,7 @@ const FacebookLikeDashboard = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [showReviewDetails, setShowReviewDetails] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
-  const [showWorkPhotosModal, setShowWorkPhotosModal] = useState(false);
-  const [showCertificatesModal, setShowCertificatesModal] = useState(false);
+
   const [selectedWorkPhoto, setSelectedWorkPhoto] = useState(null);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [workPhotosFiles, setWorkPhotosFiles] = useState([]);
@@ -770,7 +770,7 @@ const FacebookLikeDashboard = () => {
                     </label>
                     {userProfile.workPhotos && userProfile.workPhotos.length > 0 && (
                       <button
-                        onClick={() => setShowWorkPhotosModal(true)}
+                        onClick={() => navigate('/worker/portfolio')}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
                       >
                         View All
@@ -860,7 +860,7 @@ const FacebookLikeDashboard = () => {
                     </label>
                     {userProfile.certificates && userProfile.certificates.length > 0 && (
                       <button
-                        onClick={() => setShowCertificatesModal(true)}
+                        onClick={() => navigate('/worker/certificates')}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
                       >
                         View All
@@ -1428,110 +1428,9 @@ const FacebookLikeDashboard = () => {
         </div>
       )}
 
-      {/* Work Photos Modal */}
-      {showWorkPhotosModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-          <div className="relative max-w-6xl max-h-[90vh] w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-white">Work Portfolio</h3>
-              <button
-                onClick={() => setShowWorkPhotosModal(false)}
-                className="text-white hover:text-gray-300 p-2"
-              >
-                <XMarkIcon className="h-8 w-8" />
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[80vh] overflow-y-auto">
-              {userProfile.workPhotos && userProfile.workPhotos
-                .filter(photo => {
-                  if (typeof photo === 'string') return true;
-                  if (typeof photo === 'object' && photo.path) return true;
-                  return false;
-                })
-                .map((photo, index) => {
-                  const photoSrc = typeof photo === 'string' 
-                    ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
-                    : (photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`);
-                  return (
-                    <div key={index} className="relative group cursor-pointer" onClick={() => handleWorkPhotoView(photo)}>
-                      <img
-                        src={photoSrc}
-                        alt={`Work ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
-                        <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Certificates Modal */}
-      {showCertificatesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-          <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-white">Certificates</h3>
-              <button
-                onClick={() => setShowCertificatesModal(false)}
-                className="text-white hover:text-gray-300 p-2"
-              >
-                <XMarkIcon className="h-8 w-8" />
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[80vh] overflow-y-auto">
-              {userProfile.certificates && userProfile.certificates
-                .filter(cert => {
-                  if (typeof cert === 'string') return true;
-                  if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
-                  return false;
-                })
-                .map((cert, index) => {
-                  const certName = typeof cert === 'string' 
-                    ? cert.split('/').pop()
-                    : (cert.originalName || cert.path?.split('/').pop() || 'Certificate');
-                  return (
-                    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onClick={() => handleCertificateView(cert)}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <AcademicCapIcon className="h-8 w-8 text-green-600 mr-3" />
-                          <div>
-                            <h4 className="font-medium text-gray-900 dark:text-white">{certName}</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Certificate {index + 1}</p>
-                          </div>
-                        </div>
-                        <EyeIcon className="h-6 w-6 text-blue-600" />
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Full Screen Photo/Certificate Viewer */}
-      {selectedPhoto && (
-        <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50">
-          <div className="relative max-w-full max-h-full">
-            <button
-              onClick={() => setSelectedPhoto(null)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
-            >
-              <XMarkIcon className="h-8 w-8" />
-            </button>
-            <img
-              src={selectedPhoto}
-              alt="Full screen view"
-              className="max-w-[95vw] max-h-[95vh] object-contain"
-            />
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };

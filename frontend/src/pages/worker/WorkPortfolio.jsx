@@ -3,20 +3,15 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
   PhotoIcon,
-  EyeIcon,
   PlusIcon,
   ArrowLeftIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
-import ImageViewer from '../../components/ImageViewer';
 
 const WorkPortfolio = () => {
   const { user } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
@@ -64,23 +59,6 @@ const WorkPortfolio = () => {
 
   // Get unique categories for filter
   const categories = ['all', ...new Set(processedPhotos.map(photo => photo.category))];
-
-  const openImageModal = (photo) => {
-    const photoIndex = filteredPhotos.findIndex(p => p.id === photo.id);
-    setCurrentImageIndex(photoIndex);
-    setSelectedImage(photo);
-    setIsViewerOpen(true);
-  };
-
-  const closeImageModal = () => {
-    setSelectedImage(null);
-    setIsViewerOpen(false);
-  };
-
-  const handleIndexChange = (newIndex) => {
-    setCurrentImageIndex(newIndex);
-    setSelectedImage(filteredPhotos[newIndex]);
-  };
 
   const handleImageError = (e) => {
     e.target.src = '/api/placeholder/400/300';
@@ -155,13 +133,9 @@ const WorkPortfolio = () => {
                   <img
                     src={photo.src}
                     alt={photo.name}
-                    className="w-full h-full object-cover cursor-pointer"
-                    onClick={() => openImageModal(photo)}
+                    className="w-full h-full object-cover"
                     onError={handleImageError}
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center">
-                    <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
                   {photo.category !== 'General' && (
                     <div className="absolute top-2 right-2">
                       <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
@@ -201,17 +175,6 @@ const WorkPortfolio = () => {
           </div>
         )}
       </div>
-
-      {/* Image Viewer */}
-      <ImageViewer
-        isOpen={isViewerOpen}
-        onClose={closeImageModal}
-        images={filteredPhotos}
-        currentIndex={currentImageIndex}
-        onIndexChange={handleIndexChange}
-        showNavigation={true}
-        showDownload={true}
-      />
     </div>
   );
 };
