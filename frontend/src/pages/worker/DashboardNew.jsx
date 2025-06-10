@@ -331,7 +331,13 @@ const FacebookLikeDashboard = () => {
     workPhotos: Array.isArray(user?.workPhotos) ? user.workPhotos : (user?.portfolio ? (Array.isArray(user.portfolio) ? user.portfolio : [user.portfolio]) : []),
     certificates: Array.isArray(user?.certificates) ? user.certificates : (user?.certifications ? (Array.isArray(user.certifications) ? user.certifications : [user.certifications]) : []),
     // Map backend fields correctly: availability -> availabilityStatus
-    availabilityStatus: String(user?.availability || user?.availabilityStatus || user?.status || 'Not specified'),
+    availabilityStatus: (() => {
+      const status = user?.availabilityStatus || user?.status;
+      if (typeof status === 'object' && status !== null) {
+        return status.status || status.value || 'available';
+      }
+      return status || 'available';
+    })(),
     businessName: String(user?.businessName || user?.companyName || ''),
     businessType: String(user?.businessType || user?.companyType || '')
   };
@@ -374,8 +380,18 @@ const FacebookLikeDashboard = () => {
 
   // Handle post creation from CreatePostModal
   const handlePostCreated = (newPost) => {
+    // Ensure the new post has proper author information
+    const postWithAuthor = {
+      ...newPost,
+      author: {
+        _id: user._id,
+        fullName: user.fullName || user.name,
+        name: user.fullName || user.name,
+        profilePhoto: user.profilePhoto
+      }
+    };
     // Add the new post to the beginning of the posts array
-    setPosts(prevPosts => [newPost, ...prevPosts]);
+    setPosts(prevPosts => [postWithAuthor, ...prevPosts]);
     toast.success('Post created successfully!');
   };
 

@@ -99,7 +99,17 @@ const OwnerDashboard = () => {
 
   // Handle post creation from CreatePostModal
   const handlePostCreated = (newPost) => {
-    setPosts(prevPosts => [newPost, ...prevPosts]);
+    // Ensure the new post has proper author information
+    const postWithAuthor = {
+      ...newPost,
+      author: {
+        _id: user._id,
+        fullName: user.fullName || user.name,
+        name: user.fullName || user.name,
+        profilePhoto: user.profilePhoto
+      }
+    };
+    setPosts(prevPosts => [postWithAuthor, ...prevPosts]);
     toast.success('Post created successfully!');
   };
 
