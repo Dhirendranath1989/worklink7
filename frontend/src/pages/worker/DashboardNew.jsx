@@ -878,32 +878,55 @@ const FacebookLikeDashboard = () => {
                 )}
                 
                 {userProfile.certificates && userProfile.certificates.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {userProfile.certificates
                       .filter(cert => {
                         if (typeof cert === 'string') return true;
                         if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
                         return false;
                       })
-                      .slice(0, 3)
+                      .slice(0, 4)
                       .map((cert, index) => {
-                        const certName = typeof cert === 'string' 
-                          ? cert.split('/').pop()
-                          : (cert.originalName || cert.path?.split('/').pop() || 'Certificate');
+                        let certSrc;
+                        let certName = `Certificate ${index + 1}`;
+                        
+                        if (typeof cert === 'object' && cert.path) {
+                          // New structure with path, originalName, etc.
+                          certSrc = cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`;
+                          certName = cert.originalName || cert.name || certName;
+                        } else if (typeof cert === 'object' && cert.filename) {
+                          // Legacy structure with filename
+                          certSrc = `http://localhost:5000/uploads/${cert.filename}`;
+                          certName = cert.originalName || cert.name || certName;
+                        } else if (typeof cert === 'string') {
+                          // Simple string path
+                          certSrc = cert.startsWith('http') ? cert : `http://localhost:5000${cert}`;
+                          certName = cert.split('/').pop() || certName;
+                        } else {
+                          // Fallback
+                          certSrc = `http://localhost:5000/uploads/${cert.name || cert}`;
+                          certName = cert.originalName || cert.name || certName;
+                        }
+                        
                         return (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                            <div className="flex items-center">
-                              <AcademicCapIcon className="h-5 w-5 text-green-600 mr-3" />
-                              <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                                {certName}
-                              </span>
-                            </div>
-                            <button
+                          <div key={index} className="relative group">
+                            <img
+                              src={certSrc}
+                              alt={certName}
+                              className="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                               onClick={() => handleCertificateView(cert)}
-                              className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                            >
-                              <EyeIcon className="h-4 w-4" />
-                            </button>
+                              onError={(e) => {
+                                e.target.src = '/api/placeholder/400/300';
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
+                              <EyeIcon className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <div className="absolute bottom-1 left-1 right-1">
+                              <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded truncate">
+                                {certName.length > 15 ? `${certName.substring(0, 15)}...` : certName}
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
@@ -920,13 +943,13 @@ const FacebookLikeDashboard = () => {
                   if (typeof cert === 'string') return true;
                   if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
                   return false;
-                }).length > 3 && (
+                }).length > 4 && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                     +{userProfile.certificates.filter(cert => {
                       if (typeof cert === 'string') return true;
                       if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
                       return false;
-                    }).length - 3} more certificates
+                    }).length - 4} more certificates
                   </p>
                 )}
               </div>
