@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
   PhotoIcon,
   PlusIcon,
   ArrowLeftIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import ImageViewer from '../../components/ImageViewer';
 
 const WorkPortfolio = () => {
   const { user } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [triggerElement, setTriggerElement] = useState(null);
+  const imageRefs = useRef([]);
 
   // Get work photos from profile or user data
   const workPhotos = profile?.workPhotos || user?.workPhotos || [];
@@ -63,6 +70,24 @@ const WorkPortfolio = () => {
   const handleImageError = (e) => {
     e.target.src = '/api/placeholder/400/300';
     toast.error('Failed to load image');
+  };
+
+  const openImageModal = (photo, index, element) => {
+    setSelectedImage(photo);
+    setCurrentImageIndex(index);
+    setTriggerElement(element);
+    setIsViewerOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsViewerOpen(false);
+    setSelectedImage(null);
+    setTriggerElement(null);
+  };
+
+  const handleIndexChange = (newIndex) => {
+    setCurrentImageIndex(newIndex);
+    setSelectedImage(filteredPhotos[newIndex]);
   };
 
   return (
@@ -127,17 +152,27 @@ const WorkPortfolio = () => {
         {/* Portfolio Grid */}
         {filteredPhotos.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {filteredPhotos.map((photo) => (
-              <div key={photo.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden group hover:shadow-lg transition-shadow">
+            {filteredPhotos.map((photo, index) => (
+              <div key={photo.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden group hover:shadow-lg transition-all duration-300 hover:scale-105">
                 <div className="relative aspect-square">
                   <img
+                    ref={(el) => imageRefs.current[index] = el}
                     src={photo.src}
                     alt={photo.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110"
                     onError={handleImageError}
+                    onClick={(e) => openImageModal(photo, index, e.target)}
                   />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center cursor-pointer"
+                       onClick={(e) => {
+                         e.preventDefault();
+                         openImageModal(photo, index, imageRefs.current[index]);
+                       }}>
+                    <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
                   {photo.category !== 'General' && (
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 z-10">
                       <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
                         {photo.category}
                       </span>
@@ -175,6 +210,20 @@ const WorkPortfolio = () => {
           </div>
         )}
       </div>
+
+      {/* Image Viewer Modal */}
+      {isViewerOpen && (
+        <ImageViewer
+          isOpen={isViewerOpen}
+          onClose={closeImageModal}
+          images={filteredPhotos}
+          currentIndex={currentImageIndex}
+          onIndexChange={handleIndexChange}
+          triggerElement={triggerElement}
+          showNavigation={true}
+          showDownload={true}
+        />
+      )}
     </div>
   );
 };

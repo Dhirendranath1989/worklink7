@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
@@ -8,15 +8,22 @@ import {
   MagnifyingGlassIcon,
   AcademicCapIcon,
   CalendarIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import ImageViewer from '../../components/ImageViewer';
 
 const Certificates = () => {
   const { user } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [triggerElement, setTriggerElement] = useState(null);
+  const certificateRefs = useRef([]);
 
   // Get certificates from profile or user data
   const certificates = profile?.certificates || user?.certificates || [];
@@ -68,6 +75,24 @@ const Certificates = () => {
   const handleImageError = (e) => {
     e.target.src = '/api/placeholder/400/300';
     toast.error('Failed to load certificate image');
+  };
+
+  const openCertificateModal = (cert, index, element) => {
+    setSelectedCertificate(cert);
+    setCurrentCertificateIndex(index);
+    setTriggerElement(element);
+    setIsViewerOpen(true);
+  };
+
+  const closeCertificateModal = () => {
+    setIsViewerOpen(false);
+    setSelectedCertificate(null);
+    setTriggerElement(null);
+  };
+
+  const handleIndexChange = (newIndex) => {
+    setCurrentCertificateIndex(newIndex);
+    setSelectedCertificate(filteredCertificates[newIndex]);
   };
 
   return (
@@ -132,16 +157,26 @@ const Certificates = () => {
         {/* Certificates Grid */}
         {filteredCertificates.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredCertificates.map((cert) => (
-              <div key={cert.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden group hover:shadow-lg transition-shadow">
+            {filteredCertificates.map((cert, index) => (
+              <div key={cert.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden group hover:shadow-lg transition-all duration-300 hover:scale-105">
                 <div className="relative aspect-[4/3]">
                   <img
+                    ref={(el) => certificateRefs.current[index] = el}
                     src={cert.src}
                     alt={cert.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110"
                     onError={handleImageError}
+                    onClick={(e) => openCertificateModal(cert, index, e.target)}
                   />
-                  <div className="absolute top-2 right-2">
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center cursor-pointer"
+                       onClick={(e) => {
+                         e.preventDefault();
+                         openCertificateModal(cert, index, certificateRefs.current[index]);
+                       }}>
+                    <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <div className="absolute top-2 right-2 z-10">
                     <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
                       {cert.type}
                     </span>
@@ -187,6 +222,20 @@ const Certificates = () => {
           </div>
         )}
       </div>
+
+      {/* Certificate Viewer Modal */}
+      {isViewerOpen && (
+        <ImageViewer
+          isOpen={isViewerOpen}
+          onClose={closeCertificateModal}
+          images={filteredCertificates}
+          currentIndex={currentCertificateIndex}
+          onIndexChange={handleIndexChange}
+          triggerElement={triggerElement}
+          showNavigation={true}
+          showDownload={true}
+        />
+      )}
     </div>
   );
 };
