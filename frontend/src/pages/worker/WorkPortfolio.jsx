@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
@@ -6,15 +6,17 @@ import {
   EyeIcon,
   PlusIcon,
   ArrowLeftIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import ImageViewer from '../../components/ImageViewer';
 
 const WorkPortfolio = () => {
   const { user } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
@@ -26,15 +28,20 @@ const WorkPortfolio = () => {
     let photoSrc;
     let photoName = `Work Photo ${index + 1}`;
     
-    if (typeof photo === 'string') {
-      photoSrc = `http://localhost:5000/uploads/${photo}`;
-    } else if (photo.path) {
-      photoSrc = `http://localhost:5000${photo.path}`;
+    if (typeof photo === 'object' && photo.path) {
+      // New structure with path, originalName, etc.
+      photoSrc = photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`;
       photoName = photo.originalName || photo.name || photoName;
-    } else if (photo.filename) {
+    } else if (typeof photo === 'object' && photo.filename) {
+      // Legacy structure with filename
       photoSrc = `http://localhost:5000/uploads/${photo.filename}`;
       photoName = photo.originalName || photo.name || photoName;
+    } else if (typeof photo === 'string') {
+      // Simple string path
+      photoSrc = photo.startsWith('http') ? photo : `http://localhost:5000${photo}`;
+      photoName = photo.split('/').pop() || photoName;
     } else {
+      // Fallback
       photoSrc = `http://localhost:5000/uploads/${photo.name || photo}`;
       photoName = photo.originalName || photo.name || photoName;
     }
@@ -59,11 +66,20 @@ const WorkPortfolio = () => {
   const categories = ['all', ...new Set(processedPhotos.map(photo => photo.category))];
 
   const openImageModal = (photo) => {
+    const photoIndex = filteredPhotos.findIndex(p => p.id === photo.id);
+    setCurrentImageIndex(photoIndex);
     setSelectedImage(photo);
+    setIsViewerOpen(true);
   };
 
   const closeImageModal = () => {
     setSelectedImage(null);
+    setIsViewerOpen(false);
+  };
+
+  const handleIndexChange = (newIndex) => {
+    setCurrentImageIndex(newIndex);
+    setSelectedImage(filteredPhotos[newIndex]);
   };
 
   const handleImageError = (e) => {
@@ -186,30 +202,16 @@ const WorkPortfolio = () => {
         )}
       </div>
 
-      {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-50" onClick={closeImageModal}>
-          <div className="relative w-full h-full flex items-center justify-center">
-            <button
-              onClick={closeImageModal}
-              className="absolute top-6 right-6 text-white hover:text-gray-300 z-20 bg-black bg-opacity-50 rounded-full p-2 transition-colors"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-            <img
-              src={selectedImage.src}
-              alt={selectedImage.name}
-              className="max-w-full max-h-full object-contain"
-              onError={handleImageError}
-              onClick={(e) => e.stopPropagation()}
-            />
-            <div className="absolute bottom-6 left-6 right-6 bg-black bg-opacity-70 text-white p-4 rounded-lg backdrop-blur-sm">
-              <h3 className="font-medium text-lg">{selectedImage.name}</h3>
-              <p className="text-sm opacity-75">{selectedImage.uploadDate} • {selectedImage.category}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Image Viewer */}
+      <ImageViewer
+        isOpen={isViewerOpen}
+        onClose={closeImageModal}
+        images={filteredPhotos}
+        currentIndex={currentImageIndex}
+        onIndexChange={handleIndexChange}
+        showNavigation={true}
+        showDownload={true}
+      />
     </div>
   );
 };

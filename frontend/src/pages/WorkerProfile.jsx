@@ -10,6 +10,7 @@ import { createConversation } from '../features/chat/chatSlice';
 import { saveWorker, removeSavedWorker, checkIfWorkerSaved } from '../features/savedWorkers/savedWorkersSlice';
 import { toast } from 'react-hot-toast';
 import { useChatPopup } from '../hooks/useChatPopup';
+import MediaPreview from '../components/MediaPreview';
 
 const WorkerProfile = () => {
   const { id } = useParams();
@@ -23,8 +24,7 @@ const WorkerProfile = () => {
   const [workerPosts, setWorkerPosts] = useState([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [showImagePreview, setShowImagePreview] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
+
   const [showComments, setShowComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [isSubmittingComment, setIsSubmittingComment] = useState({});
@@ -743,59 +743,16 @@ const WorkerProfile = () => {
             {activeTab === 'certificates' && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Certifications & Documents</h3>
-                {formattedWorker.certificates && Array.isArray(formattedWorker.certificates) && formattedWorker.certificates.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {formattedWorker.certificates.map((cert, index) => (
-                      <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow bg-white dark:bg-gray-800">
-                        <div className="flex items-center mb-3">
-                          <CheckBadgeIcon className="h-6 w-6 text-blue-500 dark:text-blue-400 mr-2" />
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100">{cert.name || cert.originalName || `Certificate ${index + 1}`}</h4>
-                        </div>
-                        {(cert.url || cert.path) && (
-                          <div className="mb-3">
-                            <img
-                              src={(cert.url || cert.path).startsWith('http') ? (cert.url || cert.path) : `http://localhost:5000${cert.url || cert.path}`}
-                              alt={cert.name || cert.originalName || `Certificate ${index + 1}`}
-                              className="w-full h-40 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => {
-                                const imageUrl = (cert.url || cert.path).startsWith('http') ? (cert.url || cert.path) : `http://localhost:5000${cert.url || cert.path}`;
-                                setPreviewImage(imageUrl);
-                                setShowImagePreview(true);
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
-
-
-                        {cert.issuer && <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Issued by: {cert.issuer}</p>}
-                        {cert.date && <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Date: {cert.date}</p>}
-                        {(cert.url || cert.path) && (
-                          <a
-                            href={(cert.url || cert.path).startsWith('http') ? (cert.url || cert.path) : `http://localhost:5000${cert.url || cert.path}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block w-full text-center bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-sm font-medium"
-                          >
-                            View Document
-                          </a>
-                        )}
-
-
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <CheckBadgeIcon className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" />
-                    <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">No Certificates Yet</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">This worker hasn't uploaded any certifications or documents yet.</p>
-                  </div>
-                )}
-
-
+                <MediaPreview 
+                  certificates={formattedWorker.certificates || []}
+                  showTitle={false}
+                  maxItems={12}
+                  onViewAll={(type) => {
+                    if (type === 'certificates') {
+                      navigate(`/certificates/${id}`);
+                    }
+                  }}
+                />
               </div>
             )}
 
@@ -805,57 +762,21 @@ const WorkerProfile = () => {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Work Portfolio & Previous Projects</h3>
                 
-                {/* Work Photos Section */}
-                {formattedWorker.workPhotos && Array.isArray(formattedWorker.workPhotos) && formattedWorker.workPhotos.length > 0 && (
-                  <div className="mb-8">
-                    <div className="flex items-center mb-4">
-                      <div className="h-6 w-6 text-blue-500 dark:text-blue-400 mr-2">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Work Photos ({formattedWorker.workPhotos.length})</h4>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                      {formattedWorker.workPhotos.map((photo, index) => {
-                        // Handle both string and object formats for backward compatibility
-                        const photoUrl = typeof photo === 'string' 
-                          ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
-                          : (photo.path?.startsWith('http') ? photo.path : `http://localhost:5000${photo.path || photo}`);
-                        
-                        return (
-                          <div key={index} className="relative group">
-                            <img
-                              src={photoUrl}
-                              alt={`Work photo ${index + 1}`}
-                              className="w-full h-40 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg transition-all cursor-pointer"
-                              onClick={() => {
-                                setPreviewImage(photoUrl);
-                                setShowImagePreview(true);
-                              }}
-                            />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity rounded-lg flex items-center justify-center">
-                             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                               <div 
-                                 className="bg-white dark:bg-gray-800 rounded-full p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                 onClick={(e) => {
-                                   e.stopPropagation();
-                                   setPreviewImage(photoUrl);
-                                   setShowImagePreview(true);
-                                 }}
-                               >
-                                 <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                 </svg>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       );
-                       })}
-                    </div>
-                  </div>
-                )}
+                {/* Media Preview Component */}
+                <MediaPreview 
+                  workPhotos={formattedWorker.workPhotos || []}
+                  certificates={formattedWorker.certificates || []}
+                  showTitle={false}
+                  maxItems={8}
+                  onViewAll={(type) => {
+                    if (type === 'photos') {
+                      navigate(`/work-portfolio/${id}`);
+                    } else if (type === 'certificates') {
+                      navigate(`/certificates/${id}`);
+                    }
+                  }}
+                  className="mb-8"
+                />
 
 
                 
@@ -888,10 +809,8 @@ const WorkerProfile = () => {
                                 alt={item.title || `Project ${index + 1}`}
                                 className="w-full h-40 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                 onClick={() => {
-                                  const imageUrl = item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
-                                  setPreviewImage(imageUrl);
-                                  setShowImagePreview(true);
-                                }}
+                              // Portfolio image viewing can be handled separately if needed
+                            }}
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                 }}
@@ -906,9 +825,7 @@ const WorkerProfile = () => {
                           {item.image && (
                             <button
                               onClick={() => {
-                                const imageUrl = item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`;
-                                setPreviewImage(imageUrl);
-                                setShowImagePreview(true);
+                                // Portfolio image viewing can be handled separately if needed
                               }}
                               className="inline-block w-full text-center bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-sm font-medium"
                             >
@@ -1201,8 +1118,7 @@ const WorkerProfile = () => {
                                   alt={`Post image ${imgIndex + 1}`}
                                   className="w-full h-48 object-cover rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
                                   onClick={() => {
-                                    setPreviewImage(image.startsWith('http') ? image : `http://localhost:5000${image}`);
-                                    setShowImagePreview(true);
+                                    // Post image viewing can be handled separately if needed
                                   }}
                                 />
                               ))}
@@ -1361,26 +1277,7 @@ const WorkerProfile = () => {
         </div>
       </div>
       
-      {/* Image Preview Modal */}
-      {showImagePreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => setShowImagePreview(false)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
-          </div>
-        </div>
-      )}
+
 
       {/* Review Modal */}
       {showReviewModal && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
@@ -7,17 +7,19 @@ import {
   PlusIcon,
   ArrowLeftIcon,
   MagnifyingGlassIcon,
-  XMarkIcon,
   AcademicCapIcon,
   CalendarIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import ImageViewer from '../../components/ImageViewer';
 
 const Certificates = () => {
   const { user } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
@@ -26,22 +28,26 @@ const Certificates = () => {
 
   // Process certificates to ensure proper URLs and metadata
   const processedCertificates = certificates.map((cert, index) => {
-    let certSrc;
-    let certName;
-    let certType = 'Certificate';
+    // Handle different certificate data structures
+    let certSrc, certName, certType;
     
-    if (typeof cert === 'string') {
-      certSrc = `http://localhost:5000/uploads/${cert}`;
-      certName = `Certificate ${index + 1}`;
-    } else if (cert.path) {
-      certSrc = `http://localhost:5000${cert.path}`;
+    if (typeof cert === 'object' && cert.path) {
+      // New structure with path, originalName, etc.
+      certSrc = cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`;
       certName = cert.originalName || cert.name || `Certificate ${index + 1}`;
       certType = cert.type || 'Certificate';
-    } else if (cert.filename) {
+    } else if (typeof cert === 'object' && cert.filename) {
+      // Legacy structure with filename
       certSrc = `http://localhost:5000/uploads/${cert.filename}`;
       certName = cert.originalName || cert.originalname || cert.name || `Certificate ${index + 1}`;
       certType = cert.type || 'Certificate';
+    } else if (typeof cert === 'string') {
+      // Simple string path
+      certSrc = cert.startsWith('http') ? cert : `http://localhost:5000${cert}`;
+      certName = cert.split('/').pop() || `Certificate ${index + 1}`;
+      certType = 'Certificate';
     } else {
+      // Fallback
       certSrc = `http://localhost:5000/uploads/${cert.name || cert}`;
       certName = cert.originalName || cert.name || `Certificate ${index + 1}`;
       certType = cert.type || 'Certificate';
@@ -78,11 +84,20 @@ const Certificates = () => {
   });
 
   const openCertificateModal = (cert) => {
+    const certIndex = filteredCertificates.findIndex(c => c.id === cert.id);
+    setCurrentCertificateIndex(certIndex);
     setSelectedCertificate(cert);
+    setIsViewerOpen(true);
   };
 
   const closeCertificateModal = () => {
     setSelectedCertificate(null);
+    setIsViewerOpen(false);
+  };
+
+  const handleIndexChange = (newIndex) => {
+    setCurrentCertificateIndex(newIndex);
+    setSelectedCertificate(filteredCertificates[newIndex]);
   };
 
   const handleFileError = (e) => {
@@ -254,64 +269,16 @@ const Certificates = () => {
         )}
       </div>
 
-      {/* Certificate Modal */}
-      {selectedCertificate && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-50" onClick={closeCertificateModal}>
-          <button
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-60"
-            onClick={closeCertificateModal}
-          >
-            <XMarkIcon className="h-8 w-8" />
-          </button>
-          {selectedCertificate.isPDF ? (
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-center" onClick={(e) => e.stopPropagation()}>
-              <DocumentTextIcon className="h-16 w-16 text-red-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">{selectedCertificate.name}</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">PDF files cannot be previewed here</p>
-              <button
-                onClick={() => window.open(selectedCertificate.src, '_blank')}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2"
-              >
-                Open in New Tab
-              </button>
-              <button
-                onClick={() => downloadCertificate(selectedCertificate)}
-                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-              >
-                Download
-              </button>
-            </div>
-          ) : selectedCertificate.isImage ? (
-            <div className="relative max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
-              <img
-                src={selectedCertificate.src}
-                alt={selectedCertificate.name}
-                className="max-w-full max-h-screen object-contain"
-                onError={handleFileError}
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white p-4">
-                <h3 className="font-medium text-lg">{selectedCertificate.name}</h3>
-                <p className="text-sm opacity-75">{selectedCertificate.uploadDate} • {selectedCertificate.type}</p>
-                {selectedCertificate.issuer !== 'Not specified' && (
-                  <p className="text-sm opacity-75">Issued by: {selectedCertificate.issuer}</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4 text-center" onClick={(e) => e.stopPropagation()}>
-              <DocumentIcon className="h-16 w-16 text-gray-600 dark:text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">{selectedCertificate.name}</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">This file type cannot be previewed</p>
-              <button
-                onClick={() => downloadCertificate(selectedCertificate)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Download
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Certificate Viewer */}
+      <ImageViewer
+        isOpen={isViewerOpen}
+        onClose={closeCertificateModal}
+        images={filteredCertificates}
+        currentIndex={currentCertificateIndex}
+        onIndexChange={handleIndexChange}
+        showNavigation={true}
+        showDownload={true}
+      />
     </div>
   );
 };

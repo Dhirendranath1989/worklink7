@@ -54,8 +54,18 @@ const userSchema = new mongoose.Schema({
   },
   
   // Portfolio
-  workPhotos: [{ type: String }],
-  certificates: [{ type: String }],
+  workPhotos: [{
+    path: { type: String },
+    originalName: { type: String },
+    size: { type: Number },
+    mimetype: { type: String }
+  }],
+  certificates: [{
+    path: { type: String },
+    originalName: { type: String },
+    size: { type: Number },
+    mimetype: { type: String }
+  }],
   
   // Business information (for owners)
   businessName: { type: String },
