@@ -248,6 +248,7 @@ export const loginWithGoogle = createAsyncThunk(
       };
       
       // Send to backend
+      console.log('Sending user data to backend:', userData);
       const response = await api.post('/auth/google', { userData });
       
       console.log('Backend Google login successful:', response.data.user);
@@ -264,6 +265,28 @@ export const loginWithGoogle = createAsyncThunk(
       if (error.message && error.message.includes('Cross-Origin-Opener-Policy')) {
         console.warn('⚠️ COOP Warning: This is a browser security warning that can be safely ignored. Authentication should still work properly.');
         console.warn('ℹ️ This warning is caused by Google\'s accounts.google.com sending report-only COOP headers.');
+        // Don't throw error for COOP warnings, continue with normal flow
+        return;
+      }
+      
+      // Handle backend API errors
+      if (error.response) {
+        console.error('Backend API error:', error.response.status, error.response.data);
+        
+        // Handle specific backend error cases
+        if (error.response.status === 409) {
+          // User already exists - this might happen after account deletion/recreation
+          console.log('User already exists, attempting to handle gracefully');
+          throw new Error(error.response.data.details || 'Account already exists. Please try logging in instead.');
+        } else if (error.response.status === 500) {
+          // Server error - provide more helpful message
+          const serverError = error.response.data.details || error.response.data.error || 'Server error occurred';
+          console.error('Server error details:', serverError);
+          throw new Error(`Server error: ${serverError}. Please try again or contact support if the issue persists.`);
+        } else if (error.response.status === 400) {
+          // Bad request - validation error
+          throw new Error(error.response.data.details || error.response.data.error || 'Invalid user data');
+        }
       }
       
       let errorMessage = error.response?.data?.error || error.message || 'Google login failed';

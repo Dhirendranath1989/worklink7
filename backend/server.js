@@ -48,13 +48,45 @@ const PORT = process.env.PORT || 5000;
 let inMemoryUsers = [];
 let isMongoConnected = false;
 
-// Configure CORS
+// Configure CORS with better Google OAuth support
 app.use(cors({
-  origin: true, // Allow all origins for testing
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    
+    // Allow Google OAuth domains
+    if (origin.includes('accounts.google.com') || origin.includes('googleapis.com')) {
+      return callback(null, true);
+    }
+    
+    // For production, add your domain here
+    // if (origin === 'https://yourdomain.com') {
+    //   return callback(null, true);
+    // }
+    
+    // Allow all origins for testing (remove in production)
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  maxAge: 86400 // 24 hours
 }));
+
+// Add security headers to reduce COOP conflicts
+app.use((req, res, next) => {
+  // Set Cross-Origin-Opener-Policy to same-origin-allow-popups for Google OAuth
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  // Set Cross-Origin-Embedder-Policy
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  next();
+});
 
 // Parse JSON bodies
 app.use(express.json());
@@ -187,6 +219,12 @@ const User = require('./models/User');
 // Import routes
 const postsRouter = require('./routes/posts');
 const usersRouter = require('./routes/users');
+
+// Set global references for routes
+usersRouter.setGlobalReferences({
+  isMongoConnected,
+  inMemoryUsers
+});
 
 // Register routes
 app.use('/api/posts', postsRouter);
@@ -376,7 +414,6 @@ app.post('/api/auth/google', async (req, res) => {
           fullName: `${userData.firstName} ${userData.lastName}`.trim(),
           email: userData.email,
           password: '', // Empty password for Google users
-          userType: 'worker', // Default to worker, can be changed later
           profilePhoto: userData.photoURL || '',
           emailVerified: userData.emailVerified || false,
           firebaseUid: userData.uid,
@@ -404,7 +441,7 @@ app.post('/api/auth/google', async (req, res) => {
           fullName: `${userData.firstName} ${userData.lastName}`.trim(),
           email: userData.email,
           password: '', // Empty password for Google users
-          userType: 'worker',
+          userType: 'worker', // Default to worker, can be changed during profile completion
           profilePhoto: userData.photoURL || '',
           emailVerified: userData.emailVerified || false,
           firebaseUid: userData.uid,
@@ -476,7 +513,137 @@ app.post('/api/auth/google', async (req, res) => {
     });
   } catch (error) {
     console.error('Google login error:', error);
-    res.status(500).json({ error: 'Failed to process Google login' });
+    
+    // Handle MongoDB duplicate key errors
+    if (error.code === 11000) {
+      console.error('Duplicate key error - user may already exist:', error.keyPattern);
+      
+      // Try to find and return existing user
+      try {
+        if (isMongoConnected && userData && userData.email) {
+          const existingUser = await User.findOne({ email: userData.email });
+          if (existingUser) {
+            console.log('Found existing user, returning user data');
+            
+            // Generate JWT token for existing user
+            const token = jwt.sign(
+              { userId: existingUser._id, email: existingUser.email },
+              process.env.JWT_SECRET || 'fallback_secret',
+              { expiresIn: '24h' }
+            );
+            
+            return res.json({
+              message: 'Google login successful',
+              token,
+              user: {
+                id: existingUser._id,
+                fullName: existingUser.fullName,
+                email: existingUser.email,
+                userType: existingUser.userType,
+                profilePhoto: existingUser.profilePhoto,
+                workPhotos: existingUser.workPhotos || [],
+                certificates: existingUser.certificates || [],
+                skills: existingUser.skills || [],
+                workExperience: existingUser.workExperience || [],
+                languages: existingUser.languages || [],
+                availability: existingUser.availability,
+                availabilityStatus: existingUser.availabilityStatus || 'available',
+                hourlyRate: existingUser.hourlyRate || 0,
+                description: existingUser.description,
+                businessName: existingUser.businessName,
+                rating: existingUser.rating || 0,
+                reviewCount: existingUser.reviewCount || 0,
+                profileCompleted: existingUser.profileCompleted || false
+              }
+            });
+          } else {
+            // User was deleted but unique constraint still exists
+            // This is a known MongoDB issue - we need to handle this case
+            console.log('Duplicate key error but user not found - likely deleted user with orphaned index');
+            console.log('Attempting to recreate user with different approach...');
+            
+            // Try to create user with upsert to handle the constraint issue
+            try {
+              const recreatedUser = await User.findOneAndUpdate(
+                { email: userData.email },
+                {
+                   fullName: `${userData.firstName} ${userData.lastName}`.trim(),
+                   email: userData.email,
+                   password: '',
+                   profilePhoto: userData.photoURL || '',
+                   emailVerified: userData.emailVerified || false,
+                   firebaseUid: userData.uid,
+                   profileCompleted: false
+                 },
+                { 
+                  upsert: true, 
+                  new: true, 
+                  setDefaultsOnInsert: true 
+                }
+              );
+              
+              console.log('Successfully recreated user:', recreatedUser._id);
+              
+              // Generate JWT token for recreated user
+              const token = jwt.sign(
+                { userId: recreatedUser._id, email: recreatedUser.email },
+                process.env.JWT_SECRET || 'fallback_secret',
+                { expiresIn: '24h' }
+              );
+              
+              return res.json({
+                message: 'Google login successful',
+                token,
+                user: {
+                  id: recreatedUser._id,
+                  fullName: recreatedUser.fullName,
+                  email: recreatedUser.email,
+                  userType: recreatedUser.userType,
+                  profilePhoto: recreatedUser.profilePhoto,
+                  workPhotos: recreatedUser.workPhotos || [],
+                  certificates: recreatedUser.certificates || [],
+                  skills: recreatedUser.skills || [],
+                  workExperience: recreatedUser.workExperience || [],
+                  languages: recreatedUser.languages || [],
+                  availability: recreatedUser.availability,
+                  availabilityStatus: recreatedUser.availabilityStatus || 'available',
+                  hourlyRate: recreatedUser.hourlyRate || 0,
+                  description: recreatedUser.description,
+                  businessName: recreatedUser.businessName,
+                  rating: recreatedUser.rating || 0,
+                  reviewCount: recreatedUser.reviewCount || 0,
+                  profileCompleted: recreatedUser.profileCompleted || false
+                }
+              });
+            } catch (upsertError) {
+              console.error('Failed to recreate user with upsert:', upsertError);
+            }
+          }
+        }
+      } catch (findError) {
+        console.error('Error finding existing user:', findError);
+      }
+      
+      return res.status(409).json({ 
+        error: 'User already exists with this email or Firebase UID',
+        details: 'Please try logging in instead of creating a new account'
+      });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      console.error('Validation error:', error.message);
+      return res.status(400).json({ 
+        error: 'Invalid user data',
+        details: error.message
+      });
+    }
+    
+    // Generic error handling
+    res.status(500).json({ 
+      error: 'Failed to process Google login',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 });
 
@@ -777,10 +944,23 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
 ]), async (req, res) => {
   try {
     const userId = req.user.userId;
-    const updateData = { ...req.body };
+    let updateData = { ...req.body };
+    
+    // Parse profileData JSON if it exists
+    if (req.body.profileData) {
+      try {
+        const profileData = JSON.parse(req.body.profileData);
+        updateData = { ...updateData, ...profileData };
+        delete updateData.profileData; // Remove the JSON string field
+      } catch (e) {
+        console.error('Error parsing profileData:', e);
+      }
+    }
     
     // Mark profile as completed
     updateData.profileCompleted = true;
+    
+    console.log('Profile completion data:', { userId, userType: updateData.userType, profileCompleted: updateData.profileCompleted });
 
     // Handle file uploads
     if (req.files) {

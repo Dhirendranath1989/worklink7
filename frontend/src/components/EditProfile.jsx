@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCredentials, logout } from '../features/auth/authSlice';
+import { toast } from 'react-toastify';
+import { XMarkIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import {
   UserIcon,
-  CameraIcon,
   PhotoIcon,
-  XMarkIcon,
-  PlusIcon,
-  TrashIcon
+  PlusIcon
 } from '@heroicons/react/24/outline';
-import { toast } from 'react-hot-toast';
-import { setCredentials } from '../features/auth/authSlice';
 
 const EditProfile = ({ isOpen, onClose, userType }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const { user, token } = useSelector((state) => state.auth);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [profilePhotoFile, setProfilePhotoFile] = useState(null);
   const [workPhotosFiles, setWorkPhotosFiles] = useState([]);
   const [certificatesFiles, setCertificatesFiles] = useState([]);
@@ -257,6 +259,83 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
       setIsSubmitting(false);
     }
   };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    const userId = user._id || user.id;
+    console.log('Attempting to delete user with ID:', userId);
+    console.log('User object:', user);
+    console.log('Token:', token ? 'Present' : 'Missing');
+    
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Delete response status:', response.status);
+      const data = await response.json();
+      console.log('Delete response data:', data);
+
+      if (response.ok) {
+        toast.success('Account deleted successfully');
+        dispatch(logout());
+        navigate('/');
+      } else {
+        toast.error(data.message || 'Failed to delete account');
+      }
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast.error('An error occurred while deleting account');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const DeleteConfirmationDialog = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+        <div className="flex items-center mb-4">
+          <TrashIcon className="h-6 w-6 text-red-500 mr-3" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Delete Account
+          </h3>
+        </div>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data, including:
+        </p>
+        <ul className="text-sm text-gray-600 dark:text-gray-400 mb-6 list-disc list-inside space-y-1">
+          <li>Profile information and photos</li>
+          <li>Job postings and applications</li>
+          <li>Reviews and ratings</li>
+          <li>Messages and conversations</li>
+          <li>All saved data</li>
+        </ul>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => setShowDeleteConfirm(false)}
+            disabled={isDeleting}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDeleteAccount}
+            disabled={isDeleting}
+            className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+              isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (!isOpen) return null;
 
@@ -607,6 +686,30 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
             </div>
           )}
 
+          {/* Delete Account Section */}
+          <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-start">
+                <TrashIcon className="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
+                    Delete Account
+                  </h3>
+                  <p className="text-sm text-red-700 dark:text-red-300 mb-3">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Submit Buttons */}
           <div className="flex justify-end space-x-4 pt-6 border-t">
             <button
@@ -628,6 +731,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
           </div>
         </form>
       </div>
+      {showDeleteConfirm && <DeleteConfirmationDialog />}
     </div>
   );
 };

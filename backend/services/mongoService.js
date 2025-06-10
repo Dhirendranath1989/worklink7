@@ -73,6 +73,58 @@ class MongoService {
       throw error;
     }
   }
+
+  // Delete user by ID
+  async deleteUser(userId) {
+    try {
+      // Get user data before deletion for cleanup
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Delete related data to maintain referential integrity
+      // Delete jobs posted by this user (if owner)
+      if (user.userType === 'owner') {
+        await Job.deleteMany({ ownerId: userId });
+      }
+
+      // Delete reviews written by this user
+      await Review.deleteMany({ reviewerId: userId });
+      
+      // Delete reviews about this user
+      await Review.deleteMany({ revieweeId: userId });
+      
+      // Delete conversations involving this user
+      await Conversation.deleteMany({
+        $or: [
+          { participant1: userId },
+          { participant2: userId }
+        ]
+      });
+      
+      // Delete messages sent by this user
+      await Message.deleteMany({ senderId: userId });
+      
+      // Delete notifications for this user
+      await Notification.deleteMany({ userId: userId });
+      
+      // Delete the user from Worker or Owner collections
+      if (user.userType === 'worker') {
+        await Worker.deleteOne({ uid: user.firebaseUid });
+      } else if (user.userType === 'owner') {
+        await Owner.deleteOne({ uid: user.firebaseUid });
+      }
+      
+      // Finally, delete the user
+      await User.findByIdAndDelete(userId);
+      
+      return { success: true, message: 'User and related data deleted successfully' };
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  }
   
   // Worker operations
   async getWorkerProfile(firebaseUid) {
