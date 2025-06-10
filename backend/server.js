@@ -306,6 +306,18 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // For in-memory storage, ensure user is in the array and update if needed
+    if (!isMongoConnected) {
+      const existingUserIndex = inMemoryUsers.findIndex(u => u.email === email);
+      if (existingUserIndex !== -1) {
+        // Update the existing user data to ensure it's current
+        inMemoryUsers[existingUserIndex] = { ...user };
+      } else {
+        // Add user to memory if not present
+        inMemoryUsers.push(user);
+      }
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id || user.id, email: user.email },
@@ -334,7 +346,8 @@ app.post('/api/auth/login', async (req, res) => {
         businessName: user.businessName,
         rating: user.rating,
         reviewCount: user.reviewCount,
-        reviews: user.reviews
+        reviews: user.reviews,
+        profileCompleted: user.profileCompleted
       }
     });
   } catch (error) {
@@ -387,9 +400,10 @@ app.post('/api/auth/google', async (req, res) => {
       
       if (!user) {
         user = {
-          id: Date.now().toString(),
+          _id: Date.now().toString(),
           fullName: `${userData.firstName} ${userData.lastName}`.trim(),
           email: userData.email,
+          password: '', // Empty password for Google users
           userType: 'worker',
           profilePhoto: userData.photoURL || '',
           emailVerified: userData.emailVerified || false,
@@ -405,9 +419,11 @@ app.post('/api/auth/google', async (req, res) => {
           rating: 0,
           reviewCount: 0,
           certificates: [],
-          workPhotos: []
+          workPhotos: [],
+          reviews: []
         };
         inMemoryUsers.push(user);
+        console.log(`Created new Google user with ID: ${user._id}`);
       } else {
         // Update existing user
         if (userData.photoURL && !user.profilePhoto) {
@@ -417,6 +433,13 @@ app.post('/api/auth/google', async (req, res) => {
           user.firebaseUid = userData.uid;
         }
         user.emailVerified = userData.emailVerified || user.emailVerified;
+        
+        // Ensure user is properly updated in the array
+        const userIndex = inMemoryUsers.findIndex(u => u.email === userData.email);
+        if (userIndex !== -1) {
+          inMemoryUsers[userIndex] = { ...user };
+          console.log(`Updated existing Google user with ID: ${user._id}`);
+        }
       }
     }
 
@@ -892,16 +915,21 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log(`/auth/me called for user ID: ${userId}`);
     
     let user;
     if (isMongoConnected) {
       user = await User.findById(userId).select('-password');
     } else {
-      user = inMemoryUsers.find(u => u._id === userId);
+      console.log(`Looking for user ${userId} in inMemoryUsers. Available users:`, inMemoryUsers.map(u => ({ id: u._id || u.id, email: u.email, fullName: u.fullName })));
+      user = inMemoryUsers.find(u => (u._id || u.id) === userId);
       if (user) {
+        console.log(`Found user in /auth/me:`, { id: user._id || user.id, fullName: user.fullName, profilePhoto: user.profilePhoto });
         // Remove password from response
         const { password, ...userWithoutPassword } = user;
         user = userWithoutPassword;
+      } else {
+        console.log(`User ${userId} not found in inMemoryUsers`);
       }
     }
     
@@ -985,6 +1013,9 @@ app.get('/api/profiles/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user profile' });
   }
 });
+
+// Export inMemoryUsers for use in other modules
+module.exports = { inMemoryUsers };
 
 // Start server
 server.listen(PORT, () => {

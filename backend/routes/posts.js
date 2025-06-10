@@ -4,6 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { authenticateToken } = require('../middleware/auth');
+const User = require('../models/User');
+const mongoose = require('mongoose');
 
 // Configure multer for image uploads
 const storage = multer.diskStorage({
@@ -63,9 +65,28 @@ router.post('/', authenticateToken, upload.array('images', 10), async (req, res)
     // Fetch complete user information
     let userInfo;
     try {
-      // Try to get user from in-memory storage first
-      const { inMemoryUsers } = require('../server');
-      userInfo = inMemoryUsers.find(u => u._id === userId);
+      const isMongoConnected = mongoose.connection.readyState === 1;
+      
+      if (isMongoConnected) {
+        // Try to get user from MongoDB first
+        console.log(`Looking for user ${userId} in MongoDB`);
+        userInfo = await User.findById(userId).select('-password');
+        if (userInfo) {
+          console.log(`Found user in MongoDB:`, { id: userInfo._id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
+        } else {
+          console.log(`User ${userId} not found in MongoDB`);
+        }
+      } else {
+        // Fallback to in-memory storage
+        const { inMemoryUsers } = require('../server');
+        userInfo = inMemoryUsers.find(u => (u._id || u.id) === userId);
+        
+        if (userInfo) {
+          console.log(`Found user in memory:`, { id: userInfo._id || userInfo.id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
+        } else {
+          console.log(`User ${userId} not found in inMemoryUsers. Available users:`, inMemoryUsers.map(u => ({ id: u._id || u.id, email: u.email, fullName: u.fullName })));
+        }
+      }
       
       if (!userInfo) {
         // Fallback to basic info from token
@@ -248,12 +269,31 @@ router.post('/:postId/comments', authenticateToken, async (req, res) => {
     console.log('User data from token:', req.user);
     console.log('User profilePhoto:', req.user.profilePhoto);
 
-    // Fetch complete user information from in-memory storage
+    // Fetch complete user information
     let userInfo;
     try {
-      // Try to get user from in-memory storage first
-      const { inMemoryUsers } = require('../server');
-      userInfo = inMemoryUsers.find(u => u._id === userId);
+      const isMongoConnected = mongoose.connection.readyState === 1;
+      
+      if (isMongoConnected) {
+        // Try to get user from MongoDB first
+        console.log(`Looking for comment author ${userId} in MongoDB`);
+        userInfo = await User.findById(userId).select('-password');
+        if (userInfo) {
+          console.log(`Found comment author in MongoDB:`, { id: userInfo._id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
+        } else {
+          console.log(`Comment author ${userId} not found in MongoDB`);
+        }
+      } else {
+        // Fallback to in-memory storage
+        const { inMemoryUsers } = require('../server');
+        userInfo = inMemoryUsers.find(u => (u._id || u.id) === userId);
+        
+        if (userInfo) {
+          console.log(`Found comment author in memory:`, { id: userInfo._id || userInfo.id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
+        } else {
+          console.log(`Comment author ${userId} not found in inMemoryUsers. Available users:`, inMemoryUsers.map(u => ({ id: u._id || u.id, email: u.email, fullName: u.fullName })));
+        }
+      }
       
       if (!userInfo) {
         // Fallback to basic info from token
