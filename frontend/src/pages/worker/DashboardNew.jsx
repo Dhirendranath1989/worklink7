@@ -537,14 +537,14 @@ const FacebookLikeDashboard = () => {
           userType: updatedUser.userType
         }));
         
-        toast.success('Certificates uploaded successfully!');
+        toast.success('Documents uploaded successfully!');
         await manualRefreshUserData();
       } else {
-        toast.error(data.message || 'Failed to upload certificates');
+        toast.error(data.message || 'Failed to upload documents');
       }
     } catch (error) {
       console.error('Certificates upload error:', error);
-      toast.error('An error occurred while uploading certificates');
+      toast.error('An error occurred while uploading documents');
     } finally {
       setIsUploadingCertificates(false);
     }
@@ -859,12 +859,12 @@ const FacebookLikeDashboard = () => {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
                     <AcademicCapIcon className="h-4 w-4 mr-2 text-green-600" />
-                    Certificates
+                    Document & ID Proof
                   </h4>
                   <div className="flex items-center space-x-2">
                     <label className="cursor-pointer text-xs text-green-600 hover:text-green-800 font-medium flex items-center">
                       <PlusIcon className="h-3 w-3 mr-1" />
-                      Add Certificate
+                      Add Document
                       <input
                         type="file"
                         multiple
@@ -950,8 +950,8 @@ const FacebookLikeDashboard = () => {
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
                     <AcademicCapIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No certificates yet</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Upload certificates to showcase your qualifications</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No documents yet</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Upload documents to showcase your qualifications</p>
                   </div>
                 )}
                 
@@ -965,7 +965,7 @@ const FacebookLikeDashboard = () => {
                       if (typeof cert === 'string') return true;
                       if (typeof cert === 'object' && (cert.path || cert.originalName)) return true;
                       return false;
-                    }).length - 4} more certificates
+                    }).length - 4} more documents
                   </p>
                 )}
               </div>

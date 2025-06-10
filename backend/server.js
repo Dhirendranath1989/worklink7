@@ -577,7 +577,7 @@ app.post('/api/auth/upload-certificates', authenticateToken, upload.array('certi
     }
 
     res.json({
-      message: 'Certificates uploaded successfully',
+      message: 'Documents uploaded successfully',
       certificates: user.certificates,
       user: {
         id: user._id || user.id,
@@ -591,7 +591,7 @@ app.post('/api/auth/upload-certificates', authenticateToken, upload.array('certi
     });
   } catch (error) {
     console.error('Error uploading certificates:', error);
-    res.status(500).json({ error: 'Failed to upload certificates' });
+    res.status(500).json({ error: 'Failed to upload documents' });
   }
 });
 

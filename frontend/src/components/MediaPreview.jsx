@@ -183,7 +183,7 @@ const MediaPreview = ({
             <div className="flex items-center">
               <DocumentIcon className="h-5 w-5 text-green-500 dark:text-green-400 mr-2" />
               <h4 className="font-medium text-gray-900 dark:text-white">
-                Certificates ({processedCertificates.length})
+                Document & ID Proof ({processedCertificates.length})
               </h4>
             </div>
             {processedCertificates.length > maxItems && onViewAll && (

@@ -387,7 +387,7 @@ const WorkerProfile = () => {
 
   const tabs = [
     { key: 'overview', label: 'About & Experience' },
-    { key: 'certificates', label: 'Certificates & Documents' },
+    { key: 'certificates', label: 'Document & ID Proof' },
     { key: 'portfolio', label: 'Work Portfolio' },
     { key: 'posts', label: 'Posts & Updates' },
     { key: 'reviews', label: 'Reviews' },
@@ -582,7 +582,7 @@ const WorkerProfile = () => {
 
                 <div className="flex items-center">
                   <CheckBadgeIcon className="h-4 w-4 mr-1" />
-                  <span>{formattedWorker.certificates?.length || 0} certificates</span>
+                  <span>{formattedWorker.certificates?.length || 0} documents</span>
                 </div>
               </div>
             </div>

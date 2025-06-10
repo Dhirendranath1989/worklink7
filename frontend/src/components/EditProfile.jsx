@@ -515,7 +515,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
               {/* Certificates Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Certificates & Licenses
+                  Document & ID Proof
                 </label>
                 <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
                   <div className="text-center">
@@ -523,7 +523,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
                     <div className="mt-4">
                       <label className="cursor-pointer">
                         <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-100">
-                          Upload certificates
+                          Upload documents
                         </span>
                         <input
                           type="file"
