@@ -237,7 +237,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, editPost = null }) =>
   );
 };
 
-const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId }) => {
+const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -487,7 +487,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId }) => {
                 src={image.startsWith('http') ? image : `http://localhost:5000${image}`}
                 alt={`Post image ${index + 1}`}
                 className="w-full h-64 object-contain bg-gray-100 dark:bg-gray-700 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => onImageClick && onImageClick(image, index)}
+                onClick={() => onImageClick && onImageClick(image.startsWith('http') ? image : `http://localhost:5000${image}`)}
               />
             ))}
           </div>

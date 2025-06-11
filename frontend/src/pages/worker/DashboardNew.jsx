@@ -48,7 +48,7 @@ import EditProfile from '../../components/EditProfile';
 
 import { CreatePostModal, PostCard } from '../../components/Post';
 import { reviewAPI } from '../../services/api';
-import ImageViewer from '../../components/ImageViewer';
+
 
 const FacebookLikeDashboard = () => {
   const dispatch = useDispatch();
@@ -83,14 +83,11 @@ const FacebookLikeDashboard = () => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [modalImages, setModalImages] = useState([]);
+
 
   // Handle image click for full-screen view
-  const handleImageClick = (image, index, postImages = []) => {
+  const handleImageClick = (image) => {
     setSelectedImage(image);
-    setSelectedImageIndex(index);
-    setModalImages(postImages.length > 0 ? postImages : [image]);
     setShowImageModal(true);
   };
 
@@ -1078,7 +1075,7 @@ const FacebookLikeDashboard = () => {
                   onDelete={handleDeletePost}
                   onLike={handleLikePost}
                   currentUserId={user?.userId}
-                  onImageClick={(image, index) => handleImageClick(image, index, post.images)}
+                  onImageClick={(image) => handleImageClick(image)}
                 />
               ))}
               {posts.length === 0 && (
@@ -1503,8 +1500,25 @@ const FacebookLikeDashboard = () => {
         </div>
       )}
 
-
-
+      {/* True Fullscreen Image Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setShowImageModal(false)}>
+          <img 
+            src={selectedImage} 
+            alt="Fullscreen view" 
+            className="w-screen h-screen object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setShowImageModal(false)}
+            className="absolute top-6 right-6 text-white bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full p-3 transition-all duration-200 z-10"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
     </div>
   );

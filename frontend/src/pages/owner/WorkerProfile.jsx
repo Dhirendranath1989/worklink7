@@ -364,9 +364,14 @@ const WorkerProfile = () => {
 
   // Handle image click for full-screen view
   const handlePostImageClick = (image, index, postImages = []) => {
-    setSelectedImage(image);
+    // Convert image URLs to proper format for ImageViewer
+    const formattedImages = postImages.map(img => ({
+      src: img.startsWith('http') ? img : `http://localhost:5000${img}`,
+      alt: 'Post image'
+    }));
+    
+    setModalImages(formattedImages);
     setSelectedImageIndex(index);
-    setModalImages(postImages);
     setShowImageModal(true);
   };
 
@@ -889,27 +894,19 @@ const WorkerProfile = () => {
         </div>
       )}
 
-      {/* Image Modal */}
-      {showImageModal && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => {
-                setShowImageModal(false);
-                setSelectedImage(null);
-              }}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl z-10"
-            >
-              <FaTimes />
-            </button>
-            <img
-              src={selectedImage}
-              alt="Work photo"
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
-          </div>
-        </div>
-      )}
+      {/* Image Viewer Modal */}
+      <ImageViewer
+        isOpen={showImageModal}
+        onClose={() => {
+          setShowImageModal(false);
+          setSelectedImage(null);
+        }}
+        images={modalImages}
+        currentIndex={selectedImageIndex}
+        onIndexChange={setSelectedImageIndex}
+        showNavigation={modalImages.length > 1}
+        showDownload={true}
+      />
     </div>
   );
 };
