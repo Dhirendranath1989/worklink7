@@ -80,7 +80,7 @@ const WorkerCard = ({ worker, onClick, onSave, onUnsave, isSaved = false }) => {
         <div className="aspect-w-16 aspect-h-12 bg-gray-200 rounded-t-lg overflow-hidden">
           {worker.profilePhoto ? (
             <img
-              src={worker.profilePhoto}
+              src={worker.profilePhoto.startsWith('http') ? worker.profilePhoto : `${process.env.REACT_APP_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${worker.profilePhoto}`}
               alt={worker.name}
               className="w-full h-48 object-cover"
               onError={(e) => {
