@@ -1243,6 +1243,231 @@ app.get('/api/profiles/:userId', async (req, res) => {
 
 
 
+// ============================================================================
+// REVIEW ROUTES
+// ============================================================================
+
+// Create a review
+app.post('/api/reviews', authenticateToken, async (req, res) => {
+  try {
+    const { workerId, rating, comment, jobId } = req.body;
+    const reviewerId = req.user.uid;
+
+    // Validate required fields
+    if (!workerId || !rating || !comment) {
+      return res.status(400).json({ error: 'Worker ID, rating, and comment are required' });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    }
+
+    // Get reviewer information
+    let reviewer;
+    if (isMongoConnected) {
+      reviewer = await ConsolidatedUser.findById(reviewerId);
+    } else {
+      reviewer = inMemoryUsers.find(u => u._id === reviewerId);
+    }
+
+    if (!reviewer) {
+      return res.status(404).json({ error: 'Reviewer not found' });
+    }
+
+    // Check if worker exists
+    let worker;
+    if (isMongoConnected) {
+      worker = await ConsolidatedUser.findById(workerId);
+    } else {
+      worker = inMemoryUsers.find(u => u._id === workerId);
+    }
+
+    if (!worker) {
+      return res.status(404).json({ error: 'Worker not found' });
+    }
+
+    const reviewData = {
+      reviewerId,
+      workerId,
+      jobId: jobId || null,
+      rating: parseInt(rating),
+      comment: comment.trim(),
+      reviewerName: reviewer.fullName || reviewer.firstName + ' ' + reviewer.lastName,
+      reviewerProfilePicture: reviewer.profilePhoto || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    let savedReview;
+    if (isMongoConnected) {
+      // Use mongoService to create review
+      savedReview = await mongoService.createReview(reviewData);
+    } else {
+      // For in-memory storage, we'll simulate review creation
+      savedReview = {
+        _id: Date.now().toString(),
+        ...reviewData
+      };
+      
+      // Update worker's rating and review count
+      const workerIndex = inMemoryUsers.findIndex(u => u._id === workerId);
+      if (workerIndex !== -1) {
+        const currentReviews = inMemoryUsers[workerIndex].reviews || [];
+        currentReviews.push(savedReview);
+        
+        const totalRating = currentReviews.reduce((sum, review) => sum + review.rating, 0);
+        const averageRating = totalRating / currentReviews.length;
+        
+        inMemoryUsers[workerIndex].reviews = currentReviews;
+        inMemoryUsers[workerIndex].averageRating = averageRating;
+        inMemoryUsers[workerIndex].totalReviews = currentReviews.length;
+        inMemoryUsers[workerIndex].reviewCount = currentReviews.length;
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Review created successfully',
+      review: savedReview
+    });
+  } catch (error) {
+    console.error('Error creating review:', error);
+    res.status(500).json({ error: 'Failed to create review' });
+  }
+});
+
+// Get reviews for a specific worker
+app.get('/api/reviews/worker/:workerId', async (req, res) => {
+  try {
+    const { workerId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let reviews = [];
+    let totalReviews = 0;
+
+    if (isMongoConnected) {
+      reviews = await mongoService.getWorkerReviews(workerId);
+      totalReviews = reviews.length;
+      
+      // Apply pagination
+      reviews = reviews.slice(skip, skip + limit);
+    } else {
+      // For in-memory storage
+      const worker = inMemoryUsers.find(u => u._id === workerId);
+      if (worker && worker.reviews) {
+        reviews = worker.reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        totalReviews = reviews.length;
+        
+        // Apply pagination
+        reviews = reviews.slice(skip, skip + limit);
+      }
+    }
+
+    res.json({
+      success: true,
+      reviews,
+      totalReviews,
+      currentPage: page,
+      totalPages: Math.ceil(totalReviews / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching worker reviews:', error);
+    res.status(500).json({ error: 'Failed to fetch worker reviews' });
+  }
+});
+
+// Get reviews written by the current user
+app.get('/api/reviews/my-reviews', authenticateToken, async (req, res) => {
+  try {
+    const reviewerId = req.user.uid;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let reviews = [];
+    let totalReviews = 0;
+
+    if (isMongoConnected) {
+      const Review = require('./models/Review');
+      totalReviews = await Review.countDocuments({ reviewerId });
+      reviews = await Review.find({ reviewerId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+    } else {
+      // For in-memory storage, collect all reviews by this user
+      const allReviews = [];
+      inMemoryUsers.forEach(user => {
+        if (user.reviews) {
+          const userReviews = user.reviews.filter(review => review.reviewerId === reviewerId);
+          allReviews.push(...userReviews);
+        }
+      });
+      
+      reviews = allReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      totalReviews = reviews.length;
+      
+      // Apply pagination
+      reviews = reviews.slice(skip, skip + limit);
+    }
+
+    res.json({
+      success: true,
+      reviews,
+      totalReviews,
+      currentPage: page,
+      totalPages: Math.ceil(totalReviews / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching user reviews:', error);
+    res.status(500).json({ error: 'Failed to fetch user reviews' });
+  }
+});
+
+// Get reviews received by the current user (for workers)
+app.get('/api/reviews/received', authenticateToken, async (req, res) => {
+  try {
+    const workerId = req.user.uid;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let reviews = [];
+    let totalReviews = 0;
+
+    if (isMongoConnected) {
+      reviews = await mongoService.getWorkerReviews(workerId);
+      totalReviews = reviews.length;
+      
+      // Apply pagination
+      reviews = reviews.slice(skip, skip + limit);
+    } else {
+      // For in-memory storage
+      const worker = inMemoryUsers.find(u => u._id === workerId);
+      if (worker && worker.reviews) {
+        reviews = worker.reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        totalReviews = reviews.length;
+        
+        // Apply pagination
+        reviews = reviews.slice(skip, skip + limit);
+      }
+    }
+
+    res.json({
+      success: true,
+      reviews,
+      totalReviews,
+      currentPage: page,
+      totalPages: Math.ceil(totalReviews / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching received reviews:', error);
+    res.status(500).json({ error: 'Failed to fetch received reviews' });
+  }
+});
+
 // Export inMemoryUsers for use in other modules
 module.exports = { inMemoryUsers };
 

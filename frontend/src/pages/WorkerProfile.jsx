@@ -892,8 +892,21 @@ const WorkerProfile = () => {
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">Working Hours</h4>
                     </div>
                     <div className="space-y-2">
-                      {formattedWorker.availability?.workingHours ? (
-                        <p className="text-gray-700 dark:text-gray-300 text-lg">{String(formattedWorker.availability.workingHours)}</p>
+                      {formattedWorker.availability && typeof formattedWorker.availability === 'object' ? (
+                        <div className="text-gray-700 dark:text-gray-300">
+                          {Object.entries(formattedWorker.availability).map(([day, schedule]) => {
+                            if (typeof schedule === 'object' && schedule !== null) {
+                              const dayName = day.charAt(0).toUpperCase() + day.slice(1);
+                              return (
+                                <p key={day} className="flex justify-between">
+                                  <span className="font-medium">{dayName}:</span>
+                                  <span>{schedule.available ? (schedule.hours || 'Available') : 'Not Available'}</span>
+                                </p>
+                              );
+                            }
+                            return null;
+                          }).filter(Boolean)}
+                        </div>
                       ) : (
                         <div className="text-gray-500 dark:text-gray-400">
                           <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
