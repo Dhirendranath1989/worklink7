@@ -108,7 +108,7 @@ router.get('/search', async (req, res) => {
       lastName: worker.lastName,
       fullName: worker.fullName,
       email: worker.email,
-      name: `${worker.firstName} ${worker.lastName}`,
+      name: worker.fullName || `${worker.firstName || ''} ${worker.lastName || ''}`.trim() || 'Worker',
       profilePhoto: worker.profilePhoto,
       bio: worker.bio,
       skills: worker.skills,
