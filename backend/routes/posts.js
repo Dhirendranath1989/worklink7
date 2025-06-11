@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { authenticateToken } = require('../middleware/auth');
 const ConsolidatedUser = require('../models/ConsolidatedUser');
+const Post = require('../models/Post');
 const mongoose = require('mongoose');
 
 // Configure multer for image uploads
@@ -36,16 +37,12 @@ const upload = multer({
   }
 });
 
-// In-memory storage for posts (replace with database in production)
-let posts = [];
-let postIdCounter = 1;
-
 // Get all posts
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    // Sort posts by creation date (newest first)
-    const sortedPosts = posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json({ posts: sortedPosts });
+    // Fetch posts from MongoDB, sorted by creation date (newest first)
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.json({ posts });
   } catch (error) {
     console.error('Error fetching posts:', error);
     res.status(500).json({ message: 'Server error' });
@@ -109,8 +106,7 @@ router.post('/', authenticateToken, upload.array('images', 10), async (req, res)
     // Process uploaded images
     const images = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
-    const newPost = {
-      _id: postIdCounter++,
+    const newPost = new Post({
       content: content || '',
       images,
       author: {
@@ -119,16 +115,14 @@ router.post('/', authenticateToken, upload.array('images', 10), async (req, res)
         profilePhoto: userInfo.profilePhoto || null
       },
       likes: [],
-      comments: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      comments: []
+    });
 
-    posts.push(newPost);
+    const savedPost = await newPost.save();
 
     res.status(201).json({
       message: 'Post created successfully',
-      post: newPost
+      post: savedPost
     });
   } catch (error) {
     console.error('Error creating post:', error);
@@ -143,12 +137,11 @@ router.put('/:postId', authenticateToken, upload.array('images', 10), async (req
     const { content, existingImages } = req.body;
     const userId = req.user.userId;
 
-    const postIndex = posts.findIndex(p => p._id == postId);
-    if (postIndex === -1) {
+    const post = await Post.findById(postId);
+    if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    const post = posts[postIndex];
     if (post.author._id !== userId) {
       return res.status(403).json({ message: 'Not authorized to edit this post' });
     }
@@ -159,16 +152,14 @@ router.put('/:postId', authenticateToken, upload.array('images', 10), async (req
     // Combine existing images with new ones
     const allImages = [...(existingImages ? [existingImages].flat() : []), ...newImages];
 
-    posts[postIndex] = {
-      ...post,
-      content: content || '',
-      images: allImages,
-      updatedAt: new Date().toISOString()
-    };
+    post.content = content || '';
+    post.images = allImages;
+    
+    const updatedPost = await post.save();
 
     res.json({
       message: 'Post updated successfully',
-      post: posts[postIndex]
+      post: updatedPost
     });
   } catch (error) {
     console.error('Error updating post:', error);
@@ -182,12 +173,11 @@ router.delete('/:postId', authenticateToken, async (req, res) => {
     const { postId } = req.params;
     const userId = req.user.userId;
 
-    const postIndex = posts.findIndex(p => p._id == postId);
-    if (postIndex === -1) {
+    const post = await Post.findById(postId);
+    if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    const post = posts[postIndex];
     if (post.author._id !== userId) {
       return res.status(403).json({ message: 'Not authorized to delete this post' });
     }
@@ -202,7 +192,7 @@ router.delete('/:postId', authenticateToken, async (req, res) => {
       });
     }
 
-    posts.splice(postIndex, 1);
+    await Post.findByIdAndDelete(postId);
 
     res.json({ message: 'Post deleted successfully' });
   } catch (error) {
@@ -217,12 +207,11 @@ router.post('/:postId/like', authenticateToken, async (req, res) => {
     const { postId } = req.params;
     const userId = req.user.userId;
 
-    const postIndex = posts.findIndex(p => p._id == postId);
-    if (postIndex === -1) {
+    const post = await Post.findById(postId);
+    if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    const post = posts[postIndex];
     const likeIndex = post.likes.indexOf(userId);
 
     if (likeIndex > -1) {
@@ -233,15 +222,12 @@ router.post('/:postId/like', authenticateToken, async (req, res) => {
       post.likes.push(userId);
     }
 
-    posts[postIndex] = {
-      ...post,
-      updatedAt: new Date().toISOString()
-    };
+    const updatedPost = await post.save();
 
     res.json({
       message: likeIndex > -1 ? 'Post unliked' : 'Post liked',
-      isLiked: likeIndex === -1,
-      likesCount: post.likes.length
+      liked: likeIndex === -1,
+      likesCount: updatedPost.likes.length
     });
   } catch (error) {
     console.error('Error liking post:', error);
@@ -256,86 +242,46 @@ router.post('/:postId/comments', authenticateToken, async (req, res) => {
     const { content } = req.body;
     const userId = req.user.userId;
 
-    if (!content || !content.trim()) {
+    if (!content || content.trim() === '') {
       return res.status(400).json({ message: 'Comment content is required' });
     }
 
-    const postIndex = posts.findIndex(p => p._id == postId);
-    if (postIndex === -1) {
+    const post = await Post.findById(postId);
+    if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Debug: Log user data to see what's available
-    console.log('User data from token:', req.user);
-    console.log('User profilePhoto:', req.user.profilePhoto);
-
-    // Fetch complete user information
+    // Get user info
     let userInfo;
     try {
-      const isMongoConnected = mongoose.connection.readyState === 1;
-      
-      if (isMongoConnected) {
-        // Try to get user from MongoDB first
-        console.log(`Looking for comment author ${userId} in MongoDB`);
-        userInfo = await ConsolidatedUser.findById(userId).select('-password');
-        if (userInfo) {
-          console.log(`Found comment author in MongoDB:`, { id: userInfo._id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
-        } else {
-          console.log(`Comment author ${userId} not found in MongoDB`);
-        }
-      } else {
-        // Fallback to in-memory storage
-        const { inMemoryUsers } = require('../server');
-        userInfo = inMemoryUsers.find(u => (u._id || u.id) === userId);
-        
-        if (userInfo) {
-          console.log(`Found comment author in memory:`, { id: userInfo._id || userInfo.id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
-        } else {
-          console.log(`Comment author ${userId} not found in inMemoryUsers. Available users:`, inMemoryUsers.map(u => ({ id: u._id || u.id, email: u.email, fullName: u.fullName })));
-        }
-      }
-      
-      if (!userInfo) {
-        // Fallback to basic info from token
-        userInfo = {
-          _id: userId,
-          fullName: req.user.fullName || 'User',
-          profilePhoto: req.user.profilePhoto || null
-        };
-      }
-    } catch (error) {
-      console.error('Error fetching user info for comment:', error);
-      // Fallback to basic info from token
-      userInfo = {
-        _id: userId,
-        fullName: req.user.fullName || 'User',
-        profilePhoto: req.user.profilePhoto || null
-      };
+      userInfo = await ConsolidatedUser.findById(userId);
+    } catch (mongoError) {
+      console.log('MongoDB not available, using in-memory user data');
+      const { inMemoryUsers } = require('../server');
+      userInfo = inMemoryUsers.find(u => (u._id || u.id) === userId);
     }
 
-    console.log('User info from memory:', userInfo);
-    console.log('User info profilePhoto:', userInfo.profilePhoto);
+    if (!userInfo) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-    const comment = {
-      _id: Date.now(),
+    const newComment = {
+      _id: new mongoose.Types.ObjectId(),
       content: content.trim(),
       author: {
         _id: userId,
-        fullName: userInfo.fullName || userInfo.firstName + ' ' + userInfo.lastName || req.user.fullName || 'User',
+        fullName: userInfo.fullName || userInfo.firstName + ' ' + userInfo.lastName || 'User',
         profilePhoto: userInfo.profilePhoto || null
       },
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     };
 
-    console.log('Created comment:', comment);
-    console.log('Comment author profilePhoto:', comment.author.profilePhoto);
-
-    posts[postIndex].comments.push(comment);
-    posts[postIndex].updatedAt = new Date().toISOString();
+    post.comments.push(newComment);
+    const updatedPost = await post.save();
 
     res.status(201).json({
       message: 'Comment added successfully',
-      comment
+      comment: newComment
     });
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -347,15 +293,32 @@ router.post('/:postId/comments', authenticateToken, async (req, res) => {
 router.get('/:postId/comments', authenticateToken, async (req, res) => {
   try {
     const { postId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const post = posts.find(p => p._id == postId);
+    const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    res.json({ comments: post.comments || [] });
+    const totalComments = post.comments.length;
+    const paginatedComments = post.comments
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(skip, skip + limit);
+
+    res.json({
+      comments: paginatedComments,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalComments / limit),
+        totalComments,
+        hasNext: skip + limit < totalComments,
+        hasPrev: page > 1
+      }
+    });
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    console.error('Error getting comments:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

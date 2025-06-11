@@ -4,13 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { MapPinIcon, CalendarIcon, CheckBadgeIcon, HeartIcon, ChatBubbleLeftIcon, PhoneIcon, StarIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
-import { reviewAPI } from '../services/api';
+import { reviewAPI, workerSearchAPI } from '../services/api';
 import { fetchProfile } from '../features/profiles/profilesSlice';
 import { createConversation } from '../features/chat/chatSlice';
 import { saveWorker, removeSavedWorker, checkIfWorkerSaved } from '../features/savedWorkers/savedWorkersSlice';
 import { toast } from 'react-hot-toast';
 import { useChatPopup } from '../hooks/useChatPopup';
 import MediaPreview from '../components/MediaPreview';
+import ImageViewer from '../components/ImageViewer';
 
 const WorkerProfile = () => {
   const { id } = useParams();
@@ -36,20 +37,19 @@ const WorkerProfile = () => {
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const { user } = useSelector((state) => state.auth);
+  
+  // Image viewer state
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [modalImages, setModalImages] = useState([]);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [triggerElement, setTriggerElement] = useState(null);
 
   // Fetch worker posts
   const fetchWorkerPosts = async (workerId) => {
     try {
       setIsLoadingPosts(true);
-      const response = await fetch(`http://localhost:5000/api/posts?userId=${workerId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setWorkerPosts(data.posts || []);
-      }
+      const response = await workerSearchAPI.getWorkerPosts(workerId);
+      setWorkerPosts(response.data.posts || []);
     } catch (error) {
       console.error('Error fetching worker posts:', error);
     } finally {
@@ -822,8 +822,20 @@ const WorkerProfile = () => {
                                 src={item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
                                 alt={item.title || `Project ${index + 1}`}
                                 className="w-full h-40 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => {
-                              // Portfolio image viewing can be handled separately if needed
+                                onClick={(e) => {
+                              e.stopPropagation();
+                              const images = formattedWorker.workPhotos.map((photo, idx) => ({
+                                id: idx,
+                                src: photo.startsWith('http') ? photo : `http://localhost:5000${photo}`,
+                                name: `Work Photo ${idx + 1}`,
+                                uploadDate: new Date().toLocaleDateString(),
+                                isImage: true,
+                                type: 'Work Photo'
+                              }));
+                              setModalImages(images);
+                              setSelectedImageIndex(index);
+                              setTriggerElement(e.currentTarget);
+                              setIsImageViewerOpen(true);
                             }}
                                 onError={(e) => {
                                   e.target.style.display = 'none';
@@ -838,9 +850,22 @@ const WorkerProfile = () => {
                           {item.date && <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Date: {item.date}</p>}
                           {item.image && (
                             <button
-                              onClick={() => {
-                                // Portfolio image viewing can be handled separately if needed
-                              }}
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 const images = formattedWorker.portfolio.map((item, idx) => ({
+                                   id: idx,
+                                   src: item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`,
+                                   name: item.title || `Project ${idx + 1}`,
+                                   uploadDate: item.date || new Date().toLocaleDateString(),
+                                   isImage: true,
+                                   type: 'Portfolio',
+                                   description: item.description
+                                 }));
+                                 setModalImages(images);
+                                 setSelectedImageIndex(index);
+                                 setTriggerElement(e.currentTarget);
+                                 setIsImageViewerOpen(true);
+                               }}
                               className="inline-block w-full text-center bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-sm font-medium"
                             >
                               View Full Image
@@ -1144,8 +1169,20 @@ const WorkerProfile = () => {
                                   src={image.startsWith('http') ? image : `http://localhost:5000${image}`}
                                   alt={`Post image ${imgIndex + 1}`}
                                   className="w-full h-48 object-cover rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => {
-                                    // Post image viewing can be handled separately if needed
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const images = post.images.map((img, idx) => ({
+                                      id: idx,
+                                      src: img.startsWith('http') ? img : `http://localhost:5000${img}`,
+                                      name: `Post Image ${idx + 1}`,
+                                      uploadDate: new Date(post.createdAt).toLocaleDateString(),
+                                      isImage: true,
+                                      type: 'Post Image'
+                                    }));
+                                    setModalImages(images);
+                                    setSelectedImageIndex(imgIndex);
+                                    setTriggerElement(e.currentTarget);
+                                    setIsImageViewerOpen(true);
                                   }}
                                 />
                               ))}
@@ -1386,6 +1423,20 @@ const WorkerProfile = () => {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Image Viewer Modal */}
+      {isImageViewerOpen && (
+        <ImageViewer
+          isOpen={isImageViewerOpen}
+          onClose={() => setIsImageViewerOpen(false)}
+          images={modalImages}
+          currentIndex={selectedImageIndex}
+          onIndexChange={setSelectedImageIndex}
+          triggerElement={triggerElement}
+          showNavigation={true}
+          showDownload={true}
+        />
       )}
     </div>
   );

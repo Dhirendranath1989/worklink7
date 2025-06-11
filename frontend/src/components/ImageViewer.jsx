@@ -137,13 +137,36 @@ const ImageViewer = ({
     toast.error('Failed to load image');
   };
 
-  const downloadFile = (file) => {
-    const link = document.createElement('a');
-    link.href = file.src;
-    link.download = file.name || 'download';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadFile = async (file) => {
+    try {
+      // Check if the file URL is accessible
+      const response = await fetch(file.src, { method: 'HEAD' });
+      
+      if (!response.ok) {
+        toast.error('File not available on server');
+        return;
+      }
+      
+      // If accessible, proceed with download
+      const link = document.createElement('a');
+      link.href = file.src;
+      link.download = file.name || 'download';
+      link.target = '_blank'; // Open in new tab as fallback
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download file. File may not be available.');
+      
+      // Fallback: try to open in new tab
+      try {
+        window.open(file.src, '_blank');
+      } catch (fallbackError) {
+        console.error('Fallback download failed:', fallbackError);
+        toast.error('Unable to access file. Please check if the file exists.');
+      }
+    }
   };
 
   const isImage = currentImage.isImage !== false && !currentImage.isPDF;

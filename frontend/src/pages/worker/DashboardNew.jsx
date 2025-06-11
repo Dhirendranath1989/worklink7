@@ -48,6 +48,7 @@ import EditProfile from '../../components/EditProfile';
 
 import { CreatePostModal, PostCard } from '../../components/Post';
 import { reviewAPI } from '../../services/api';
+import ImageViewer from '../../components/ImageViewer';
 
 const FacebookLikeDashboard = () => {
   const dispatch = useDispatch();
@@ -80,6 +81,18 @@ const FacebookLikeDashboard = () => {
   const [isUploadingWorkPhotos, setIsUploadingWorkPhotos] = useState(false);
   const [isUploadingCertificates, setIsUploadingCertificates] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [modalImages, setModalImages] = useState([]);
+
+  // Handle image click for full-screen view
+  const handleImageClick = (image, index, postImages = []) => {
+    setSelectedImage(image);
+    setSelectedImageIndex(index);
+    setModalImages(postImages.length > 0 ? postImages : [image]);
+    setShowImageModal(true);
+  };
 
   // Fetch posts from backend
   const fetchPosts = async () => {
@@ -1065,6 +1078,7 @@ const FacebookLikeDashboard = () => {
                   onDelete={handleDeletePost}
                   onLike={handleLikePost}
                   currentUserId={user?.userId}
+                  onImageClick={(image, index) => handleImageClick(image, index, post.images)}
                 />
               ))}
               {posts.length === 0 && (

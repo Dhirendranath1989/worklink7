@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ConsolidatedUser = require('../models/ConsolidatedUser');
+const Post = require('../models/Post');
 const { authenticateToken } = require('../middleware/auth');
 
 // Search workers by skills and location
@@ -162,19 +163,50 @@ router.get('/:id', async (req, res) => {
     // Format worker profile for detailed view
     const workerProfile = {
       _id: worker._id,
-      name: `${worker.firstName} ${worker.lastName}`,
+      name: worker.fullName || 
+             (worker.firstName && worker.lastName ? `${worker.firstName} ${worker.lastName}` : 
+              worker.firstName || worker.lastName || 'Worker').trim(),
+      firstName: worker.firstName,
+      lastName: worker.lastName,
+      fullName: worker.fullName,
       email: worker.email,
       phone: worker.phone,
+      mobile: worker.mobile,
+      phoneNumber: worker.phoneNumber,
       website: worker.website,
       profilePhoto: worker.profilePhoto,
       bio: worker.bio,
+      description: worker.description,
       skills: worker.skills,
       workExperience: worker.workExperience,
       hourlyRate: worker.hourlyRate,
+      minimumRate: worker.minimumRate,
+      projectRate: worker.projectRate,
       location: worker.location,
       availability: worker.availability,
-      workPhotos: worker.workPhotos,
-      certificates: worker.certificates,
+      availabilityStatus: worker.availabilityStatus,
+      workPhotos: worker.workPhotos ? worker.workPhotos.map(photo => {
+        if (typeof photo === 'string') {
+          return photo.startsWith('http') ? photo : `http://localhost:5000${photo}`;
+        }
+        return photo.path ? `http://localhost:5000${photo.path}` : photo;
+      }) : [],
+      certificates: worker.certificates ? worker.certificates.map(cert => {
+        if (typeof cert === 'string') {
+          return cert.startsWith('http') ? cert : `http://localhost:5000${cert}`;
+        }
+        return cert.path ? `http://localhost:5000${cert.path}` : cert;
+      }) : [],
+      documents: worker.documents ? worker.documents.map(doc => {
+        if (typeof doc === 'string') {
+          return doc.startsWith('http') ? doc : `http://localhost:5000${doc}`;
+        }
+        return doc.path ? `http://localhost:5000${doc.path}` : doc;
+      }) : [],
+      languagesSpoken: worker.languagesSpoken,
+      completedJobs: worker.completedJobs,
+      responseTime: worker.responseTime,
+      experienceYears: worker.experienceYears,
       averageRating: worker.averageRating || 0,
       totalReviews: worker.totalReviews || 0,
       isVerified: worker.isVerified,
@@ -201,7 +233,6 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/posts', async (req, res) => {
   try {
     const { id } = req.params;
-    const { page = 1, limit = 10 } = req.query;
     
     // Check if worker exists
     const worker = await ConsolidatedUser.findById(id);
@@ -212,15 +243,25 @@ router.get('/:id/posts', async (req, res) => {
       });
     }
     
-    // For now, return empty posts array
-    // This can be extended when posts functionality is implemented
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
+    // Get posts from database with pagination
+    const workerPosts = await Post.find({ 'author._id': id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    const totalPosts = await Post.countDocuments({ 'author._id': id });
+    
     res.json({
       success: true,
-      posts: [],
-      total: 0,
-      page: parseInt(page),
-      totalPages: 0,
-      hasMore: false
+      posts: workerPosts,
+      total: totalPosts,
+      page,
+      totalPages: Math.ceil(totalPosts / limit)
     });
     
   } catch (error) {
