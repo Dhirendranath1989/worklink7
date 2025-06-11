@@ -160,17 +160,17 @@ const Navbar = () => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{String(user?.name || 'User')}</p>
-                        <p className="text-sm text-gray-500">{String(user?.email || '')}</p>
+                    <Menu.Items className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-600 focus:outline-none">
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{String(user?.name || 'User')}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{String(user?.email || '')}</p>
                       </div>
                       {userNavigation.map((item) => (
                         <Menu.Item key={item.name}>
                           {({ active }) => (
                             <Link
                               to={item.href}
-                              className={`${active ? 'bg-gray-50' : ''} flex items-center px-4 py-2 text-sm text-gray-700`}
+                              className={`${active ? 'bg-gray-50 dark:bg-gray-700' : ''} flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`}
                             >
                               <item.icon className="mr-3 h-4 w-4" />
                               {item.name}
@@ -182,7 +182,7 @@ const Navbar = () => {
                         {({ active }) => (
                           <button
                             onClick={handleLogout}
-                            className={`${active ? 'bg-gray-50' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700`}
+                            className={`${active ? 'bg-gray-50 dark:bg-gray-700' : ''} flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`}
                           >
                             <ArrowRightOnRectangleIcon className="mr-3 h-4 w-4" />
                             Sign out
@@ -244,7 +244,7 @@ const Navbar = () => {
         leaveFrom="opacity-100 scale-100"
         leaveTo="opacity-0 scale-95"
       >
-        <div className="md:hidden bg-white shadow-lg">
+        <div className="md:hidden bg-white dark:bg-gray-800 shadow-lg border-t dark:border-gray-700">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navigation.map((item) => (
               <Link
@@ -252,8 +252,8 @@ const Navbar = () => {
                 to={item.href}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   item.current
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -264,14 +264,14 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                   onClick={() => setIsOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-white bg-primary-600 hover:bg-primary-700"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
                   onClick={() => setIsOpen(false)}
                 >
                   Get Started

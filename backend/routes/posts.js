@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { authenticateToken } = require('../middleware/auth');
-const User = require('../models/User');
+const ConsolidatedUser = require('../models/ConsolidatedUser');
 const mongoose = require('mongoose');
 
 // Configure multer for image uploads
@@ -70,7 +70,7 @@ router.post('/', authenticateToken, upload.array('images', 10), async (req, res)
       if (isMongoConnected) {
         // Try to get user from MongoDB first
         console.log(`Looking for user ${userId} in MongoDB`);
-        userInfo = await User.findById(userId).select('-password');
+        userInfo = await ConsolidatedUser.findById(userId).select('-password');
         if (userInfo) {
           console.log(`Found user in MongoDB:`, { id: userInfo._id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
         } else {
@@ -277,7 +277,7 @@ router.post('/:postId/comments', authenticateToken, async (req, res) => {
       if (isMongoConnected) {
         // Try to get user from MongoDB first
         console.log(`Looking for comment author ${userId} in MongoDB`);
-        userInfo = await User.findById(userId).select('-password');
+        userInfo = await ConsolidatedUser.findById(userId).select('-password');
         if (userInfo) {
           console.log(`Found comment author in MongoDB:`, { id: userInfo._id, fullName: userInfo.fullName, profilePhoto: userInfo.profilePhoto });
         } else {

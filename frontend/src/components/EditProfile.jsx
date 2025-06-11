@@ -27,6 +27,10 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
     fullName: '',
     mobile: '',
     address: '',
+    state: '',
+    district: '',
+    city: '',
+    block: '',
     pincode: '',
     // Worker specific fields
     skills: [],
@@ -49,6 +53,10 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
         fullName: user.fullName || user.name || '',
         mobile: user.mobile || user.phoneNumber || '',
         address: user.address || '',
+        state: user.state || '',
+        district: user.district || '',
+        city: user.city || '',
+        block: user.block || '',
         pincode: user.pincode || '',
         // Worker specific
         skills: Array.isArray(user.skills) ? user.skills : [],
@@ -156,6 +164,22 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
 
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required';
+    }
+
+    if (!formData.state.trim()) {
+      newErrors.state = 'State is required';
+    }
+
+    if (!formData.district.trim()) {
+      newErrors.district = 'District is required';
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+    }
+
+    if (!formData.block.trim()) {
+      newErrors.block = 'Block is required';
     }
 
     if (!formData.pincode.trim()) {
@@ -425,6 +449,74 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
                 placeholder="Enter your complete address"
               />
               {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                State *
+              </label>
+              <input
+                type="text"
+                name="state"
+                value={formData.state}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
+                  errors.state ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Enter your state"
+              />
+              {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                District *
+              </label>
+              <input
+                type="text"
+                name="district"
+                value={formData.district}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
+                  errors.district ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Enter your district"
+              />
+              {errors.district && <p className="text-red-500 text-sm mt-1">{errors.district}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                City *
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
+                  errors.city ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Enter your city"
+              />
+              {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Block *
+              </label>
+              <input
+                type="text"
+                name="block"
+                value={formData.block}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
+                  errors.block ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Enter your block"
+              />
+              {errors.block && <p className="text-red-500 text-sm mt-1">{errors.block}</p>}
             </div>
 
             <div>

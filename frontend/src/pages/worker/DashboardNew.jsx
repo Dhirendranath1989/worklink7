@@ -45,7 +45,7 @@ import { fetchProfile, fetchEarnings } from '../../features/profiles/profilesSli
 import { setCredentials } from '../../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
 import EditProfile from '../../components/EditProfile';
-import SearchWorkers from '../../components/SearchWorkers';
+
 import { CreatePostModal, PostCard } from '../../components/Post';
 import { reviewAPI } from '../../services/api';
 
@@ -64,7 +64,7 @@ const FacebookLikeDashboard = () => {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showSearchWorkers, setShowSearchWorkers] = useState(false);
+
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
@@ -316,12 +316,16 @@ const FacebookLikeDashboard = () => {
     mobile: String(user?.mobile || user?.phoneNumber || user?.phone || 'Not provided'),
     // Map backend fields correctly: location -> address, address -> address
     address: String(user?.location || user?.address || 'Not specified'),
+    state: String(user?.state || 'Not specified'),
+    district: String(user?.district || 'Not specified'),
+    city: String(user?.city || 'Not specified'),
+    block: String(user?.block || 'Not specified'),
     pincode: String(user?.pincode || user?.zipCode || user?.postalCode || 'Not specified'),
     location: String(user?.location || user?.address || 'Not specified'),
     bio: String(user?.bio || user?.description || user?.about || 'No bio available'),
     description: String(user?.description || user?.bio || user?.about || 'No description available'),
     skills: Array.isArray(user?.skills) ? user.skills : (user?.skills ? [user.skills] : []),
-    languagesSpoken: Array.isArray(user?.languagesSpoken) ? user.languagesSpoken : (user?.languages ? (Array.isArray(user.languages) ? user.languages : [user.languages]) : []),
+    languagesSpoken: Array.isArray(user?.languagesSpoken) ? user.languagesSpoken : [],
     workExperience: String(user?.workExperience || user?.experience || 'Not specified'),
     rating: Number(user?.rating || user?.averageRating) || 0,
     totalReviews: Number(user?.totalReviews || user?.reviewCount) || 0,
@@ -673,6 +677,30 @@ const FacebookLikeDashboard = () => {
                   <span className="text-sm text-gray-600 dark:text-gray-400">Address</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white truncate ml-2">{userProfile.address}</span>
                 </div>
+                {user?.state && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">State</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{user.state}</span>
+                  </div>
+                )}
+                {user?.district && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">District</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{user.district}</span>
+                  </div>
+                )}
+                {user?.city && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">City</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{user.city}</span>
+                  </div>
+                )}
+                {user?.block && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Block</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{user.block}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Pincode</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">{userProfile.pincode}</span>
@@ -1294,13 +1322,7 @@ const FacebookLikeDashboard = () => {
         />
       )}
 
-      {/* Search Workers Modal */}
-      {showSearchWorkers && (
-        <SearchWorkers
-          isOpen={showSearchWorkers}
-          onClose={() => setShowSearchWorkers(false)}
-        />
-      )}
+
 
       {/* Create/Edit Post Modal */}
         {(showCreatePost || editingPost) && (

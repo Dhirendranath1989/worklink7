@@ -40,7 +40,7 @@ import { fetchSavedWorkers } from '../../features/savedWorkers/savedWorkersSlice
 import { setCredentials } from '../../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
 import EditProfile from '../../components/EditProfile';
-import SearchWorkers from '../../components/SearchWorkers';
+
 import { CreatePostModal, PostCard } from '../../components/Post';
 import { useChatPopup } from '../../hooks/useChatPopup';
 
@@ -59,18 +59,26 @@ const OwnerDashboard = () => {
 
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  
+  // Add search state variables
+  const [searchSkill, setSearchSkill] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
+
   const [profileData, setProfileData] = useState({
     fullName: user?.name || user?.fullName || user?.firstName || user?.displayName || '',
     mobile: user?.mobile || '',
     email: user?.email || '',
     address: user?.address || '',
+    state: user?.state || '',
+    district: user?.district || '',
+    city: user?.city || '',
+    block: user?.block || '',
     pincode: user?.pincode || '',
+    languagesSpoken: user?.languagesSpoken || [],
     profilePhoto: user?.profilePhoto || ''
   });
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showSearchWorkers, setShowSearchWorkers] = useState(false);
+
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
@@ -116,6 +124,22 @@ const OwnerDashboard = () => {
   // Handle post editing
   const handleEditPost = (post) => {
     setEditingPost(post);
+  };
+
+  // Add search handler function
+  const handleSearch = () => {
+    console.log('Performing search...');
+    if (!searchSkill.trim() && !searchLocation.trim()) {
+      toast.error('Please enter at least one search criteria');
+      return;
+    }
+    
+    // Navigate to SearchWorkers page with search parameters
+    const searchParams = new URLSearchParams();
+    if (searchSkill.trim()) searchParams.set('skill', searchSkill.trim());
+    if (searchLocation.trim()) searchParams.set('location', searchLocation.trim());
+    
+    navigate(`/search-workers?${searchParams.toString()}`);
   };
 
   // Handle post deletion
@@ -360,7 +384,12 @@ const OwnerDashboard = () => {
         mobile: user?.mobile || '',
         email: user?.email || '',
         address: user?.address || '',
+        state: user?.state || '',
+        district: user?.district || '',
+        city: user?.city || '',
+        block: user?.block || '',
         pincode: user?.pincode || '',
+        languagesSpoken: user?.languagesSpoken || [],
         profilePhoto: user?.profilePhoto || ''
       });
     }
@@ -438,99 +467,9 @@ const OwnerDashboard = () => {
 
 
 
-  const mockSearchResults = [
-    {
-      id: 1,
-      name: "Rajesh Kumar",
-      profilePicture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-      location: "Gurgaon, Haryana",
-      hourlyRate: 500,
-      skills: ["Electrical Work", "Home Wiring", "Appliance Repair"]
-    },
-    {
-      id: 2,
-      name: "Priya Sharma",
-      profilePicture: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150",
-      location: "Delhi, India",
-      hourlyRate: 600,
-      skills: ["Plumbing", "Pipe Repair", "Bathroom Renovation"]
-    },
-    {
-      id: 3,
-      name: "Amit Singh",
-      profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
-      location: "Noida, UP",
-      hourlyRate: 450,
-      skills: ["Carpentry", "Furniture Repair", "Wood Work"]
-    },
-    {
-      id: 4,
-      name: "Sunita Devi",
-      profilePicture: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-      location: "Faridabad, Haryana",
-      hourlyRate: 350,
-      skills: ["House Cleaning", "Deep Cleaning", "Kitchen Cleaning"]
-    }
-  ];
 
-  const searchHistory = [
-    { query: 'Electrician near me', date: '2024-01-20', results: 15 },
-    { query: 'Plumber Gurgaon', date: '2024-01-18', results: 8 },
-    { query: 'House cleaning service', date: '2024-01-15', results: 22 }
-  ];
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
 
-    // Try API search first, then fallback to mock data
-    try {
-      await handleSkillSearch();
-    } catch (error) {
-      console.error('API search failed, using mock data:', error);
-      // Filter mock results based on search query
-      const filteredResults = mockSearchResults.filter(worker =>
-        worker.skills.some(skill => 
-          skill.toLowerCase().includes(searchQuery.toLowerCase())
-        ) || worker.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      
-      setSearchResults(filteredResults);
-    }
-  };
-
-  const handleSkillSearch = async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/search/workers?skills=${encodeURIComponent(searchQuery)}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const results = await response.json();
-        setSearchResults(results);
-        console.log('Search results:', results);
-      } else {
-        console.error('Search API error:', response.status, response.statusText);
-        // Fallback to mock data
-        handleSearch();
-      }
-    } catch (error) {
-      console.error('Search failed:', error);
-      // Fallback to mock data
-      handleSearch();
-    }
-  };
 
   const notifications = [
     {
@@ -775,13 +714,13 @@ const OwnerDashboard = () => {
             </div>
           </Link>
           <Link
-            to="/search"
+            to="/search-workers"
             className="flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-500 transition-all"
           >
             <MagnifyingGlassIcon className="h-6 w-6 text-green-600 dark:text-green-400 mr-3" />
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Browse Workers</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Discover talent</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Search Workers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Find skilled workers</p>
             </div>
           </Link>
           <button
@@ -946,7 +885,52 @@ const OwnerDashboard = () => {
                 ) : (
                   <div className="flex items-start">
                     <MapPinIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2 mt-1" />
-                    <p className="text-gray-900 dark:text-gray-100">{profileData.address}</p>
+                    <div className="text-gray-900 dark:text-gray-100">
+                      {profileData.address && (
+                        <div>{profileData.address}</div>
+                      )}
+                      {(profileData.state || profileData.district || profileData.city || profileData.block) && (
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {[profileData.block, profileData.city, profileData.district, profileData.state]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </div>
+                      )}
+                      {!profileData.address && !profileData.state && !profileData.district && !profileData.city && !profileData.block && (
+                        <span>Address not specified</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Languages Spoken */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Languages Spoken
+                </label>
+                {isEditingProfile ? (
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Languages can be updated in your profile settings
+                  </div>
+                ) : (
+                  <div className="flex items-start">
+                    <div className="text-gray-900 dark:text-gray-100">
+                      {profileData.languagesSpoken && profileData.languagesSpoken.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {profileData.languagesSpoken.map((language, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                            >
+                              {language}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 dark:text-gray-400">No languages specified</span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1116,172 +1100,7 @@ const OwnerDashboard = () => {
 
 
 
-  const renderSearchWorkers = () => (
-    <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Search Workers</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Find skilled workers for your projects</p>
-        </div>
-        <div className="flex space-x-4">
-          <input
-            type="text"
-            placeholder="Search by skills, name, or location..."
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSkillSearch()}
-          />
-          <button
-            onClick={handleSkillSearch}
-            className="bg-blue-600 dark:bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 flex items-center transition-colors"
-          >
-            <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-            Search
-          </button>
-        </div>
-      </div>
 
-      {/* Search Results */}
-      {searchResults.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-            Search Results ({searchResults.length} workers found)
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {searchResults.map((worker) => (
-              <div key={worker.id} className="border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-900/25 transition-shadow">
-                <div className="flex items-center space-x-3 mb-3">
-                  <img
-                    src={worker.profilePicture 
-                      ? (worker.profilePicture.startsWith('http') 
-                          ? worker.profilePicture 
-                          : `http://localhost:5000${worker.profilePicture}`)
-                      : DEFAULT_AVATAR_60
-                    }
-                    alt={worker.name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                  />
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">{worker.name}</h4>
-                    {/* Average Rating Display */}
-                    {worker.averageRating > 0 && (
-                      <div className="flex items-center mt-1">
-                        <div className="flex items-center mr-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <svg
-                              key={star}
-                              className={`h-3 w-3 ${
-                                star <= Math.round(worker.averageRating)
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300 dark:text-gray-600'
-                              }`}
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                        </div>
-                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                          {worker.averageRating.toFixed(1)}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                          ({worker.totalReviews || 0})
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="mb-3">
-                  <div className="flex items-center space-x-1 mb-1">
-                    <MapPinIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{worker.location}</span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">₹{worker.hourlyRate}/hour</p>
-                </div>
-                
-                <div className="mb-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Skills:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {worker.skills.slice(0, 3).map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                    {worker.skills.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded text-xs">
-                        +{worker.skills.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={() => window.location.href = `/worker/${worker.id}`}
-                    className="flex-1 bg-blue-600 dark:bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 text-sm transition-colors"
-                  >
-                    View Details
-                  </button>
-                  <button className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
-                    <HeartIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {searchQuery && searchResults.length === 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-          <MagnifyingGlassIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No workers found</h3>
-          <p className="text-gray-600 dark:text-gray-400">Try searching with different skills or keywords.</p>
-        </div>
-      )}
-
-      {/* Search History */}
-      {searchHistory.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Searches</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Your recent search history</p>
-          </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {searchHistory.map((search, index) => (
-              <div key={index} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{search.query}</h4>
-                    <div className="flex items-center space-x-4 mt-1">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{search.results} results found</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{search.date}</span>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setSearchQuery(search.query);
-                      handleSearch();
-                    }}
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm font-medium transition-colors"
-                  >
-                    Search Again
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   const renderNotifications = () => (
     <div className="space-y-6">
@@ -1753,131 +1572,122 @@ const OwnerDashboard = () => {
         <div className="flex-1 p-8 pt-12">
           {/* Search Bar */}
           <div className="mb-8">
-            <div className="max-w-2xl">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search workers by skills (e.g., electrician, plumber, cleaner)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSkillSearch()}
-                  className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-0 focus:ring-2 focus:ring-purple-500 dark:focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
-                />
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400 dark:text-gray-500" />
-                <button
-                  onClick={handleSkillSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-500 to-blue-500 dark:from-blue-600 dark:to-purple-600 text-white px-6 py-2 rounded-xl hover:from-purple-600 hover:to-blue-600 dark:hover:from-blue-700 dark:hover:to-purple-700 transition-all duration-200 shadow-md"
-                >
-                  Search
-                </button>
+            <div className="max-w-4xl mx-auto">
+              {/* Main Search Section */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
+                  Find Workers
+                </h2>
+                
+                {/* Search Inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {/* Worker Search */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Search Workers
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <UserIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Enter worker name, skill, or service..."
+                        value={searchSkill}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 shadow-sm transition-all duration-200"
+                        onChange={(e) => {
+                          console.log('Worker search:', e.target.value);
+                          setSearchSkill(e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Location */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Location
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MapPinIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Enter city or area..."
+                        value={searchLocation}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 shadow-sm transition-all duration-200"
+                        onChange={(e) => {
+                          console.log('Location search:', e.target.value);
+                          setSearchLocation(e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Search Button */}
+                <div className="flex justify-center mb-6">
+                  <button 
+                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-12 py-3 rounded-lg font-medium flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    onClick={handleSearch}
+                  >
+                    <MagnifyingGlassIcon className="h-5 w-5" />
+                    <span>Search Workers</span>
+                  </button>
+                </div>
+                
+                {/* Quick Search Filters */}
+                <div className="mt-6">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Popular Categories:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button 
+                      className="px-4 py-2 text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors flex items-center space-x-1"
+                      onClick={() => console.log('Filter: Electricians')}
+                    >
+                      <span>⚡</span>
+                      <span>Electricians</span>
+                    </button>
+                    <button 
+                      className="px-4 py-2 text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full hover:bg-green-200 dark:hover:bg-green-800 transition-colors flex items-center space-x-1"
+                      onClick={() => console.log('Filter: Plumbers')}
+                    >
+                      <span>🔧</span>
+                      <span>Plumbers</span>
+                    </button>
+                    <button 
+                      className="px-4 py-2 text-sm bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors flex items-center space-x-1"
+                      onClick={() => console.log('Filter: Cleaners')}
+                    >
+                      <span>🧹</span>
+                      <span>Cleaners</span>
+                    </button>
+                    <button 
+                      className="px-4 py-2 text-sm bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors flex items-center space-x-1"
+                      onClick={() => console.log('Filter: Carpenters')}
+                    >
+                      <span>🔨</span>
+                      <span>Carpenters</span>
+                    </button>
+                    <button 
+                      className="px-4 py-2 text-sm bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors flex items-center space-x-1"
+                      onClick={() => console.log('Filter: Painters')}
+                    >
+                      <span>🎨</span>
+                      <span>Painters</span>
+                    </button>
+                    <button 
+                      className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center space-x-1"
+                      onClick={() => console.log('Show all categories')}
+                    >
+                      <span>👁️</span>
+                      <span>View All</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Search Results - Display immediately when available */}
-          {searchResults.length > 0 && (
-            <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-                Search Results ({searchResults.length} workers found)
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {searchResults.map((worker) => (
-                  <div key={worker.id} className="border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-900/25 transition-shadow">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <img
-                        src={worker.profilePicture 
-                          ? (worker.profilePicture.startsWith('http') 
-                              ? worker.profilePicture 
-                              : `http://localhost:5000${worker.profilePicture}`)
-                          : DEFAULT_AVATAR_60
-                        }
-                        alt={worker.name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                      />
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{worker.name}</h4>
-                        {/* Average Rating Display */}
-                        {worker.averageRating > 0 && (
-                          <div className="flex items-center mt-1">
-                            <div className="flex items-center mr-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <svg
-                                  key={star}
-                                  className={`h-3 w-3 ${
-                                    star <= Math.round(worker.averageRating)
-                                      ? 'text-yellow-400 fill-current'
-                                      : 'text-gray-300 dark:text-gray-600'
-                                  }`}
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                              ))}
-                            </div>
-                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                              {worker.averageRating.toFixed(1)}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                              ({worker.totalReviews || 0})
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <div className="flex items-center space-x-1 mb-1">
-                        <MapPinIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{worker.location}</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">₹{worker.hourlyRate}/hour</p>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Skills:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {worker.skills.slice(0, 3).map((skill, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                        {worker.skills.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded text-xs">
-                            +{worker.skills.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => window.location.href = `/worker/${worker.id}`}
-                        className="flex-1 bg-blue-600 dark:bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 text-sm transition-colors"
-                      >
-                        View Details
-                      </button>
-                      <button className="bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
-                        <HeartIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No Results Message */}
-          {searchQuery && searchResults.length === 0 && (
-            <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-              <MagnifyingGlassIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No workers found</h3>
-              <p className="text-gray-600 dark:text-gray-400">Try searching with different skills or keywords.</p>
-            </div>
-          )}
 
           {/* Tab Content */}
           {renderTabContent()}
@@ -1894,13 +1704,7 @@ const OwnerDashboard = () => {
         />
       )}
 
-      {/* Search Workers Modal */}
-      {showSearchWorkers && (
-        <SearchWorkers
-          isOpen={showSearchWorkers}
-          onClose={() => setShowSearchWorkers(false)}
-        />
-      )}
+
 
       {/* Create/Edit Post Modal */}
         {(showCreatePost || editingPost) && (

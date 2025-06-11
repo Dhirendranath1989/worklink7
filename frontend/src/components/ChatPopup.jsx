@@ -225,7 +225,7 @@ const ChatPopup = () => {
                       alt={getOtherParticipant(selectedConversation).name}
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border-2 border-white">
+                    <div className="w-8 h-8 rounded-full bg-white/20 dark:bg-gray-600/50 flex items-center justify-center border-2 border-white dark:border-gray-400">
                       <span className="text-sm font-semibold">
                         {getOtherParticipant(selectedConversation).name.charAt(0).toUpperCase()}
                       </span>

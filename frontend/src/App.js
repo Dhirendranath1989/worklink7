@@ -26,9 +26,9 @@ import WorkerDashboard from './pages/worker/DashboardNew';
 import WorkPortfolio from './pages/worker/WorkPortfolio';
 import Certificates from './pages/worker/Certificates';
 import OwnerDashboard from './pages/owner/Dashboard';
+import SearchWorkers from './pages/owner/SearchWorkers';
+import WorkerProfile from './pages/owner/WorkerProfile';
 import AdminDashboard from './pages/admin/Dashboard';
-import SearchWorkers from './pages/SearchWorkers';
-import WorkerProfile from './pages/WorkerProfile';
 import PostJob from './pages/PostJob';
 import Chat from './pages/Chat';
 
@@ -149,7 +149,7 @@ function App() {
                   <CompleteProfile />
                 </ProtectedRoute>
               } />
-              <Route path="/search" element={<SearchWorkers />} />
+    
               <Route path="/worker/:id" element={<WorkerProfile />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/find-work" element={<FindWork />} />
@@ -178,6 +178,18 @@ function App() {
               <Route path="/owner/dashboard" element={
                 <ProtectedRoute requiredRole="owner">
                   <OwnerDashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/search-workers" element={
+                <ProtectedRoute requiredRole="owner">
+                  <SearchWorkers />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/worker-profile/:workerId" element={
+                <ProtectedRoute requiredRole="owner">
+                  <WorkerProfile />
                 </ProtectedRoute>
               } />
               

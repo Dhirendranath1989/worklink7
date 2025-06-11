@@ -86,59 +86,14 @@ export const updateApplicationStatus = createAsyncThunk(
   }
 );
 
-export const searchWorkers = createAsyncThunk(
-  'jobs/searchWorkers',
-  async (searchParams, { rejectWithValue }) => {
-    try {
-      const response = await jobsAPI.searchWorkers(searchParams);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data.message);
-    }
-  }
-);
 
-export const saveSearch = createAsyncThunk(
-  'jobs/saveSearch',
-  async (searchData, { rejectWithValue }) => {
-    try {
-      const response = await api.post('/saved-searches', searchData);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data.message);
-    }
-  }
-);
-
-export const fetchSavedSearches = createAsyncThunk(
-  'jobs/fetchSavedSearches',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get('/saved-searches');
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data.message);
-    }
-  }
-);
 
 const initialState = {
   jobs: [],
   currentJob: null,
   applications: [],
-  searchResults: [],
-  savedSearches: [],
   isLoading: false,
   error: null,
-  filters: {
-    skill: '',
-    location: '',
-    radius: 10,
-    minRating: 0,
-    experience: '',
-    availability: false,
-    sortBy: 'relevance',
-  },
   pagination: {
     page: 1,
     limit: 10,
@@ -151,12 +106,7 @@ const jobsSlice = createSlice({
   name: 'jobs',
   initialState,
   reducers: {
-    setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
-    },
-    clearFilters: (state) => {
-      state.filters = initialState.filters;
-    },
+
     setCurrentJob: (state, action) => {
       state.currentJob = action.payload;
     },
@@ -207,27 +157,8 @@ const jobsSlice = createSlice({
       .addCase(deleteJob.fulfilled, (state, action) => {
         state.jobs = state.jobs.filter(job => job._id !== action.payload);
       })
-      // Search workers
-      .addCase(searchWorkers.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(searchWorkers.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.searchResults = action.payload.workers;
-        state.pagination = action.payload.pagination;
-      })
-      .addCase(searchWorkers.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-      // Saved searches
-      .addCase(fetchSavedSearches.fulfilled, (state, action) => {
-        state.savedSearches = action.payload;
-      })
-      .addCase(saveSearch.fulfilled, (state, action) => {
-        state.savedSearches.unshift(action.payload);
-      })
+
+
       // Job applications
       .addCase(fetchJobApplications.fulfilled, (state, action) => {
         state.applications = action.payload;
@@ -244,5 +175,5 @@ const jobsSlice = createSlice({
   },
 });
 
-export const { setFilters, clearFilters, setCurrentJob, clearError, setPagination } = jobsSlice.actions;
+export const { setCurrentJob, clearError, setPagination } = jobsSlice.actions;
 export default jobsSlice.reducer;

@@ -10,27 +10,28 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const socketIo = require('socket.io');
+const mongoService = require('./services/mongoService');
 
 // Load environment variables
 dotenv.config();
 
-// Initialize Firebase Admin SDK
-if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL
-      })
-    });
-    console.log('Firebase Admin SDK initialized successfully');
-  } catch (error) {
-    console.log('Firebase Admin SDK initialization error:', error.message);
-  }
-} else {
-  console.log('Firebase Admin SDK not configured - some features may not work');
-}
+// Initialize Firebase Admin SDK - TEMPORARILY DISABLED FOR TESTING
+// if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+//   try {
+//     admin.initializeApp({
+//       credential: admin.credential.cert({
+//         projectId: process.env.FIREBASE_PROJECT_ID,
+//         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+//         clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+//       })
+//     });
+//     console.log('Firebase Admin SDK initialized successfully');
+//   } catch (error) {
+//     console.log('Firebase Admin SDK initialization error:', error.message);
+//   }
+// } else {
+console.log('Firebase Admin SDK not configured - some features may not work');
+// }
 
 const app = express();
 const server = http.createServer(app);
@@ -212,13 +213,14 @@ if (process.env.MONGODB_URI) {
 }
 
 // Import User model
-const User = require('./models/User');
+const ConsolidatedUser = require('./models/ConsolidatedUser');
 
 // Routes
 
 // Import routes
 const postsRouter = require('./routes/posts');
 const usersRouter = require('./routes/users');
+const workersRouter = require('./routes/workers');
 
 // Set global references for routes
 usersRouter.setGlobalReferences({
@@ -226,9 +228,9 @@ usersRouter.setGlobalReferences({
   inMemoryUsers
 });
 
-// Register routes
 app.use('/api/posts', postsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/workers', workersRouter);
 
 // Test route
 app.get('/api/test', (req, res) => {
@@ -248,7 +250,7 @@ app.post('/api/auth/register', async (req, res) => {
     // Check if user already exists
     let existingUser;
     if (isMongoConnected) {
-      existingUser = await User.findOne({ email });
+      existingUser = await ConsolidatedUser.findOne({ email });
     } else {
       existingUser = inMemoryUsers.find(user => user.email === email);
     }
@@ -271,7 +273,7 @@ app.post('/api/auth/register', async (req, res) => {
       certificates: [],
       skills: [],
       workExperience: [],
-      languages: [],
+      languagesSpoken: [],
       availability: '',
       hourlyRate: 0,
       description: '',
@@ -283,7 +285,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     let user;
     if (isMongoConnected) {
-      user = new User(userData);
+      user = new ConsolidatedUser(userData);
       await user.save();
     } else {
       userData._id = Date.now().toString();
@@ -329,7 +331,7 @@ app.post('/api/auth/login', async (req, res) => {
     // Find user
     let user;
     if (isMongoConnected) {
-      user = await User.findOne({ email });
+      user = await ConsolidatedUser.findOne({ email });
     } else {
       user = inMemoryUsers.find(u => u.email === email);
     }
@@ -376,12 +378,20 @@ app.post('/api/auth/login', async (req, res) => {
         certificates: user.certificates,
         skills: user.skills,
         workExperience: user.workExperience,
-        languages: user.languages,
+        languagesSpoken: user.languagesSpoken,
         availability: user.availability,
         availabilityStatus: user.availabilityStatus || 'available',
         hourlyRate: user.hourlyRate,
         description: user.description,
         businessName: user.businessName,
+        businessType: user.businessType || '',
+        mobile: user.mobile || '',
+        address: user.address || '',
+        state: user.state || '',
+        district: user.district || '',
+        city: user.city || '',
+        block: user.block || '',
+        pincode: user.pincode || '',
         rating: user.rating,
         reviewCount: user.reviewCount,
         reviews: user.reviews,
@@ -406,11 +416,11 @@ app.post('/api/auth/google', async (req, res) => {
     // Find or create user
     let user;
     if (isMongoConnected) {
-      user = await User.findOne({ email: userData.email });
+      user = await ConsolidatedUser.findOne({ email: userData.email });
       
       if (!user) {
         // Create new user
-        user = new User({
+        user = new ConsolidatedUser({
           fullName: `${userData.firstName} ${userData.lastName}`.trim(),
           email: userData.email,
           password: '', // Empty password for Google users
@@ -500,12 +510,20 @@ app.post('/api/auth/google', async (req, res) => {
         certificates: user.certificates,
         skills: user.skills,
         workExperience: user.workExperience,
-        languages: user.languages,
+        languagesSpoken: user.languagesSpoken,
         availability: user.availability,
         availabilityStatus: user.availabilityStatus || 'available',
         hourlyRate: user.hourlyRate,
         description: user.description,
         businessName: user.businessName,
+        businessType: user.businessType || '',
+        mobile: user.mobile || '',
+        address: user.address || '',
+        state: user.state || '',
+        district: user.district || '',
+        city: user.city || '',
+        block: user.block || '',
+        pincode: user.pincode || '',
         rating: user.rating,
         reviewCount: user.reviewCount,
         profileCompleted: user.profileCompleted || false
@@ -521,7 +539,7 @@ app.post('/api/auth/google', async (req, res) => {
       // Try to find and return existing user
       try {
         if (isMongoConnected && userData && userData.email) {
-          const existingUser = await User.findOne({ email: userData.email });
+          const existingUser = await ConsolidatedUser.findOne({ email: userData.email });
           if (existingUser) {
             console.log('Found existing user, returning user data');
             
@@ -545,12 +563,20 @@ app.post('/api/auth/google', async (req, res) => {
                 certificates: existingUser.certificates || [],
                 skills: existingUser.skills || [],
                 workExperience: existingUser.workExperience || [],
-                languages: existingUser.languages || [],
+                languagesSpoken: existingUser.languagesSpoken || [],
                 availability: existingUser.availability,
                 availabilityStatus: existingUser.availabilityStatus || 'available',
                 hourlyRate: existingUser.hourlyRate || 0,
                 description: existingUser.description,
                 businessName: existingUser.businessName,
+                businessType: existingUser.businessType || '',
+                mobile: existingUser.mobile || '',
+                address: existingUser.address || '',
+                state: existingUser.state || '',
+                district: existingUser.district || '',
+                city: existingUser.city || '',
+                block: existingUser.block || '',
+                pincode: existingUser.pincode || '',
                 rating: existingUser.rating || 0,
                 reviewCount: existingUser.reviewCount || 0,
                 profileCompleted: existingUser.profileCompleted || false
@@ -564,7 +590,7 @@ app.post('/api/auth/google', async (req, res) => {
             
             // Try to create user with upsert to handle the constraint issue
             try {
-              const recreatedUser = await User.findOneAndUpdate(
+              const recreatedUser = await ConsolidatedUser.findOneAndUpdate(
                 { email: userData.email },
                 {
                    fullName: `${userData.firstName} ${userData.lastName}`.trim(),
@@ -673,7 +699,7 @@ app.post('/api/auth/upload-work-photos', authenticateToken, upload.array('workPh
     // Find user and update work photos
     let user;
     if (isMongoConnected) {
-      user = await User.findById(userId);
+      user = await ConsolidatedUser.findById(userId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
@@ -742,7 +768,7 @@ app.post('/api/auth/upload-certificates', authenticateToken, upload.array('certi
     // Find user and update certificates
     let user;
     if (isMongoConnected) {
-      user = await User.findById(userId);
+      user = await ConsolidatedUser.findById(userId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
@@ -815,7 +841,7 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
         
         // Get existing work photos and append new ones
         const existingUser = isMongoConnected 
-          ? await User.findById(userId)
+          ? await ConsolidatedUser.findById(userId)
           : inMemoryUsers.find(u => (u._id || u.id) === userId);
         
         const existingWorkPhotos = existingUser?.workPhotos || [];
@@ -833,7 +859,7 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
         
         // Get existing certificates and append new ones
         const existingUser = isMongoConnected 
-          ? await User.findById(userId)
+          ? await ConsolidatedUser.findById(userId)
           : inMemoryUsers.find(u => (u._id || u.id) === userId);
         
         const existingCertificates = existingUser?.certificates || [];
@@ -873,7 +899,7 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
     // Update user in database or memory
     let updatedUser;
     if (isMongoConnected) {
-      updatedUser = await User.findByIdAndUpdate(
+      updatedUser = await ConsolidatedUser.findByIdAndUpdate(
         userId,
         { $set: updateData },
         { new: true, runValidators: true }
@@ -918,6 +944,10 @@ app.put('/api/auth/update-profile', authenticateToken, upload.fields([
         businessType: updatedUser.businessType || '',
         mobile: updatedUser.mobile || '',
         address: updatedUser.address || '',
+        state: updatedUser.state || '',
+        district: updatedUser.district || '',
+        city: updatedUser.city || '',
+        block: updatedUser.block || '',
         pincode: updatedUser.pincode || '',
         rating: updatedUser.rating || 0,
         reviewCount: updatedUser.reviewCount || 0,
@@ -950,12 +980,21 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
     if (req.body.profileData) {
       try {
         const profileData = JSON.parse(req.body.profileData);
+        console.log('📋 Parsed profileData:', profileData);
         updateData = { ...updateData, ...profileData };
         delete updateData.profileData; // Remove the JSON string field
       } catch (e) {
         console.error('Error parsing profileData:', e);
       }
     }
+    
+    console.log('📝 Final updateData before saving:', {
+      state: updateData.state,
+      district: updateData.district,
+      city: updateData.city,
+      block: updateData.block,
+      languagesSpoken: updateData.languagesSpoken
+    });
     
     // Mark profile as completed
     updateData.profileCompleted = true;
@@ -980,7 +1019,7 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
         
         // Get existing work photos and append new ones
         const existingUser = isMongoConnected 
-          ? await User.findById(userId)
+          ? await ConsolidatedUser.findById(userId)
           : inMemoryUsers.find(u => (u._id || u.id) === userId);
         
         const existingWorkPhotos = existingUser?.workPhotos || [];
@@ -998,7 +1037,7 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
         
         // Get existing certificates and append new ones
         const existingUser = isMongoConnected 
-          ? await User.findById(userId)
+          ? await ConsolidatedUser.findById(userId)
           : inMemoryUsers.find(u => (u._id || u.id) === userId);
         
         const existingCertificates = existingUser?.certificates || [];
@@ -1038,7 +1077,7 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
     // Update user in database or memory
     let updatedUser;
     if (isMongoConnected) {
-      updatedUser = await User.findByIdAndUpdate(
+      updatedUser = await ConsolidatedUser.findByIdAndUpdate(
         userId,
         { $set: updateData },
         { new: true, runValidators: true }
@@ -1079,6 +1118,10 @@ app.post('/api/auth/complete-profile', authenticateToken, upload.fields([
         businessType: updatedUser.businessType || '',
         mobile: updatedUser.mobile || '',
         address: updatedUser.address || '',
+        state: updatedUser.state || '',
+        district: updatedUser.district || '',
+        city: updatedUser.city || '',
+        block: updatedUser.block || '',
         pincode: updatedUser.pincode || '',
         rating: updatedUser.rating || 0,
         reviewCount: updatedUser.reviewCount || 0,
@@ -1099,7 +1142,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
     
     let user;
     if (isMongoConnected) {
-      user = await User.findById(userId).select('-password');
+      user = await ConsolidatedUser.findById(userId).select('-password');
     } else {
       console.log(`Looking for user ${userId} in inMemoryUsers. Available users:`, inMemoryUsers.map(u => ({ id: u._id || u.id, email: u.email, fullName: u.fullName })));
       user = inMemoryUsers.find(u => (u._id || u.id) === userId);
@@ -1126,7 +1169,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         profilePhoto: user.profilePhoto,
         skills: user.skills || [],
         workExperience: user.workExperience || [],
-        languages: user.languages || [],
+        languagesSpoken: user.languagesSpoken || [],
         availability: user.availability || '',
         availabilityStatus: user.availabilityStatus || 'available',
         hourlyRate: user.hourlyRate || 0,
@@ -1135,6 +1178,10 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         businessType: user.businessType || '',
         mobile: user.mobile || '',
         address: user.address || '',
+        state: user.state || '',
+        district: user.district || '',
+        city: user.city || '',
+        block: user.block || '',
         pincode: user.pincode || '',
         rating: user.rating || 0,
         reviewCount: user.reviewCount || 0,
@@ -1156,7 +1203,7 @@ app.get('/api/profiles/:userId', async (req, res) => {
     
     let user;
     if (isMongoConnected) {
-      user = await User.findById(userId).select('-password');
+      user = await ConsolidatedUser.findById(userId).select('-password');
     } else {
       user = inMemoryUsers.find(u => u._id === userId);
       if (user) {
@@ -1178,7 +1225,7 @@ app.get('/api/profiles/:userId', async (req, res) => {
       profilePhoto: user.profilePhoto,
       skills: user.skills || [],
       workExperience: user.workExperience || [],
-      languages: user.languages || [],
+      languagesSpoken: user.languagesSpoken || [],
       availability: user.availability || '',
       hourlyRate: user.hourlyRate || 0,
       description: user.description || '',
@@ -1193,6 +1240,8 @@ app.get('/api/profiles/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user profile' });
   }
 });
+
+
 
 // Export inMemoryUsers for use in other modules
 module.exports = { inMemoryUsers };

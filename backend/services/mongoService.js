@@ -1,6 +1,4 @@
-const User = require('../models/User');
-const Worker = require('../models/Worker');
-const Owner = require('../models/Owner');
+const ConsolidatedUser = require('../models/ConsolidatedUser');
 const Job = require('../models/Job');
 const Review = require('../models/Review');
 const Conversation = require('../models/Conversation');
@@ -14,7 +12,7 @@ class MongoService {
   // Get user by ID
   async getUserById(userId) {
     try {
-      return await User.findById(userId);
+      return await ConsolidatedUser.findById(userId);
     } catch (error) {
       console.error('Error getting user by ID:', error);
       throw error;
@@ -24,7 +22,7 @@ class MongoService {
   // Get user by Firebase UID
   async getUserByFirebaseUid(firebaseUid) {
     try {
-      return await User.findOne({ firebaseUid });
+      return await ConsolidatedUser.findOne({ firebaseUid });
     } catch (error) {
       console.error('Error getting user by Firebase UID:', error);
       throw error;
@@ -34,7 +32,7 @@ class MongoService {
   // Update user by ID
   async updateUser(userId, updateData) {
     try {
-      return await User.findByIdAndUpdate(userId, updateData, { new: true });
+      return await ConsolidatedUser.findByIdAndUpdate(userId, updateData, { new: true });
     } catch (error) {
       console.error('Error updating user:', error);
       throw error;
@@ -44,7 +42,7 @@ class MongoService {
   // Update user by Firebase UID
   async updateUserByFirebaseUid(firebaseUid, updateData) {
     try {
-      return await User.findOneAndUpdate({ firebaseUid }, updateData, { new: true, upsert: true });
+      return await ConsolidatedUser.findOneAndUpdate({ firebaseUid }, updateData, { new: true, upsert: true });
     } catch (error) {
       console.error('Error updating user by Firebase UID:', error);
       throw error;
@@ -53,7 +51,7 @@ class MongoService {
   
   async createUser(userData) {
     try {
-      const user = new User(userData);
+      const user = new ConsolidatedUser(userData);
       return await user.save();
     } catch (error) {
       console.error('Error creating user:', error);
@@ -63,7 +61,7 @@ class MongoService {
   
   async updateUserByFirebaseUidWithTimestamp(firebaseUid, userData) {
     try {
-      return await User.findOneAndUpdate(
+      return await ConsolidatedUser.findOneAndUpdate(
         { firebaseUid },
         { ...userData, updatedAt: new Date() },
         { new: true, upsert: true }
@@ -78,7 +76,7 @@ class MongoService {
   async deleteUser(userId) {
     try {
       // Get user data before deletion for cleanup
-      const user = await User.findById(userId);
+      const user = await ConsolidatedUser.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
@@ -109,15 +107,8 @@ class MongoService {
       // Delete notifications for this user
       await Notification.deleteMany({ userId: userId });
       
-      // Delete the user from Worker or Owner collections
-      if (user.userType === 'worker') {
-        await Worker.deleteOne({ uid: user.firebaseUid });
-      } else if (user.userType === 'owner') {
-        await Owner.deleteOne({ uid: user.firebaseUid });
-      }
-      
-      // Finally, delete the user
-      await User.findByIdAndDelete(userId);
+      // Finally, delete the user (no need to delete from separate collections)
+      await ConsolidatedUser.findByIdAndDelete(userId);
       
       return { success: true, message: 'User and related data deleted successfully' };
     } catch (error) {
@@ -129,7 +120,12 @@ class MongoService {
   // Worker operations
   async getWorkerProfile(firebaseUid) {
     try {
-      return await Worker.findOne({ uid: firebaseUid });
+      return await ConsolidatedUser.findOne({ 
+        $and: [
+          { $or: [{ uid: firebaseUid }, { firebaseUid: firebaseUid }] },
+          { $or: [{ userType: 'worker' }, { role: 'worker' }] }
+        ]
+      });
     } catch (error) {
       console.error('Error getting worker profile:', error);
       throw error;
@@ -138,9 +134,9 @@ class MongoService {
 
   async saveWorkerProfile(firebaseUid, workerData) {
     try {
-      return await Worker.findOneAndUpdate(
-        { uid: firebaseUid },
-        { ...workerData, updatedAt: new Date() },
+      return await ConsolidatedUser.findOneAndUpdate(
+        { $or: [{ uid: firebaseUid }, { firebaseUid: firebaseUid }] },
+        { ...workerData, updatedAt: new Date(), userType: 'worker' },
         { new: true, upsert: true }
       );
     } catch (error) {
@@ -149,49 +145,71 @@ class MongoService {
     }
   }
 
-  async searchWorkers(filters = {}) {
-    try {
-      const query = {};
+  // Helper function to generate skill variations
+  getSkillVariations(skill) {
+    const variations = [];
+    const lowerSkill = skill.toLowerCase();
+    
+    // Common skill variations mapping
+    const skillMappings = {
+      // Person -> Activity
+      'painter': ['painting', 'paint'],
+      'cleaner': ['cleaning', 'clean'],
+      'plumber': ['plumbing', 'plumb'],
+      'electrician': ['electrical', 'electric'],
+      'carpenter': ['carpentry', 'woodwork'],
+      'gardener': ['gardening', 'garden'],
+      'mechanic': ['mechanical', 'repair'],
+      'driver': ['driving', 'transport'],
+      'cook': ['cooking', 'chef'],
+      'teacher': ['teaching', 'education'],
+      'nurse': ['nursing', 'healthcare'],
+      'designer': ['design', 'designing'],
       
-      if (filters.skills && filters.skills.length > 0) {
-        query.skills = { $in: filters.skills };
-      }
-      
-      if (filters.location) {
-        query.location = new RegExp(filters.location, 'i');
-      }
-      
-      if (filters.minRating) {
-        query.rating = { $gte: parseFloat(filters.minRating) };
-      }
-      
-      if (filters.availability) {
-        query.availability = filters.availability;
-      }
-      
-      if (filters.maxHourlyRate) {
-        query.hourlyRate = { $lte: parseFloat(filters.maxHourlyRate) };
-      }
-      
-      if (filters.minHourlyRate) {
-        query.hourlyRate = { ...query.hourlyRate, $gte: parseFloat(filters.minHourlyRate) };
-      }
-      
-      const workers = await Worker.find(query)
-        .sort({ rating: -1, createdAt: -1 })
-        .limit(filters.limit || 20);
-      
-      return workers;
-    } catch (error) {
-      console.error('Error searching workers:', error);
-      throw error;
+      // Activity -> Person
+      'painting': ['painter', 'paint'],
+      'cleaning': ['cleaner', 'clean'],
+      'plumbing': ['plumber', 'plumb'],
+      'electrical': ['electrician', 'electric'],
+      'carpentry': ['carpenter', 'woodwork'],
+      'gardening': ['gardener', 'garden'],
+      'mechanical': ['mechanic', 'repair'],
+      'driving': ['driver', 'transport'],
+      'cooking': ['cook', 'chef'],
+      'teaching': ['teacher', 'education'],
+      'nursing': ['nurse', 'healthcare'],
+      'design': ['designer', 'designing']
+    };
+    
+    // Add direct mappings
+    if (skillMappings[lowerSkill]) {
+      variations.push(...skillMappings[lowerSkill]);
     }
+    
+    // Add common suffixes/prefixes
+    if (lowerSkill.endsWith('er')) {
+      const base = lowerSkill.slice(0, -2);
+      variations.push(base + 'ing', base);
+    }
+    if (lowerSkill.endsWith('ing')) {
+      const base = lowerSkill.slice(0, -3);
+      variations.push(base + 'er', base);
+    }
+    
+    return [...new Set(variations)]; // Remove duplicates
   }
+
+
 
   // Owner operations
   async getOwnerProfile(firebaseUid) {
     try {
-      return await Owner.findOne({ uid: firebaseUid });
+      return await ConsolidatedUser.findOne({ 
+        $and: [
+          { $or: [{ uid: firebaseUid }, { firebaseUid: firebaseUid }] },
+          { $or: [{ userType: 'owner' }, { role: 'owner' }] }
+        ]
+      });
     } catch (error) {
       console.error('Error getting owner profile:', error);
       throw error;
@@ -200,9 +218,9 @@ class MongoService {
 
   async saveOwnerProfile(firebaseUid, ownerData) {
     try {
-      return await Owner.findOneAndUpdate(
-        { uid: firebaseUid },
-        { ...ownerData, updatedAt: new Date() },
+      return await ConsolidatedUser.findOneAndUpdate(
+        { $or: [{ uid: firebaseUid }, { firebaseUid: firebaseUid }] },
+        { ...ownerData, updatedAt: new Date(), userType: 'owner' },
         { new: true, upsert: true }
       );
     } catch (error) {
@@ -310,7 +328,7 @@ class MongoService {
         const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
         const averageRating = totalRating / reviews.length;
         
-        await Worker.findByIdAndUpdate(workerId, {
+        await ConsolidatedUser.findByIdAndUpdate(workerId, {
           rating: Math.round(averageRating * 10) / 10,
           reviewCount: reviews.length
         });

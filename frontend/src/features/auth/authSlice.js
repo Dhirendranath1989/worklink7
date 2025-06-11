@@ -381,9 +381,21 @@ export const loadUserFromFirestore = createAsyncThunk(
   }
 );
 
-// Initialize state without localStorage dependency
+// Initialize state with localStorage data
+const getInitialUserData = () => {
+  try {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error('Error parsing user data from localStorage:', error);
+    return null;
+  }
+};
+
+const initialUserData = getInitialUserData();
+
 const initialState = {
-  user: null,
+  user: initialUserData,
   token: localStorage.getItem('token'),
   isLoading: false,
   isAuthenticated: !!localStorage.getItem('token'),
@@ -393,8 +405,8 @@ const initialState = {
     confirmationResult: null,
     phone: null,
   },
-  profileCompleted: false,
-  userType: null,
+  profileCompleted: initialUserData?.profileCompleted || false,
+  userType: initialUserData?.userType || initialUserData?.role || null,
 };
 
 // Add async thunk to initialize auth state from backend
@@ -530,6 +542,9 @@ const authSlice = createSlice({
           state.isAuthenticated = true;
           state.profileCompleted = userData?.profileCompleted || false;
           state.userType = userData?.userType || userData?.role || 'worker';
+          
+          // Update localStorage with fresh user data from backend
+          localStorage.setItem('user', JSON.stringify(userData));
         } else {
           state.user = null;
           state.isAuthenticated = false;

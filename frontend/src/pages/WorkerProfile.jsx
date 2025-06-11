@@ -574,7 +574,21 @@ const WorkerProfile = () => {
                 </div>
                 <div className="flex items-start text-gray-700 dark:text-gray-300">
                   <MapPinIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                  <span className="font-medium">{formattedWorker.address || formattedWorker.location || 'Address not specified'}</span>
+                  <div className="font-medium">
+                    {formattedWorker.address && (
+                      <div>{formattedWorker.address}</div>
+                    )}
+                    {(formattedWorker.state || formattedWorker.district || formattedWorker.city || formattedWorker.block) && (
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {[formattedWorker.block, formattedWorker.city, formattedWorker.district, formattedWorker.state]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </div>
+                    )}
+                    {!formattedWorker.address && !formattedWorker.state && !formattedWorker.district && !formattedWorker.city && !formattedWorker.block && (
+                      <span>Address not specified</span>
+                    )}
+                  </div>
                 </div>
               </div>
               

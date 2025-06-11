@@ -6,7 +6,7 @@ export const fetchProfile = createAsyncThunk(
   'profiles/fetchProfile',
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/profiles/${userId}`);
+      const response = await api.get(`/users/${userId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -18,7 +18,7 @@ export const updateProfile = createAsyncThunk(
   'profiles/updateProfile',
   async (profileData, { rejectWithValue }) => {
     try {
-      const response = await api.put('/profiles/me', profileData);
+      const response = await api.put('/auth/update-profile', profileData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -31,8 +31,8 @@ export const uploadProfileImage = createAsyncThunk(
   async (imageFile, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append('image', imageFile);
-      const response = await api.post('/profiles/upload-image', formData, {
+      formData.append('profilePhoto', imageFile);
+      const response = await api.put('/auth/update-profile', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -48,7 +48,7 @@ export const addPortfolioItem = createAsyncThunk(
   'profiles/addPortfolioItem',
   async (portfolioData, { rejectWithValue }) => {
     try {
-      const response = await api.post('/profiles/portfolio', portfolioData);
+      const response = await api.put('/auth/update-profile', portfolioData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -60,7 +60,7 @@ export const updatePortfolioItem = createAsyncThunk(
   'profiles/updatePortfolioItem',
   async ({ id, portfolioData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/profiles/portfolio/${id}`, portfolioData);
+      const response = await api.put('/auth/update-profile', portfolioData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -72,7 +72,7 @@ export const deletePortfolioItem = createAsyncThunk(
   'profiles/deletePortfolioItem',
   async (id, { rejectWithValue }) => {
     try {
-      await api.delete(`/profiles/portfolio/${id}`);
+      await api.put('/auth/update-profile', { removePortfolioItem: id });
       return id;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -84,7 +84,7 @@ export const updateAvailability = createAsyncThunk(
   'profiles/updateAvailability',
   async (availabilityData, { rejectWithValue }) => {
     try {
-      const response = await api.put('/profiles/availability', availabilityData);
+      const response = await api.put('/auth/update-profile', { availability: availabilityData });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data.message);

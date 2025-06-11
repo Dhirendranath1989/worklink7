@@ -70,15 +70,15 @@ export const authAPI = {
 };
 
 export const profileAPI = {
-  getProfile: (userId) => api.get(`/profiles/${userId}`),
-  updateProfile: (profileData) => api.put('/profiles/me', profileData),
-  uploadAvatar: (formData) => api.post('/profiles/avatar', formData, {
+  getProfile: (userId) => api.get(`/users/${userId}`),
+  updateProfile: (profileData) => api.put('/auth/update-profile', profileData),
+  uploadAvatar: (formData) => api.put('/auth/update-profile', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  addPortfolioItem: (portfolioData) => api.post('/profiles/portfolio', portfolioData),
-  updatePortfolioItem: (itemId, portfolioData) => api.put(`/profiles/portfolio/${itemId}`, portfolioData),
-  deletePortfolioItem: (itemId) => api.delete(`/profiles/portfolio/${itemId}`),
-  updateAvailability: (availability) => api.put('/profiles/availability', availability),
+  addPortfolioItem: (portfolioData) => api.put('/auth/update-profile', portfolioData),
+  updatePortfolioItem: (itemId, portfolioData) => api.put('/auth/update-profile', portfolioData),
+  deletePortfolioItem: (itemId) => api.put('/auth/update-profile', { removePortfolioItem: itemId }),
+  updateAvailability: (availability) => api.put('/auth/update-profile', { availability }),
 
   getEarnings: (period) => api.get(`/profiles/earnings?period=${period}`),
 };
@@ -95,13 +95,7 @@ export const jobsAPI = {
   applyToJob: (jobId, applicationData) => api.post(`/jobs/${jobId}/apply`, applicationData),
   getApplications: (jobId) => api.get(`/jobs/${jobId}/applications`),
   updateApplicationStatus: (applicationId, status) => api.patch(`/applications/${applicationId}`, { status }),
-  searchWorkers: (searchParams) => {
-    const params = new URLSearchParams(searchParams).toString();
-    return api.get(`/search/workers?${params}`);
-  },
-  saveSearch: (searchData) => api.post('/searches', searchData),
-  getSavedSearches: () => api.get('/searches'),
-  deleteSavedSearch: (searchId) => api.delete(`/searches/${searchId}`),
+
 };
 
 export const chatAPI = {
@@ -136,6 +130,12 @@ export const savedWorkersAPI = {
   saveWorker: (workerId) => api.post(`/saved-workers/${workerId}`),
   removeSavedWorker: (workerId) => api.delete(`/saved-workers/${workerId}`),
   checkIfWorkerSaved: (workerId) => api.get(`/saved-workers/check/${workerId}`),
+};
+
+export const workerSearchAPI = {
+  searchWorkers: (params) => api.get('/workers/search', { params }),
+  getWorkerProfile: (workerId) => api.get(`/workers/${workerId}`),
+  getWorkerPosts: (workerId, params) => api.get(`/workers/${workerId}/posts`, { params }),
 };
 
 export const adminAPI = {

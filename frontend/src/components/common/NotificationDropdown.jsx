@@ -121,10 +121,10 @@ const NotificationDropdown = ({ children }) => {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-96 overflow-hidden">
+              <Menu.Items className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-600 focus:outline-none max-h-96 overflow-hidden border dark:border-gray-700">
                 {/* Header */}
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllAsRead}
@@ -140,21 +140,21 @@ const NotificationDropdown = ({ children }) => {
                   {isLoading ? (
                     <div className="px-4 py-8 text-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
-                      <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Loading notifications...</p>
                     </div>
                   ) : notifications.length === 0 ? (
                     <div className="px-4 py-8 text-center">
                       <BellIcon className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500">No notifications yet</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
                     </div>
                   ) : (
                     notifications.slice(0, 10).map((notification) => (
                       <Menu.Item key={notification._id}>
                         {({ active }) => (
                           <div
-                            className={`px-4 py-3 border-b border-gray-50 last:border-b-0 cursor-pointer ${
-                              active ? 'bg-gray-50' : ''
-                            } ${!notification.read ? 'bg-blue-50' : ''}`}
+                            className={`px-4 py-3 border-b border-gray-50 dark:border-gray-700 last:border-b-0 cursor-pointer ${
+                              active ? 'bg-gray-50 dark:bg-gray-700' : ''
+                            } ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                             onClick={() => handleNotificationClick(notification)}
                           >
                             <div className="flex items-start space-x-3">
@@ -167,13 +167,13 @@ const NotificationDropdown = ({ children }) => {
 
                               {/* Content */}
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                   {notification.title}
                                 </p>
-                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                                   {notification.message}
                                 </p>
-                                <p className="text-xs text-gray-400 mt-1">
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                   {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                 </p>
                               </div>
@@ -186,7 +186,7 @@ const NotificationDropdown = ({ children }) => {
                                       e.stopPropagation();
                                       handleMarkAsRead(notification._id);
                                     }}
-                                    className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                                     title="Mark as read"
                                   >
                                     <EyeIcon className="h-4 w-4" />
@@ -197,7 +197,7 @@ const NotificationDropdown = ({ children }) => {
                                     e.stopPropagation();
                                     handleDelete(notification._id);
                                   }}
-                                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                  className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                                   title="Delete"
                                 >
                                   <XMarkIcon className="h-4 w-4" />
@@ -213,8 +213,8 @@ const NotificationDropdown = ({ children }) => {
 
                 {/* Footer */}
                 {notifications.length > 0 && (
-                  <div className="px-4 py-3 border-t border-gray-100">
-                    <button className="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
+                  <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+                    <button className="w-full text-center text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
                       View all notifications
                     </button>
                   </div>
