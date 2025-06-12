@@ -21,6 +21,25 @@ const OwnerSchema = new mongoose.Schema({
   address: {
     type: String
   },
+  state: {
+    type: String
+  },
+  district: {
+    type: String
+  },
+  city: {
+    type: String
+  },
+  block: {
+    type: String
+  },
+  pincode: {
+    type: String
+  },
+  languagesSpoken: {
+    type: [String],
+    default: []
+  },
   bio: {
     type: String
   },

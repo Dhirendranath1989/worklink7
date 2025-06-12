@@ -58,25 +58,9 @@ const OwnerDashboard = () => {
 
 
   const [activeTab, setActiveTab] = useState('profile');
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  
   // Add search state variables
   const [searchSkill, setSearchSkill] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
-
-  const [profileData, setProfileData] = useState({
-    fullName: user?.name || user?.fullName || user?.firstName || user?.displayName || '',
-    mobile: user?.mobile || '',
-    email: user?.email || '',
-    address: user?.address || '',
-    state: user?.state || '',
-    district: user?.district || '',
-    city: user?.city || '',
-    block: user?.block || '',
-    pincode: user?.pincode || '',
-    languagesSpoken: user?.languagesSpoken || [],
-    profilePhoto: user?.profilePhoto || ''
-  });
   const [showEditProfile, setShowEditProfile] = useState(false);
 
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -324,30 +308,11 @@ const OwnerDashboard = () => {
   // Removed manual dark mode manipulation to prevent conflicts
 
   // Update profile data when user data changes
-  useEffect(() => {
-    if (user) {
-      setProfileData({
-        fullName: user?.name || user?.fullName || user?.firstName || user?.displayName || '',
-        mobile: user?.mobile || '',
-        email: user?.email || '',
-        address: user?.address || '',
-        state: user?.state || '',
-        district: user?.district || '',
-        city: user?.city || '',
-        block: user?.block || '',
-        pincode: user?.pincode || '',
-        languagesSpoken: user?.languagesSpoken || [],
-        profilePhoto: user?.profilePhoto || ''
-      });
-    }
-  }, [user]);
-
   // Debug logging for user data
   useEffect(() => {
     console.log('Owner Dashboard - User object:', user);
     console.log('Owner Dashboard - ProfilePhoto:', user?.profilePhoto);
-    console.log('Owner Dashboard - ProfileData:', profileData);
-  }, [user, profileData]);
+  }, [user]);
 
   // Mock data for demonstration
   const stats = [
@@ -464,68 +429,7 @@ const OwnerDashboard = () => {
     }
   };
 
-  const handleProfileUpdate = async () => {
-    try {
-      console.log('Starting profile update...');
-      console.log('Profile data to update:', profileData);
-      
-      const formData = new FormData();
-      
-      // Add all profile data to formData
-      Object.keys(profileData).forEach(key => {
-        if (key === 'profilePhoto' && profileData[key] instanceof File) {
-          console.log('Adding profile photo file:', profileData[key]);
-          formData.append(key, profileData[key]);
-        } else if (key !== 'profilePhoto') {
-          console.log(`Adding field ${key}:`, profileData[key]);
-          formData.append(key, profileData[key]);
-        }
-      });
-      
-      console.log('FormData entries:');
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-      
-      const token = localStorage.getItem('token');
-      console.log('Using token:', token ? 'Token exists' : 'No token found');
 
-      const response = await fetch('http://localhost:5000/api/owner/profile', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
-      });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        // Update user in Redux store if needed
-        setIsEditingProfile(false);
-        toast.success('Profile updated successfully!');
-        
-        // Refresh profile data
-        window.location.reload();
-      } else {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        console.error('API Error Response:', errorData);
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile. Please try again.');
-    }
-  };
-
-  const handleProfilePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfileData(prev => ({
-        ...prev,
-        profilePhoto: file
-      }));
-    }
-  };
 
   const renderOverview = () => (
     <div className="space-y-8">
@@ -680,11 +584,11 @@ const OwnerDashboard = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Profile Information</h2>
           <button
-            onClick={() => setIsEditingProfile(!isEditingProfile)}
+            onClick={() => setShowEditProfile(true)}
             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             <PencilIcon className="h-4 w-4 mr-2" />
-            {isEditingProfile ? 'Cancel' : 'Edit Profile'}
+            Edit Profile
           </button>
         </div>
       </div>
@@ -697,33 +601,16 @@ const OwnerDashboard = () => {
                 <img
                   className="h-32 w-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                   src={
-                    profileData.profilePhoto instanceof File 
-                      ? URL.createObjectURL(profileData.profilePhoto)
-                      : profileData.profilePhoto 
-                        ? `http://localhost:5000${profileData.profilePhoto}` 
-                        : DEFAULT_AVATAR_128
+                    user?.profilePhoto 
+                      ? (user.profilePhoto.startsWith('http') 
+                          ? user.profilePhoto 
+                          : `http://localhost:5000${user.profilePhoto}`)
+                      : DEFAULT_AVATAR_128
                   }
                   alt="Profile"
                 />
-                {isEditingProfile && (
-                  <>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleProfilePhotoChange}
-                      className="hidden"
-                      id="profile-photo-upload"
-                    />
-                    <label
-                      htmlFor="profile-photo-upload"
-                      className="absolute bottom-0 right-0 bg-blue-600 dark:bg-blue-500 rounded-full p-2 text-white hover:bg-blue-700 dark:hover:bg-blue-600 cursor-pointer"
-                    >
-                      <CameraIcon className="h-4 w-4" />
-                    </label>
-                  </>
-                )}
               </div>
-              <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">{profileData.fullName}</h3>
+              <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">{user?.fullName || user?.name || 'Owner'}</h3>
               <p className="text-gray-600 dark:text-gray-400">Job Owner</p>
             </div>
           </div>
@@ -735,103 +622,58 @@ const OwnerDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Full Name
                 </label>
-                {isEditingProfile ? (
-                  <input
-                    type="text"
-                    value={profileData.fullName}
-                    onChange={(e) => setProfileData({...profileData, fullName: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  />
-                ) : (
-                  <p className="text-gray-900 dark:text-gray-100">{profileData.fullName}</p>
-                )}
+                <p className="text-gray-900 dark:text-gray-100">{user?.fullName || user?.name || 'Not provided'}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Mobile Number
                 </label>
-                {isEditingProfile ? (
-                  <input
-                    type="tel"
-                    value={profileData.mobile}
-                    onChange={(e) => setProfileData({...profileData, mobile: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  />
-                ) : (
-                  <div className="flex items-center">
-                    <PhoneIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                    <p className="text-gray-900 dark:text-gray-100">{profileData.mobile}</p>
-                  </div>
-                )}
+                <div className="flex items-center">
+                  <PhoneIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
+                  <p className="text-gray-900 dark:text-gray-100">{user?.mobile || 'Not provided'}</p>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email Address
                 </label>
-                {isEditingProfile ? (
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  />
-                ) : (
-                  <div className="flex items-center">
-                    <EnvelopeIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                    <p className="text-gray-900 dark:text-gray-100">{profileData.email}</p>
-                  </div>
-                )}
+                <div className="flex items-center">
+                  <EnvelopeIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
+                  <p className="text-gray-900 dark:text-gray-100">{user?.email || 'Not provided'}</p>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Pincode
                 </label>
-                {isEditingProfile ? (
-                  <input
-                    type="text"
-                    value={profileData.pincode}
-                    onChange={(e) => setProfileData({...profileData, pincode: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  />
-                ) : (
-                  <p className="text-gray-900 dark:text-gray-100">{profileData.pincode}</p>
-                )}
+                <p className="text-gray-900 dark:text-gray-100">{user?.pincode || 'Not provided'}</p>
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Address
                 </label>
-                {isEditingProfile ? (
-                  <textarea
-                    value={profileData.address}
-                    onChange={(e) => setProfileData({...profileData, address: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  />
-                ) : (
-                  <div className="flex items-start">
-                    <MapPinIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2 mt-1" />
-                    <div className="text-gray-900 dark:text-gray-100">
-                      {profileData.address && (
-                        <div>{profileData.address}</div>
-                      )}
-                      {(profileData.state || profileData.district || profileData.city || profileData.block) && (
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {[profileData.block, profileData.city, profileData.district, profileData.state]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </div>
-                      )}
-                      {!profileData.address && !profileData.state && !profileData.district && !profileData.city && !profileData.block && (
-                        <span>Address not specified</span>
-                      )}
-                    </div>
+                <div className="flex items-start">
+                  <MapPinIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2 mt-1" />
+                  <div className="text-gray-900 dark:text-gray-100">
+                    {user?.address && (
+                      <div>{user.address}</div>
+                    )}
+                    {(user?.state || user?.district || user?.city || user?.block) && (
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {[user?.block, user?.city, user?.district, user?.state]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </div>
+                    )}
+                    {!user?.address && !user?.state && !user?.district && !user?.city && !user?.block && (
+                      <span>Address not specified</span>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Languages Spoken */}
@@ -839,49 +681,28 @@ const OwnerDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Languages Spoken
                 </label>
-                {isEditingProfile ? (
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Languages can be updated in your profile settings
+                <div className="flex items-start">
+                  <div className="text-gray-900 dark:text-gray-100">
+                    {user?.languagesSpoken && user.languagesSpoken.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {user.languagesSpoken.map((language, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                          >
+                            {language}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-500 dark:text-gray-400">No languages specified</span>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex items-start">
-                    <div className="text-gray-900 dark:text-gray-100">
-                      {profileData.languagesSpoken && profileData.languagesSpoken.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {profileData.languagesSpoken.map((language, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
-                            >
-                              {language}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-500 dark:text-gray-400">No languages specified</span>
-                      )}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
 
-            {isEditingProfile && (
-              <div className="mt-6 flex space-x-3">
-                <button
-                  onClick={handleProfileUpdate}
-                  className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                >
-                  Save Changes
-                </button>
-                <button
-                  onClick={() => setIsEditingProfile(false)}
-                  className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
+
           </div>
         </div>
       </div>

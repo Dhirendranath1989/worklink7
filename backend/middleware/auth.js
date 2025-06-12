@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const config = require('config'); // or however you store JWT_SECRET
 
 const authenticateToken = function(req, res, next) {
   // Get token from header
@@ -15,10 +14,12 @@ const authenticateToken = function(req, res, next) {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || config.get('jwtSecret'));
-    req.user = decoded.user;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    req.user = decoded;
+    console.log('Auth middleware - decoded user:', decoded);
     next();
   } catch (err) {
+    console.error('Auth middleware error:', err.message);
     res.status(401).json({ 
       success: false, 
       message: 'Token is not valid' 

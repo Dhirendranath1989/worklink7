@@ -78,12 +78,16 @@ const savedWorkersSlice = createSlice({
       })
       .addCase(fetchSavedWorkers.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.savedWorkers = action.payload;
+        // Handle the response structure { success: true, savedWorkers: [...] }
+        const savedWorkers = action.payload.savedWorkers || action.payload;
+        state.savedWorkers = Array.isArray(savedWorkers) ? savedWorkers : [];
         // Update checkedWorkers for quick lookup
         state.checkedWorkers = {};
-        action.payload.forEach(worker => {
-          state.checkedWorkers[worker._id || worker.id] = true;
-        });
+        if (Array.isArray(savedWorkers)) {
+          savedWorkers.forEach(worker => {
+            state.checkedWorkers[worker._id || worker.id] = true;
+          });
+        }
       })
       .addCase(fetchSavedWorkers.rejected, (state, action) => {
         state.isLoading = false;
@@ -94,9 +98,12 @@ const savedWorkersSlice = createSlice({
         state.error = null;
       })
       .addCase(saveWorker.fulfilled, (state, action) => {
-        const worker = action.payload;
-        state.savedWorkers.push(worker);
-        state.checkedWorkers[worker._id || worker.id] = true;
+        // Handle the response structure { success: true, message: '...', worker: {...} }
+        const worker = action.payload.worker || action.payload;
+        if (worker && (worker._id || worker.id)) {
+          state.savedWorkers.push(worker);
+          state.checkedWorkers[worker._id || worker.id] = true;
+        }
       })
       .addCase(saveWorker.rejected, (state, action) => {
         state.error = action.payload;

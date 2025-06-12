@@ -208,6 +208,7 @@ app.use('/api/posts', postsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/workers', workersRouter);
 app.use('/api/owner', require('./routes/owner'));
+app.use('/api/saved-workers', require('./routes/saved-workers'));
 
 
 // Test route

@@ -197,9 +197,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
         newErrors.hourlyRate = 'Please enter a valid hourly rate';
       }
     } else if (userType === 'owner') {
-      if (!formData.businessName.trim()) {
-        newErrors.businessName = 'Business name is required';
-      }
+      // Business name is now optional
       if (!formData.businessType.trim()) {
         newErrors.businessType = 'Business type is required';
       }
@@ -237,15 +235,18 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
         formDataToSend.append('profilePhoto', profilePhotoFile);
       }
 
-      // Work photos
-      workPhotosFiles.forEach(file => {
-        formDataToSend.append('workPhotos', file);
-      });
+      // Work photos and certificates only for workers
+      if (userType === 'worker') {
+        // Work photos
+        workPhotosFiles.forEach(file => {
+          formDataToSend.append('workPhotos', file);
+        });
 
-      // Certificates
-      certificatesFiles.forEach(file => {
-        formDataToSend.append('certificates', file);
-      });
+        // Certificates
+        certificatesFiles.forEach(file => {
+          formDataToSend.append('certificates', file);
+        });
+      }
 
       const response = await fetch('http://localhost:5000/api/auth/update-profile', {
         method: 'PUT',
@@ -632,106 +633,110 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
                 />
               </div>
 
-              {/* Work Photos Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Work Photos
-                </label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
-                  <div className="text-center">
-                    <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="mt-4">
-                      <label className="cursor-pointer">
-                        <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-100">
-                          Upload work photos
-                        </span>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          onChange={handleWorkPhotosChange}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG, GIF up to 10MB each
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Work Photos Preview */}
-                {previewWorkPhotos.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {previewWorkPhotos.map((photo, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={photo}
-                          alt={`Work ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeWorkPhoto(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <XMarkIcon className="h-4 w-4" />
-                        </button>
+              {/* Work Photos Section - Only for workers */}
+              {userType === 'worker' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Work Photos
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+                    <div className="text-center">
+                      <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="mt-4">
+                        <label className="cursor-pointer">
+                          <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Upload work photos
+                          </span>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleWorkPhotosChange}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Certificates Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Document & ID Proof
-                </label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
-                  <div className="text-center">
-                    <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="mt-4">
-                      <label className="cursor-pointer">
-                        <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-100">
-                          Upload documents
-                        </span>
-                        <input
-                          type="file"
-                          multiple
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={handleCertificatesChange}
-                          className="hidden"
-                        />
-                      </label>
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        PNG, JPG, GIF up to 10MB each
+                      </p>
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      PDF, PNG, JPG up to 10MB each
-                    </p>
                   </div>
-                </div>
-                
-                {/* Certificates Preview */}
-                {certificatesFiles.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {certificatesFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <UserIcon className="h-5 w-5 text-blue-600" />
-                          <span className="text-sm text-gray-900 dark:text-gray-100 truncate">{file.name}</span>
+                  
+                  {/* Work Photos Preview */}
+                  {previewWorkPhotos.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {previewWorkPhotos.map((photo, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={photo}
+                            alt={`Work ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeWorkPhoto(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <XMarkIcon className="h-4 w-4" />
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeCertificate(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Certificates Section - Only for workers */}
+              {userType === 'worker' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Document & ID Proof
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+                    <div className="text-center">
+                      <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="mt-4">
+                        <label className="cursor-pointer">
+                          <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Upload documents
+                          </span>
+                          <input
+                            type="file"
+                            multiple
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={handleCertificatesChange}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
-                    ))}
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        PDF, PNG, JPG up to 10MB each
+                      </p>
+                    </div>
                   </div>
-                )}
-              </div>
+                  
+                  {/* Certificates Preview */}
+                  {certificatesFiles.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      {certificatesFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <UserIcon className="h-5 w-5 text-blue-600" />
+                            <span className="text-sm text-gray-900 dark:text-gray-100 truncate">{file.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeCertificate(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -739,7 +744,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Business Name *
+                  Business Name
                 </label>
                 <input
                   type="text"
@@ -767,6 +772,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
                   }`}
                 >
                   <option value="">Select business type</option>
+                  <option value="individual">Individual</option>
                   <option value="construction">Construction</option>
                   <option value="renovation">Renovation</option>
                   <option value="maintenance">Maintenance</option>
