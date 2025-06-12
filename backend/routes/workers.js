@@ -233,15 +233,19 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/posts', async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('Fetching posts for worker ID:', id);
     
     // Check if worker exists
     const worker = await ConsolidatedUser.findById(id);
     if (!worker) {
+      console.log('Worker not found with ID:', id);
       return res.status(404).json({
         success: false,
         message: 'Worker not found'
       });
     }
+    
+    console.log('Worker found:', worker.fullName || worker.firstName + ' ' + worker.lastName);
     
     // Pagination
     const page = parseInt(req.query.page) || 1;
@@ -249,12 +253,33 @@ router.get('/:id/posts', async (req, res) => {
     const skip = (page - 1) * limit;
     
     // Get posts from database with pagination
-    const workerPosts = await Post.find({ 'author._id': id })
+    // Try both possible author ID formats
+    const workerPosts = await Post.find({ 
+      $or: [
+        { 'author._id': id },
+        { 'author._id': id.toString() },
+        { authorId: id },
+        { authorId: id.toString() }
+      ]
+    })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
     
-    const totalPosts = await Post.countDocuments({ 'author._id': id });
+    const totalPosts = await Post.countDocuments({ 
+      $or: [
+        { 'author._id': id },
+        { 'author._id': id.toString() },
+        { authorId: id },
+        { authorId: id.toString() }
+      ]
+    });
+    
+    console.log('Posts found for worker:', workerPosts.length);
+    console.log('Total posts count:', totalPosts);
+    if (workerPosts.length > 0) {
+      console.log('Sample post author:', workerPosts[0].author);
+    }
     
     res.json({
       success: true,

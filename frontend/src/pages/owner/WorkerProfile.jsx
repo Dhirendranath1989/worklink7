@@ -213,8 +213,18 @@ const WorkerProfile = () => {
       setPostsLoading(true);
       const response = await workerSearchAPI.getWorkerPosts(workerId, { page: 1, limit: 10 });
       
-      if (response.data.success) {
+      console.log('Worker posts response:', response.data);
+      
+      // Handle different response structures
+      if (response.data && response.data.success) {
         setPosts(response.data.posts || []);
+      } else if (response.data && Array.isArray(response.data.posts)) {
+        setPosts(response.data.posts);
+      } else if (response.data && Array.isArray(response.data)) {
+        setPosts(response.data);
+      } else {
+        setPosts([]);
+        console.warn('Unexpected response format for worker posts:', response.data);
       }
     } catch (error) {
       console.error('Error fetching worker posts:', error);
