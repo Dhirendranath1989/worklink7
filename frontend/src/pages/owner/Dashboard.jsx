@@ -17,7 +17,7 @@ import {
   CameraIcon,
   PencilIcon,
   BookmarkIcon,
-  ChatBubbleLeftRightIcon,
+
   MagnifyingGlassIcon,
   BellIcon,
   Cog6ToothIcon,
@@ -35,14 +35,14 @@ import {
   BookmarkIcon as BookmarkIconSolid
 } from '@heroicons/react/24/solid';
 import { fetchJobs } from '../../features/jobs/jobsSlice';
-import { createConversation } from '../../features/chat/chatSlice';
+
 import { fetchSavedWorkers } from '../../features/savedWorkers/savedWorkersSlice';
 import { setCredentials } from '../../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
 import EditProfile from '../../components/EditProfile';
 
 import { CreatePostModal, PostCard } from '../../components/Post';
-import { useChatPopup } from '../../hooks/useChatPopup';
+
 
 // Default avatar constants
 const DEFAULT_AVATAR_128 = "data:image/svg+xml,%3Csvg width='128' height='128' viewBox='0 0 128 128' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='128' height='128' fill='%23CCCCCC' rx='64'/%3E%3Cpath d='M64 42.67c7.04 0 12.8 5.76 12.8 12.8s-5.76 12.8-12.8 12.8-12.8-5.76-12.8-12.8 5.76-12.8 12.8-12.8zm0 59.73c-14.08 0-25.6-7.25-25.6-17.07 0-9.81 11.52-17.06 25.6-17.06s25.6 7.25 25.6 17.06c0 9.82-11.52 17.07-25.6 17.07z' fill='%23666666'/%3E%3C/svg%3E";
@@ -52,10 +52,10 @@ const OwnerDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const { unreadCount: chatUnreadCount } = useSelector((state) => state.chat);
+
   const { jobs, loading } = useSelector((state) => state.jobs);
   const { savedWorkers, isLoading: savedWorkersLoading } = useSelector((state) => state.savedWorkers);
-  const { openChatGeneral, openChatPopup } = useChatPopup();
+
 
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -248,60 +248,7 @@ const OwnerDashboard = () => {
     }
   };
 
-  // Handle contacting a worker
-  const handleContactWorker = async (worker) => {
-    if (!user) {
-      toast.error('Please login to contact the worker');
-      return;
-    }
 
-    if (user.role !== 'owner') {
-      toast.error('Only owners can contact workers');
-      return;
-    }
-
-    if (!worker) {
-      toast.error('Worker information not available');
-      return;
-    }
-    
-    const workerId = worker._id || worker.id;
-    if (!workerId) {
-      toast.error('Worker ID not found');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Please login to continue');
-        return;
-      }
-
-      console.log('Creating conversation with worker:', workerId);
-      
-      // Use Redux action to create conversation
-      const resultAction = await dispatch(createConversation({
-        participantId: workerId,
-        initialMessage: `Hi ${worker.firstName || worker.name}, I'm interested in your services. Could we discuss a potential project?`
-      }));
-      
-      if (createConversation.fulfilled.match(resultAction)) {
-        const conversation = resultAction.payload;
-        console.log('Conversation created successfully:', conversation);
-        
-        // Open chat popup with the new conversation
-        openChatPopup(conversation);
-        toast.success('Conversation started successfully!');
-      } else {
-        console.error('Failed to create conversation:', resultAction.error);
-        toast.error(resultAction.error?.message || 'Failed to start conversation');
-      }
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      toast.error('Failed to start conversation. Please try again.');
-    }
-  };
 
   useEffect(() => {
     dispatch(fetchJobs());
@@ -685,9 +632,6 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-500">
-                      <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                    </button>
                     <button className="text-red-500 hover:text-red-400">
                       <HeartIconSolid className="h-5 w-5" />
                     </button>
@@ -723,21 +667,7 @@ const OwnerDashboard = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400">Find skilled workers</p>
             </div>
           </Link>
-          <button
-            onClick={openChatGeneral}
-            className="flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-500 transition-all w-full text-left relative"
-          >
-            <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-3" />
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Messages</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Chat with workers</p>
-            </div>
-            {chatUnreadCount > 0 && (
-              <span className="absolute top-2 right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
-              </span>
-            )}
-          </button>
+
 
         </div>
       </div>
@@ -1011,9 +941,7 @@ const OwnerDashboard = () => {
                     <button className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
                       <EyeIcon className="h-5 w-5" />
                     </button>
-                    <button className="text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300">
-                      <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                    </button>
+
                   </div>
                 </div>
               </div>
@@ -1084,9 +1012,7 @@ const OwnerDashboard = () => {
                 <button className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-700">
                   Send Job Request
                 </button>
-                <button className="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm hover:bg-gray-200">
-                  <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                </button>
+
                 <button className="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm hover:bg-gray-200">
                   <PhoneIcon className="h-4 w-4" />
                 </button>

@@ -11,6 +11,7 @@ import {
   FaHeart,
   FaRegHeart,
   FaComment,
+  FaCommentDots,
   FaBriefcase,
   FaArrowLeft,
   FaDownload,
@@ -34,11 +35,12 @@ import {
   FaFileAlt,
   FaUserCheck
 } from 'react-icons/fa';
-import { HeartIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
 import { workerSearchAPI, reviewAPI } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+
 
 const WorkerProfile = () => {
   const { workerId } = useParams();
@@ -111,8 +113,9 @@ const WorkerProfile = () => {
       return photoPath;
     }
     
-    // Otherwise, prepend the backend URL
-    return `http://localhost:5000${photoPath}`;
+    // Otherwise, prepend the backend URL with proper path handling
+    const cleanPath = photoPath.startsWith('/') ? photoPath : `/${photoPath}`;
+    return `http://localhost:5000${cleanPath}`;
   };
   
   // Core state
@@ -144,6 +147,8 @@ const WorkerProfile = () => {
   const [showComments, setShowComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [isSubmittingComment, setIsSubmittingComment] = useState({});
+  
+
   
   // Get current user from Redux store
   const { user } = useSelector((state) => state.auth);
@@ -367,11 +372,7 @@ const WorkerProfile = () => {
     setShowImageModal(true);
   };
 
-  // Action handlers
-  const handleContact = () => {
-    toast.info('Redirecting to chat...');
-    // TODO: Implement chat functionality
-  };
+
 
   const handleReview = () => {
     setShowReviewModal(true);
@@ -565,8 +566,12 @@ const WorkerProfile = () => {
                         alt={getWorkerName(worker)}
                         className="w-full h-full object-cover"
                         onError={(e) => {
+                          console.log('Profile image failed to load:', getWorkerProfileImage(worker));
                           e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+                          const fallbackDiv = e.target.nextElementSibling;
+                          if (fallbackDiv) {
+                            fallbackDiv.style.display = 'flex';
+                          }
                         }}
                       />
                     ) : null}
@@ -655,28 +660,48 @@ const WorkerProfile = () => {
               
               {/* Right: Action Buttons */}
               <div className="flex flex-col gap-3 min-w-fit">
+
                 <button
-                  onClick={handleContact}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                  onClick={() => {
+                    const phoneNumber = worker.phone || worker.mobile || worker.mobileNumber || worker.phoneNumber || worker.mobileNo || worker.cellphone;
+                    if (phoneNumber) {
+                      const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
+                      const whatsappUrl = `https://wa.me/91${cleanNumber}?text=Hi, I found your profile on WorkLink and would like to discuss a potential project.`;
+                      window.open(whatsappUrl, '_blank');
+                    } else {
+                      toast.error('Phone number not available');
+                    }
+                  }}
+                  className="text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                  style={{ backgroundColor: '#15ce9e' }}
                 >
-                  <FaComment className="text-lg" />
+                  <FaCommentDots className="text-lg" />
                   <span>Contact</span>
                 </button>
-                
+
                 <button
                   onClick={handleReview}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
                 >
                   <FaStar className="text-lg" />
                   <span>Leave Review</span>
                 </button>
                 
                 <button
-                  onClick={handleHire}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                  onClick={() => {
+                    const phoneNumber = worker.phone || worker.mobile || worker.mobileNumber || worker.phoneNumber || worker.mobileNo || worker.cellphone;
+                    if (phoneNumber) {
+                      const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
+                      window.location.href = `tel:+91${cleanNumber}`;
+                    } else {
+                      toast.error('Phone number not available');
+                    }
+                  }}
+                  className="text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold"
+                  style={{ backgroundColor: '#17d33c' }}
                 >
-                  <FaBriefcase className="text-lg" />
-                  <span>Hire Now</span>
+                  <FaPhone className="text-lg" />
+                  <span>Call Now</span>
                 </button>
                 
                 {/* Secondary Actions */}
@@ -908,6 +933,8 @@ const WorkerProfile = () => {
           </div>
         </div>
       )}
+      
+
     </div>
   );
 };
@@ -1431,7 +1458,9 @@ const PostsTab = ({ posts, loading, user, showComments, newComment, isSubmitting
                     onClick={() => toggleComments(post._id)}
                     className="flex items-center text-sm text-gray-500 hover:text-blue-500 transition-all duration-200 transform hover:scale-105"
                   >
-                    <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
+                    <svg className="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
                     {post.comments?.length || 0} comments
                   </button>
                   

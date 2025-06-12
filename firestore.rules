@@ -97,18 +97,8 @@ service cloud.firestore {
                        resource.data.reviewerId == request.auth.uid;
     }
     
-    // Messages collection for chat functionality
-    match /messages/{messageId} {
-      allow read, write: if isAuthenticated() && 
-                            (resource.data.senderId == request.auth.uid || 
-                             resource.data.receiverId == request.auth.uid);
-    }
     
-    // Conversations collection
-    match /conversations/{conversationId} {
-      allow read, write: if isAuthenticated() && 
-                            request.auth.uid in resource.data.participants;
-    }
+
     
     // Notifications collection
     match /notifications/{notificationId} {

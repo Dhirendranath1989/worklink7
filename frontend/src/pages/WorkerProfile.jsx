@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { MapPinIcon, CalendarIcon, CheckBadgeIcon, HeartIcon, ChatBubbleLeftIcon, PhoneIcon, StarIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, CalendarIcon, CheckBadgeIcon, HeartIcon, PhoneIcon, StarIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { reviewAPI, workerSearchAPI } from '../services/api';
 import { fetchProfile } from '../features/profiles/profilesSlice';
-import { createConversation } from '../features/chat/chatSlice';
+
 import { saveWorker, removeSavedWorker, checkIfWorkerSaved } from '../features/savedWorkers/savedWorkersSlice';
 import { toast } from 'react-hot-toast';
-import { useChatPopup } from '../hooks/useChatPopup';
+
 import MediaPreview from '../components/MediaPreview';
 import ImageViewer from '../components/ImageViewer';
 
@@ -17,7 +17,7 @@ const WorkerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { openChatPopup } = useChatPopup();
+
 
   const { viewedProfile, isLoading, error } = useSelector((state) => state.profiles);
   const { checkedWorkers } = useSelector((state) => state.savedWorkers);
@@ -164,66 +164,7 @@ const WorkerProfile = () => {
     // Add actual hire logic here
   };
 
-  const handleContactWorker = async () => {
-    if (!user) {
-      toast.error('Please login to contact the worker');
-      return;
-    }
 
-    if (user.role !== 'owner') {
-      toast.error('Only owners can contact workers');
-      return;
-    }
-
-    // Debug logging
-    console.log('handleContactWorker - viewedProfile:', viewedProfile);
-    console.log('handleContactWorker - viewedProfile._id:', viewedProfile?._id);
-    console.log('handleContactWorker - viewedProfile.id:', viewedProfile?.id);
-    
-    if (!viewedProfile) {
-      toast.error('Worker profile not loaded. Please try again.');
-      return;
-    }
-    
-    // Check for both _id and id properties
-    const workerId = viewedProfile._id || viewedProfile.id;
-    if (!workerId) {
-      toast.error('Worker profile ID not found. Please try again.');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Please login to continue');
-        return;
-      }
-
-      console.log('Creating conversation with worker:', workerId);
-      
-      // Use Redux action to create conversation
-      const resultAction = await dispatch(createConversation({
-        participantId: workerId,
-        initialMessage: `Hi ${viewedProfile.firstName || viewedProfile.name}, I'm interested in your services. Could we discuss a potential project?`
-      }));
-      
-      if (createConversation.fulfilled.match(resultAction)) {
-        const conversation = resultAction.payload;
-        console.log('Conversation created successfully via Redux:', conversation);
-        console.log('Conversation ID:', conversation._id);
-        
-        // Open chat popup with the new conversation
-        openChatPopup(conversation);
-        toast.success('Conversation started successfully!');
-      } else {
-        console.error('Failed to create conversation:', resultAction.error);
-        toast.error(resultAction.error?.message || 'Failed to start conversation');
-      }
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      toast.error('Failed to start conversation. Please try again.');
-    }
-  };
 
   const handleSaveProfile = async () => {
     if (!user) {
@@ -621,14 +562,6 @@ const WorkerProfile = () => {
             </button>
 
             <button
-              onClick={handleContactWorker}
-              className="bg-green-600 dark:bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors flex items-center"
-            >
-              <ChatBubbleLeftIcon className="h-4 w-4 mr-2" />
-              Message Now
-            </button>
-
-            <button
               onClick={handleSaveProfile}
               className={`px-6 py-2 rounded-lg transition-colors flex items-center ${
                 isSaved 
@@ -948,7 +881,7 @@ const WorkerProfile = () => {
                   {/* Response Time */}
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                     <div className="flex items-center mb-4">
-                      <ChatBubbleLeftIcon className="h-5 w-5 text-green-500 dark:text-green-400 mr-2" />
+                      <CalendarIcon className="h-5 w-5 text-green-500 dark:text-green-400 mr-2" />
                       <h4 className="font-medium text-gray-900 dark:text-gray-100">Response Time</h4>
                     </div>
                     <div className="flex items-center">
@@ -958,7 +891,7 @@ const WorkerProfile = () => {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                      Average time to respond to messages
+                      Response time for inquiries
                     </p>
                   </div>
                   
@@ -990,10 +923,7 @@ const WorkerProfile = () => {
                         <PhoneIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                         <span className="text-gray-700 dark:text-gray-300">Phone/WhatsApp</span>
                       </div>
-                      <div className="flex items-center">
-                        <ChatBubbleLeftIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                        <span className="text-gray-700 dark:text-gray-300">In-app messaging</span>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -1110,7 +1040,7 @@ const WorkerProfile = () => {
             {activeTab === 'posts' && (
               <div>
                 <div className="flex items-center mb-6">
-                  <ChatBubbleLeftIcon className="h-6 w-6 text-blue-500 mr-2" />
+                  <StarIcon className="h-6 w-6 text-blue-500 mr-2" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Posts & Work Updates</h3>
                   {workerPosts && workerPosts.length > 0 && (
                     <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm px-2 py-1 rounded-full">
@@ -1215,7 +1145,9 @@ const WorkerProfile = () => {
                               onClick={() => toggleComments(post._id)}
                               className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-all duration-200 transform hover:scale-105"
                             >
-                              <ChatBubbleLeftIcon className="h-5 w-5 mr-1" />
+                              <svg className="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
                               {post.comments?.length || 0} comments
                             </button>
                             
@@ -1324,7 +1256,9 @@ const WorkerProfile = () => {
                   </div>
                 ) : (
                   <div className="text-center py-16 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <ChatBubbleLeftIcon className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" />
+                    <svg className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                     <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">No Posts Yet</h3>
                     <p className="mt-2 text-gray-500 dark:text-gray-400">
                       This worker hasn't shared any work updates or posts yet.

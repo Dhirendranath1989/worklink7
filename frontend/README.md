@@ -78,7 +78,7 @@ src/
 │   ├── auth/           # Authentication
 │   ├── jobs/           # Job management
 │   ├── profiles/       # User profiles
-│   ├── chat/           # Real-time messaging
+
 │   └── notifications/  # Notifications
 ├── pages/              # Page components
 │   ├── auth/           # Authentication pages
@@ -107,7 +107,7 @@ Required environment variables (see `.env.example`):
 - Protected routes and persistent sessions
 
 ### Real-time Features
-- Live chat between workers and owners
+
 - Real-time notifications
 - Online status indicators
 - Typing indicators

@@ -468,7 +468,7 @@ const PostWork = () => {
                   <option value="phone">Phone Call</option>
                   <option value="whatsapp">WhatsApp</option>
                   <option value="email">Email</option>
-                  <option value="app">In-App Message</option>
+
                 </select>
               </div>
             </div>

@@ -1,8 +1,8 @@
 const ConsolidatedUser = require('../models/ConsolidatedUser');
+const mongoose = require('mongoose');
 const Job = require('../models/Job');
 const Review = require('../models/Review');
-const Conversation = require('../models/Conversation');
-const Message = require('../models/Message');
+
 const Notification = require('../models/Notification');
 
 // MongoDB service to replace Firebase Firestore operations
@@ -93,16 +93,7 @@ class MongoService {
       // Delete reviews about this user
       await Review.deleteMany({ revieweeId: userId });
       
-      // Delete conversations involving this user
-      await Conversation.deleteMany({
-        $or: [
-          { participant1: userId },
-          { participant2: userId }
-        ]
-      });
-      
-      // Delete messages sent by this user
-      await Message.deleteMany({ senderId: userId });
+
       
       // Delete notifications for this user
       await Notification.deleteMany({ userId: userId });
@@ -340,69 +331,7 @@ class MongoService {
     }
   }
 
-  // Conversation operations
-  async createConversation(participants, jobId = null) {
-    try {
-      const conversation = new Conversation({
-        participants,
-        jobId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-      return await conversation.save();
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      throw error;
-    }
-  }
 
-  async getUserConversations(userId) {
-    try {
-      return await Conversation.find({ participants: userId })
-        .sort({ updatedAt: -1 })
-        .populate('participants', 'firstName lastName email')
-        .populate('jobId', 'title');
-    } catch (error) {
-      console.error('Error getting user conversations:', error);
-      throw error;
-    }
-  }
-
-  // Message operations
-  async createMessage(messageData) {
-    try {
-      const message = new Message({
-        ...messageData,
-        createdAt: new Date()
-      });
-      
-      const savedMessage = await message.save();
-      
-      // Update conversation's last message timestamp
-      await Conversation.findByIdAndUpdate(messageData.conversationId, {
-        updatedAt: new Date(),
-        lastMessage: messageData.content
-      });
-      
-      return savedMessage;
-    } catch (error) {
-      console.error('Error creating message:', error);
-      throw error;
-    }
-  }
-
-  async getConversationMessages(conversationId, limit = 50, skip = 0) {
-    try {
-      return await Message.find({ conversationId })
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .skip(skip)
-        .populate('senderId', 'firstName lastName');
-    } catch (error) {
-      console.error('Error getting conversation messages:', error);
-      throw error;
-    }
-  }
 
   // Notification operations
   async createNotification(notificationData) {

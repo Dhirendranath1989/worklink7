@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   UserGroupIcon,
   MagnifyingGlassIcon,
-  ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   StarIcon,
   ShieldCheckIcon
@@ -27,9 +26,9 @@ const HowItWorks = () => {
     },
     {
       id: 3,
-      title: 'Communicate & Negotiate',
-      description: 'Chat directly with potential matches. Discuss requirements, timeline, and pricing.',
-      icon: ChatBubbleLeftRightIcon,
+      title: 'Connect & Negotiate',
+      description: 'Contact potential matches directly. Discuss requirements, timeline, and pricing.',
+      icon: UserGroupIcon,
       color: 'bg-purple-500'
     },
     {

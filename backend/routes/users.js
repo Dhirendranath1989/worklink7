@@ -166,7 +166,7 @@ router.delete('/:userId', authenticateToken, async (req, res) => {
     // - Reviews and ratings
     // - Saved searches and workers
     // - Notifications
-    // - Chat messages
+    
     
     res.json({ message: 'Account deleted successfully' });
   } catch (error) {

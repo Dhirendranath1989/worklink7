@@ -69,7 +69,6 @@ const initialState = {
   error: null,
   settings: {
     jobAlerts: true,
-    messageAlerts: true,
     reviewAlerts: true,
     systemAlerts: true,
     emailNotifications: true,

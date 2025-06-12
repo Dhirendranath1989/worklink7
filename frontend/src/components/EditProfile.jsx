@@ -336,7 +336,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
           <li>Profile information and photos</li>
           <li>Job postings and applications</li>
           <li>Reviews and ratings</li>
-          <li>Messages and conversations</li>
+
           <li>All saved data</li>
         </ul>
         <div className="flex justify-end space-x-3">

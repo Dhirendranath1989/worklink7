@@ -98,16 +98,7 @@ export const jobsAPI = {
 
 };
 
-export const chatAPI = {
-  getConversations: () => api.get('/chat/conversations'),
-  getMessages: (conversationId, page = 1) => api.get(`/chat/conversations/${conversationId}/messages?page=${page}`),
-  sendMessage: (conversationId, messageData) => api.post(`/chat/conversations/${conversationId}/messages`, messageData),
-  createConversation: (participantId, initialMessage) => api.post('/chat/conversations', { participantId, initialMessage }),
-  markAsRead: (conversationId) => api.patch(`/chat/conversations/${conversationId}/read`),
-  uploadFile: (formData) => api.post('/chat/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-};
+
 
 export const notificationsAPI = {
   getNotifications: (page = 1) => api.get(`/notifications?page=${page}`),

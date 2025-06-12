@@ -1,29 +1,29 @@
 const jwt = require('jsonwebtoken');
+const config = require('config'); // or however you store JWT_SECRET
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+const authenticateToken = function(req, res, next) {
+  // Get token from header
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
+  // Check if no token
   if (!token) {
-    console.log('No token provided in request');
-    return res.status(401).json({ message: 'Access token required' });
+    return res.status(401).json({ 
+      success: false, 
+      message: 'No token, authorization denied' 
+    });
   }
 
-  const secret = process.env.JWT_SECRET || 'fallback_secret';
-  console.log('Using JWT secret:', secret);
-  console.log('Token to verify:', token.substring(0, 20) + '...');
-
-  jwt.verify(token, secret, (err, user) => {
-    if (err) {
-      console.error('JWT verification error:', err.message);
-      console.error('Error details:', err);
-      return res.status(403).json({ message: 'Invalid or expired token' });
-    }
-    
-    console.log('JWT verification successful for user:', user.userId);
-    req.user = user;
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || config.get('jwtSecret'));
+    req.user = decoded.user;
     next();
-  });
+  } catch (err) {
+    res.status(401).json({ 
+      success: false, 
+      message: 'Token is not valid' 
+    });
+  }
 };
 
 module.exports = { authenticateToken };

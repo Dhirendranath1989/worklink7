@@ -9,7 +9,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
-const socketIo = require('socket.io');
+
 const mongoService = require('./services/mongoService');
 
 // Load environment variables
@@ -35,13 +35,7 @@ console.log('Firebase Admin SDK not configured - some features may not work');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: true,
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -174,28 +168,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Socket.io connection handling
-const connectedUsers = new Map(); // Store user socket connections
 
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-
-  // Handle user authentication and join
-  socket.on('join', (userId) => {
-    if (userId) {
-      connectedUsers.set(userId, socket.id);
-      socket.userId = userId;
-      console.log(`User ${userId} joined with socket ${socket.id}`);
-    }
-  });
-
-  socket.on('disconnect', () => {
-    if (socket.userId) {
-      connectedUsers.delete(socket.userId);
-      console.log(`User ${socket.userId} disconnected`);
-    }
-  });
-});
 
 // MongoDB connection
 if (process.env.MONGODB_URI) {
@@ -222,15 +195,20 @@ const postsRouter = require('./routes/posts');
 const usersRouter = require('./routes/users');
 const workersRouter = require('./routes/workers');
 
+
 // Set global references for routes
 usersRouter.setGlobalReferences({
   isMongoConnected,
   inMemoryUsers
 });
 
+
+
 app.use('/api/posts', postsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/workers', workersRouter);
+app.use('/api/owner', require('./routes/owner'));
+
 
 // Test route
 app.get('/api/test', (req, res) => {

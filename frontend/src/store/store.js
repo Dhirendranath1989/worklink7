@@ -6,7 +6,7 @@ import authReducer from '../features/auth/authSlice';
 import jobsReducer from '../features/jobs/jobsSlice';
 import profilesReducer from '../features/profiles/profilesSlice';
 import notificationsReducer from '../features/notifications/notificationsSlice';
-import chatReducer from '../features/chat/chatSlice';
+
 import savedWorkersReducer from '../features/savedWorkers/savedWorkersSlice';
 
 const persistConfig = {
@@ -20,7 +20,7 @@ const rootReducer = combineReducers({
   jobs: jobsReducer,
   profiles: profilesReducer,
   notifications: notificationsReducer,
-  chat: chatReducer,
+
   savedWorkers: savedWorkersReducer,
 });
 

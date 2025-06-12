@@ -31,8 +31,7 @@ const RealTimeNotifications = () => {
 
   const getNotificationMessage = (notification) => {
     switch (notification.type) {
-      case 'message':
-        return `New message: ${notification.title}`;
+
       case 'job_request':
         return `Job request: ${notification.title}`;
       case 'review':
@@ -48,8 +47,7 @@ const RealTimeNotifications = () => {
     switch (type) {
       case 'job_request':
         return '💼';
-      case 'message':
-        return '💬';
+
       case 'review':
         return '⭐';
       case 'payment':

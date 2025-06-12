@@ -14,15 +14,15 @@ import {
   deleteNotification,
 } from '../../features/notifications/notificationsSlice';
 import { formatDistanceToNow } from 'date-fns';
-import { useChatPopup } from '../../hooks/useChatPopup';
-import { fetchConversations } from '../../features/chat/chatSlice';
+
+
 
 const NotificationDropdown = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, isLoading } = useSelector((state) => state.notifications);
-  const { conversations } = useSelector((state) => state.chat);
+
   const dispatch = useDispatch();
-  const { openChatPopup } = useChatPopup();
+
 
   useEffect(() => {
     if (isOpen && notifications.length === 0) {
@@ -48,32 +48,14 @@ const NotificationDropdown = ({ children }) => {
       dispatch(markAsRead(notification._id));
     }
 
-    // Handle message notifications by opening chat popup
-    if (notification.type === 'message' && notification.relatedId) {
-      // Ensure conversations are loaded
-      if (!conversations || conversations.length === 0) {
-        await dispatch(fetchConversations());
-      }
-      
-      // Find the conversation by ID
-      const conversation = conversations.find(conv => conv._id === notification.relatedId);
-      
-      if (conversation) {
-        // Open chat popup with the specific conversation and scroll to unread
-        openChatPopup(conversation, true);
-      } else {
-        // If conversation not found, open chat list
-        openChatPopup();
-      }
-    }
+    // Message notifications are no longer supported
   };
 
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'job_request':
         return '💼';
-      case 'message':
-        return '💬';
+
       case 'review':
         return '⭐';
       case 'payment':
@@ -89,8 +71,7 @@ const NotificationDropdown = ({ children }) => {
     switch (type) {
       case 'job_request':
         return 'bg-blue-100 text-blue-800';
-      case 'message':
-        return 'bg-green-100 text-green-800';
+
       case 'review':
         return 'bg-yellow-100 text-yellow-800';
       case 'payment':

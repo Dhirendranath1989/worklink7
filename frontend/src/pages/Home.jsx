@@ -26,7 +26,7 @@ const Home = () => {
     {
       icon: ClockIcon,
       title: 'Real-time Updates',
-      description: 'Get instant notifications for job matches, messages, and updates. Stay connected 24/7.',
+      description: 'Get instant notifications for job matches and updates. Stay connected 24/7.',
     },
     {
       icon: UserGroupIcon,
@@ -227,7 +227,7 @@ const Home = () => {
                 {[
                   { step: 1, title: 'Post Your Requirement', desc: 'Describe your job with photos, budget, and timeline' },
                   { step: 2, title: 'Get Matched', desc: 'Receive proposals from verified workers in your area' },
-                  { step: 3, title: 'Choose & Connect', desc: 'Review profiles, chat, and hire the best worker' },
+                  { step: 3, title: 'Choose & Connect', desc: 'Review profiles and hire the best worker' },
                   { step: 4, title: 'Get Work Done', desc: 'Track progress and make secure payments' },
                 ].map((item) => (
                   <div key={item.step} className="flex items-start space-x-4">

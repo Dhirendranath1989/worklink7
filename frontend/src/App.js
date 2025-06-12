@@ -8,14 +8,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials, initializeAuth } from './features/auth/authSlice';
 import toast from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { SocketProvider } from './contexts/SocketContext';
-
 // Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import ProtectedRoute from './components/common/ProtectedRouteNew';
-import ChatPopup from './components/ChatPopup';
 import RealTimeNotifications from './components/RealTimeNotifications';
+
 
 // Pages
 import Home from './pages/Home';
@@ -30,7 +28,7 @@ import SearchWorkers from './pages/owner/SearchWorkers';
 import WorkerProfile from './pages/owner/WorkerProfile';
 import AdminDashboard from './pages/admin/Dashboard';
 import PostJob from './pages/PostJob';
-import Chat from './pages/Chat';
+
 
 import NotFound from './pages/NotFound';
 import HowItWorks from './pages/HowItWorks';
@@ -128,7 +126,6 @@ function UserInitializer() {
 function App() {
   return (
     <Provider store={store}>
-      <SocketProvider>
         <ThemeProvider>
           <Router future={{
             v7_startTransition: true,
@@ -205,18 +202,13 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/chat" element={
-                <ProtectedRoute>
-                  <Chat />
-                </ProtectedRoute>
-              } />
+
               
               {/* Catch all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
-          <ChatPopup />
           <RealTimeNotifications />
   
           </div>
@@ -233,7 +225,6 @@ function App() {
           />
           </Router>
         </ThemeProvider>
-      </SocketProvider>
     </Provider>
   );
 }

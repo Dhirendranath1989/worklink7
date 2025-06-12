@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema({
   // Notification content
   type: { 
     type: String, 
-    enum: ['message', 'job_update', 'application', 'review', 'system', 'job_assigned', 'payment'], 
+    enum: ['job_update', 'application', 'review', 'system', 'job_assigned', 'payment'], 
     required: true 
   },
   title: { type: String, required: true },
@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema({
   relatedId: { type: String }, // ID of related conversation, job, application, etc.
   relatedType: { 
     type: String, 
-    enum: ['conversation', 'job', 'application', 'review', 'user', 'payment']
+    enum: ['job', 'application', 'review', 'user', 'payment']
   },
   
   // Sender information (if applicable)
@@ -31,7 +31,7 @@ const notificationSchema = new mongoose.Schema({
   data: {
     jobTitle: { type: String },
     jobId: { type: String },
-    conversationId: { type: String },
+
     applicationId: { type: String },
     reviewId: { type: String },
     amount: { type: Number },

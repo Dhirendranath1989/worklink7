@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-
 import { useSelector, useDispatch } from 'react-redux';
 import { Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
   XMarkIcon,
   BellIcon,
-  ChatBubbleLeftRightIcon,
+
   MagnifyingGlassIcon,
   UserCircleIcon,
   Cog6ToothIcon,
@@ -16,18 +15,19 @@ import {
 import { logout } from '../../features/auth/authSlice';
 import ThemeToggle from './ThemeToggle';
 import NotificationDropdown from './NotificationDropdown';
-import { useChatPopup } from '../../hooks/useChatPopup';
+
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { unreadCount } = useSelector((state) => state.notifications);
-  const { unreadCount: chatUnreadCount } = useSelector((state) => state.chat);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { openChatGeneral } = useChatPopup();
+
 
 
   useEffect(() => {
@@ -51,6 +51,7 @@ const Navbar = () => {
 
   const userNavigation = [
     { name: 'Dashboard', href: user?.role === 'worker' ? '/worker/dashboard' : '/owner/dashboard', icon: UserCircleIcon },
+
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   ];
@@ -108,20 +109,7 @@ const Navbar = () => {
                   <MagnifyingGlassIcon className="h-5 w-5" />
                 </button>
 
-                {/* Chat */}
-                <button
-                  onClick={openChatGeneral}
-                  className={`p-2 rounded-full relative transition-colors ${
-                    isScrolled ? 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400' : 'text-white hover:text-primary-200'
-                  }`}
-                >
-                  <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                  {chatUnreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
-                    </span>
-                  )}
-                </button>
+
 
                 {/* Notifications */}
                 <NotificationDropdown>
@@ -281,6 +269,8 @@ const Navbar = () => {
           </div>
         </div>
       </Transition>
+      
+
     </nav>
   );
 };

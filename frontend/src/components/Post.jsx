@@ -6,7 +6,6 @@ import {
   PencilIcon,
   TrashIcon,
   HeartIcon,
-  ChatBubbleLeftIcon,
   ShareIcon,
   EllipsisHorizontalIcon
 } from '@heroicons/react/24/outline';
@@ -516,7 +515,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
               onClick={toggleComments}
               className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-all duration-200 transform hover:scale-105"
             >
-              <ChatBubbleLeftIcon className="h-5 w-5" />
+              <EllipsisHorizontalIcon className="h-5 w-5" />
               <span className="text-sm font-medium">{comments.length}</span>
             </button>
             
