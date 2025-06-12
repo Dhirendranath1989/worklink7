@@ -329,7 +329,8 @@ class MongoService {
         const averageRating = totalRating / reviews.length;
         
         await ConsolidatedUser.findByIdAndUpdate(workerId, {
-          rating: Math.round(averageRating * 10) / 10,
+          averageRating: Math.round(averageRating * 10) / 10,
+          totalReviews: reviews.length,
           reviewCount: reviews.length
         });
       }

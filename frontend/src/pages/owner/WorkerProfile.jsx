@@ -39,7 +39,6 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
 import { workerSearchAPI, reviewAPI } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import ImageViewer from '../../components/ImageViewer';
 
 const WorkerProfile = () => {
   const { workerId } = useParams();
@@ -140,8 +139,6 @@ const WorkerProfile = () => {
   
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [modalImages, setModalImages] = useState([]);
   
   // Interactive posts state
   const [showComments, setShowComments] = useState({});
@@ -364,14 +361,9 @@ const WorkerProfile = () => {
 
   // Handle image click for full-screen view
   const handlePostImageClick = (image, index, postImages = []) => {
-    // Convert image URLs to proper format for ImageViewer
-    const formattedImages = postImages.map(img => ({
-      src: img.startsWith('http') ? img : `http://localhost:5000${img}`,
-      alt: 'Post image'
-    }));
-    
-    setModalImages(formattedImages);
-    setSelectedImageIndex(index);
+    // Set the selected image for the simple modal
+    const imageUrl = image.startsWith('http') ? image : `http://localhost:5000${image}`;
+    setSelectedImage(imageUrl);
     setShowImageModal(true);
   };
 
@@ -654,7 +646,7 @@ const WorkerProfile = () => {
                     {worker.hourlyRate && (
                       <div className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                         <FaDollarSign className="mr-2 text-green-500" />
-                        <span className="text-gray-700 dark:text-gray-300 text-sm">${worker.hourlyRate}/hour</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm">₹{worker.hourlyRate}/hour</span>
                       </div>
                     )}
                   </div>
@@ -768,10 +760,10 @@ const WorkerProfile = () => {
           {activeTab === 'photos' && (
             <WorkPhotosTab 
               worker={worker} 
-              onImageClick={(image, index) => {
-                setSelectedImage(image);
-                setSelectedImageIndex(index || 0);
-                setModalImages(worker.workPhotos || []);
+              onImageClick={(image) => {
+                // Ensure we have the full URL for the image
+                const fullImageUrl = image.startsWith('http') ? image : `http://localhost:5000${image}`;
+                setSelectedImage(fullImageUrl);
                 setShowImageModal(true);
               }}
             />
@@ -812,16 +804,16 @@ const WorkerProfile = () => {
       {/* Review Modal */}
       {showReviewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Write a Review</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Write a Review</h3>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
                   setReviewRating(0);
                   setReviewComment('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
               >
                 <FaTimes />
               </button>
@@ -829,7 +821,7 @@ const WorkerProfile = () => {
             
             {/* Rating */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Rating
               </label>
               <div className="flex gap-1">
@@ -843,7 +835,7 @@ const WorkerProfile = () => {
                     {star <= reviewRating ? (
                       <FaStar className="text-yellow-400" />
                     ) : (
-                      <FaStar className="text-gray-300 hover:text-yellow-200" />
+                      <FaStar className="text-gray-300 dark:text-gray-600 hover:text-yellow-200 dark:hover:text-yellow-300" />
                     )}
                   </button>
                 ))}
@@ -852,14 +844,14 @@ const WorkerProfile = () => {
             
             {/* Comment */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Comment
               </label>
               <textarea
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Share your experience with this worker..."
               />
             </div>
@@ -872,14 +864,14 @@ const WorkerProfile = () => {
                   setReviewRating(0);
                   setReviewComment('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitReview}
                 disabled={isSubmittingReview || reviewRating === 0 || !reviewComment.trim()}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmittingReview ? (
                   <div className="flex items-center justify-center">
@@ -894,19 +886,28 @@ const WorkerProfile = () => {
         </div>
       )}
 
-      {/* Image Viewer Modal */}
-      <ImageViewer
-        isOpen={showImageModal}
-        onClose={() => {
-          setShowImageModal(false);
-          setSelectedImage(null);
-        }}
-        images={modalImages}
-        currentIndex={selectedImageIndex}
-        onIndexChange={setSelectedImageIndex}
-        showNavigation={modalImages.length > 1}
-        showDownload={true}
-      />
+      {/* Simple Photo Viewer Modal */}
+      {showImageModal && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
+          <div className="relative w-screen h-screen flex items-center justify-center">
+            <img
+              src={selectedImage}
+              alt="Work photo"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => {
+                setShowImageModal(false);
+                setSelectedImage(null);
+              }}
+              className="absolute top-4 right-4 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white text-xl transition-all duration-200 z-10"
+            >
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1008,7 +1009,7 @@ const OverviewTab = ({ worker }) => {
         {/* Languages */}
         {worker.languagesSpoken && worker.languagesSpoken.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Languages</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Languages Spoken</h3>
             <div className="flex flex-wrap gap-2">
               {worker.languagesSpoken.map((language, index) => (
                 <span
@@ -1080,19 +1081,19 @@ const OverviewTab = ({ worker }) => {
             {worker.hourlyRate && (
               <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
                 <span className="text-gray-600 dark:text-gray-300 font-medium">Hourly Rate</span>
-                <span className="font-bold text-gray-900 dark:text-white text-xl">${worker.hourlyRate}/hr</span>
+                <span className="font-bold text-gray-900 dark:text-white text-xl">₹{worker.hourlyRate}/hr</span>
               </div>
             )}
             {worker.minimumRate && (
               <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
                 <span className="text-gray-600 dark:text-gray-300 font-medium">Minimum Rate</span>
-                <span className="font-bold text-gray-900 dark:text-white text-xl">${worker.minimumRate}</span>
+                <span className="font-bold text-gray-900 dark:text-white text-xl">₹{worker.minimumRate}</span>
               </div>
             )}
             {worker.projectRate && (
                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
                  <span className="text-gray-600 dark:text-gray-300 font-medium">Project Rate</span>
-                 <span className="font-bold text-gray-900 dark:text-white text-xl">${worker.projectRate}</span>
+                 <span className="font-bold text-gray-900 dark:text-white text-xl">₹{worker.projectRate}</span>
                </div>
              )}
            </div>
@@ -1119,39 +1120,7 @@ const OverviewTab = ({ worker }) => {
           </div>
         </div>
         
-        {/* Availability Schedule */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Availability Schedule</h3>
-          {renderAvailability(worker.availability)}
-        </div>
-        
-        {/* Stats */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
-              <FaChartBar className="text-white text-sm" />
-            </div>
-            Statistics
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{worker.completedJobs || 0}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300 font-medium mt-1">Jobs Completed</div>
-            </div>
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400">{worker.responseTime || '2h'}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300 font-medium mt-1">Response Time</div>
-            </div>
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{worker.totalReviews || 0}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300 font-medium mt-1">Total Reviews</div>
-            </div>
-            <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
-              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{worker.experienceYears || 0}+</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300 font-medium mt-1">Years Experience</div>
-            </div>
-          </div>
-        </div>
+
         
 
       </div>
@@ -1188,7 +1157,7 @@ const WorkPhotosTab = ({ worker, onImageClick }) => {
           <div 
             key={index} 
             className="relative group cursor-pointer overflow-hidden rounded-2xl bg-white/5 aspect-square border border-white/20 hover:border-white/40 transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl"
-            onClick={() => onImageClick(photo, index)}
+            onClick={() => onImageClick(photo)}
           >
             <img
               src={photo}
@@ -1585,7 +1554,7 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
     
     const remainingStars = 5 - Math.ceil(rating);
     for (let i = 0; i < remainingStars; i++) {
-      stars.push(<FaStar key={`empty-${i}`} className="text-gray-300" />);
+      stars.push(<FaStar key={`empty-${i}`} className="text-gray-300 dark:text-gray-600" />);
     }
     
     return stars;
@@ -1593,9 +1562,9 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
         <LoadingSpinner size="lg" />
-        <p className="text-gray-500 mt-4">Loading reviews...</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-4">Loading reviews...</p>
       </div>
     );
   }
@@ -1603,14 +1572,14 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
   return (
     <div className="space-y-6">
       {/* Reviews Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Reviews ({totalReviews})
           </h3>
           <button
             onClick={onWriteReview}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <FaStar />
             <span>Write Review</span>
@@ -1622,14 +1591,24 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
       {reviews && reviews.length > 0 ? (
         <div className="space-y-4">
           {reviews.map((review, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm p-6">
+            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0">
-                  {review.reviewerPhoto ? (
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                  {(review.reviewerPhoto || review.reviewerProfilePicture) ? (
                     <img
-                      src={review.reviewerPhoto}
+                      src={
+                        review.reviewerPhoto || review.reviewerProfilePicture
+                          ? (review.reviewerPhoto || review.reviewerProfilePicture).startsWith('http')
+                            ? (review.reviewerPhoto || review.reviewerProfilePicture)
+                            : `http://localhost:5000${review.reviewerPhoto || review.reviewerProfilePicture}`
+                          : null
+                      }
                       alt={review.reviewerName}
                       className="w-full h-full rounded-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
@@ -1641,9 +1620,9 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-medium text-gray-900">{review.reviewerName}</h4>
-                    <span className="text-gray-500 text-sm">•</span>
-                    <span className="text-gray-500 text-sm">
+                    <h4 className="font-medium text-gray-900 dark:text-white">{review.reviewerName}</h4>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm">•</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm">
                       {new Date(review.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -1651,24 +1630,24 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
                     <div className="flex">
                       {renderStars(review.rating)}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {review.rating.toFixed(1)}
                     </span>
                   </div>
-                  <p className="text-gray-700">{review.comment}</p>
+                  <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <FaStar className="mx-auto text-gray-400 text-4xl mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Reviews Yet</h3>
-          <p className="text-gray-500 mb-4">Be the first to review this worker!</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+          <FaStar className="mx-auto text-gray-400 dark:text-gray-500 text-4xl mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Reviews Yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">Be the first to review this worker!</p>
           <button
             onClick={onWriteReview}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+            className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white px-6 py-2 rounded-lg transition-colors"
           >
             Write First Review
           </button>

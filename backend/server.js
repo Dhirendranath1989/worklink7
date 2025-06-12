@@ -272,7 +272,7 @@ app.post('/api/auth/register', async (req, res) => {
       workPhotos: [],
       certificates: [],
       skills: [],
-      workExperience: [],
+      workExperience: '',
       languagesSpoken: [],
       availability: '',
       hourlyRate: 0,
@@ -1251,7 +1251,7 @@ app.get('/api/profiles/:userId', async (req, res) => {
 app.post('/api/reviews', authenticateToken, async (req, res) => {
   try {
     const { workerId, rating, comment, jobId } = req.body;
-    const reviewerId = req.user.uid;
+    const reviewerId = req.user.userId;
 
     // Validate required fields
     if (!workerId || !rating || !comment) {
@@ -1381,7 +1381,7 @@ app.get('/api/reviews/worker/:workerId', async (req, res) => {
 // Get reviews written by the current user
 app.get('/api/reviews/my-reviews', authenticateToken, async (req, res) => {
   try {
-    const reviewerId = req.user.uid;
+    const reviewerId = req.user.userId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -1429,7 +1429,7 @@ app.get('/api/reviews/my-reviews', authenticateToken, async (req, res) => {
 // Get reviews received by the current user (for workers)
 app.get('/api/reviews/received', authenticateToken, async (req, res) => {
   try {
-    const workerId = req.user.uid;
+    const workerId = req.user.userId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
