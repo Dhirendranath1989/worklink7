@@ -26,7 +26,6 @@ const Footer = () => {
       { name: 'Skill Tests', href: '/skill-tests' },
     ],
     forOwners: [
-      { name: 'Post a Job', href: '/post-job' },
       { name: 'Find Workers', href: '/workers' },
       { name: 'Owner Dashboard', href: '/owner/dashboard' },
       { name: 'Pricing', href: '/pricing' },

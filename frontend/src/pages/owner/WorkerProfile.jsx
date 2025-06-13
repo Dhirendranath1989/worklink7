@@ -44,7 +44,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 const WorkerProfile = () => {
-  const { id: workerId } = useParams();
+  const { workerId } = useParams();
   const navigate = useNavigate();
   
   // Helper functions for worker data
@@ -579,13 +579,15 @@ const WorkerProfile = () => {
       <div className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Back Button */}
-          <button
-            onClick={() => navigate('/search-workers')}
-            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
-          >
-            <FaArrowLeft className="mr-2" />
-            Back to Search
-          </button>
+          <div className="mt-8 mb-8">
+            <button
+              onClick={() => navigate('/search-workers')}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            >
+              <FaArrowLeft className="mr-2" />
+              Back to Search
+            </button>
+          </div>
           
           {/* Profile Header Card */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700">

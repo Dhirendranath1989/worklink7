@@ -409,8 +409,6 @@ const OwnerDashboard = () => {
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: UserIcon },
-    { id: 'work-list', name: 'Work List', icon: BriefcaseIcon },
-    { id: 'my-projects', name: 'My Projects', icon: DocumentTextIcon },
     { id: 'bookmarked-workers', name: 'Bookmarked Workers', icon: BookmarkIcon }
   ];
 
@@ -552,16 +550,6 @@ const OwnerDashboard = () => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
-            to="/post-job"
-            className="flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-500 transition-all"
-          >
-            <PlusIcon className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Post New Job</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Find workers</p>
-            </div>
-          </Link>
-          <Link
             to="/search-workers"
             className="flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-500 transition-all"
           >
@@ -571,8 +559,6 @@ const OwnerDashboard = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400">Find skilled workers</p>
             </div>
           </Link>
-
-
         </div>
       </div>
     </div>
@@ -914,154 +900,9 @@ const OwnerDashboard = () => {
     </div>
   );
 
-  const renderWorkList = () => {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Work List</h2>
-          <Link
-            to="/post-job"
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Post New Job
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs?.map((job) => (
-            <div key={job._id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{job.title}</h3>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                  getStatusColor(job.status)
-                }`}>
-                  {job.status}
-                </span>
-              </div>
-              <p className="text-gray-600 mb-4">{job.description}</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center">
-                  <CalendarIcon className="h-4 w-4 mr-1" />
-                  {new Date(job.createdAt).toLocaleDateString()}
-                </div>
-                <div className="flex items-center">
-                  <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-                  ₹{job.budget || 'TBD'}
-                </div>
-              </div>
-            </div>
-          )) || (
-            <div className="col-span-full text-center py-8">
-              <p className="text-gray-500">No jobs posted yet.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
 
-  const renderMyProjects = () => {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">My Projects</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Project Statistics Cards */}
-          <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl p-6 text-white">
-            <div className="text-center">
-              <div className="text-3xl font-bold mb-2">30%</div>
-              <div className="text-purple-100 mb-4">Project Completion</div>
-              <button className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-200">
-                READ MORE
-              </button>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 relative">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="3"
-                  />
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#8b5cf6"
-                    strokeWidth="3"
-                    strokeDasharray="75, 100"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900">75%</span>
-                </div>
-              </div>
-              <div className="text-gray-600 mb-4">Active Projects</div>
-              <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
-                READ MORE
-              </button>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 relative">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="3"
-                  />
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#06b6d4"
-                    strokeWidth="3"
-                    strokeDasharray="55, 100"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900">55%</span>
-                </div>
-              </div>
-              <div className="text-gray-600 mb-4">Completed Projects</div>
-              <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
-                READ MORE
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Project Timeline */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Project Timeline</h3>
-          <div className="space-y-4">
-            {jobs?.slice(0, 5).map((project, index) => (
-              <div key={project._id} className="flex items-center space-x-4">
-                <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">{project.title}</h4>
-                    <span className="text-sm text-gray-500">{new Date(project.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">{project.description}</p>
-                </div>
-              </div>
-            )) || (
-              <div className="text-center py-4">
-                <p className="text-gray-500">No projects available.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+
+
 
   const renderFeedback = () => {
     return (
@@ -1253,10 +1094,6 @@ const OwnerDashboard = () => {
     switch (activeTab) {
       case 'profile':
         return renderProfile();
-      case 'work-list':
-        return renderWorkList();
-      case 'my-projects':
-        return renderMyProjects();
       case 'feedback':
         return renderFeedback();
       case 'bookmarked-workers':

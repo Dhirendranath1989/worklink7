@@ -44,8 +44,7 @@ const Navbar = () => {
   };
 
   const navigation = [
-    { name: 'Find Workers', href: '/workers', current: location.pathname === '/workers' },
-    { name: 'Post Job', href: '/post-job', current: location.pathname === '/post-job' },
+    { name: 'Find Workers', href: '/search-workers', current: location.pathname === '/search-workers' },
     { name: 'How it Works', href: '/how-it-works', current: location.pathname === '/how-it-works' },
   ];
 

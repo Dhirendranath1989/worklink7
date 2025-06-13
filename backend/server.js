@@ -209,6 +209,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/workers', workersRouter);
 app.use('/api/owner', require('./routes/owner'));
 app.use('/api/saved-workers', require('./routes/saved-workers'));
+app.use('/api/jobs', require('./routes/jobs'));
 
 
 // Test route
