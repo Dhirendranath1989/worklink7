@@ -614,6 +614,12 @@ const authSlice = createSlice({
       })
       .addCase(loginWithGoogle.fulfilled, (state, action) => {
         state.isLoading = false;
+        
+        // Debug logging
+        console.log('Google login fulfilled - payload:', action.payload);
+        console.log('Google login fulfilled - user object:', action.payload.user);
+        console.log('Google login fulfilled - hasPassword:', action.payload.user?.hasPassword);
+        
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;

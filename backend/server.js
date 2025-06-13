@@ -152,17 +152,23 @@ app.use('/uploads', express.static(uploadsDir));
 
 // Middleware to authenticate token
 const authenticateToken = (req, res, next) => {
+  console.log(`🔐 Auth middleware called for ${req.method} ${req.path}`);
+  
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
+  console.log('🔑 Token received:', token ? 'Present' : 'Missing');
 
   if (!token) {
+    console.log('❌ No token provided, returning 401');
     return res.status(401).json({ error: 'Access token required' });
   }
 
   jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, user) => {
     if (err) {
+      console.log('❌ Token verification failed:', err.message);
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
+    console.log('✅ Token verified successfully for user:', user.userId);
     req.user = user;
     next();
   });
@@ -220,10 +226,14 @@ app.get('/api/test', (req, res) => {
 // Register endpoint
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { fullName, email, password, userType } = req.body;
+    const { fullName, firstName, lastName, email, password, userType, role, firebaseUid } = req.body;
+
+    // Handle both fullName and firstName/lastName formats
+    const finalFullName = fullName || (firstName && lastName ? `${firstName} ${lastName}` : '');
+    const finalUserType = userType || role;
 
     // Validate required fields
-    if (!fullName || !email || !password || !userType) {
+    if (!finalFullName || !email || !password || !finalUserType) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -244,10 +254,11 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Create user
     const userData = {
-      fullName,
+      fullName: finalFullName,
       email,
       password: hashedPassword,
-      userType,
+      userType: finalUserType,
+      firebaseUid,
       profilePhoto: '',
       workPhotos: [],
       certificates: [],
@@ -280,7 +291,7 @@ app.post('/api/auth/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User registered successfully',
       token,
       user: {
@@ -295,7 +306,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Failed to register user' });
+    return res.status(500).json({ error: 'Failed to register user' });
   }
 });
 
@@ -345,7 +356,7 @@ app.post('/api/auth/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
+    return res.json({
       message: 'Login successful',
       token,
       user: {
@@ -380,7 +391,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Failed to login' });
+    return res.status(500).json({ error: 'Failed to login' });
   }
 });
 
@@ -477,7 +488,18 @@ app.post('/api/auth/google', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
+    // Debug logging
+    console.log('Google auth response - user.password:', user.password);
+    console.log('Google auth response - user.hasPassword:', user.hasPassword);
+    console.log('Google auth response - calculated hasPassword:', user.hasPassword || (user.password && user.password.length > 0) || false);
+    console.log('Google auth response - returning user object:', {
+      id: user._id,
+      email: user.email,
+      authProvider: 'google',
+      hasPassword: user.hasPassword || (user.password && user.password.length > 0) || false
+    });
+      
+    return res.status(200).json({
       message: 'Google login successful',
       token,
       user: {
@@ -486,11 +508,14 @@ app.post('/api/auth/google', async (req, res) => {
         email: user.email,
         userType: user.userType,
         profilePhoto: user.profilePhoto,
+        emailVerified: user.emailVerified,
+        firebaseUid: user.firebaseUid,
         workPhotos: user.workPhotos,
         certificates: user.certificates,
         skills: user.skills,
         workExperience: user.workExperience,
         languagesSpoken: user.languagesSpoken,
+        languages: user.languages,
         availability: user.availability,
         availabilityStatus: user.availabilityStatus || 'available',
         hourlyRate: user.hourlyRate,
@@ -506,7 +531,10 @@ app.post('/api/auth/google', async (req, res) => {
         pincode: user.pincode || '',
         rating: user.rating,
         reviewCount: user.reviewCount,
-        profileCompleted: user.profileCompleted || false
+        reviews: user.reviews,
+        profileCompleted: user.profileCompleted || false,
+        authProvider: 'google',
+        hasPassword: user.hasPassword || (user.password && user.password.length > 0) || false
       }
     });
   } catch (error) {
@@ -646,7 +674,7 @@ app.post('/api/auth/google', async (req, res) => {
     }
     
     // Generic error handling
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: 'Failed to process Google login',
       details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
@@ -1139,8 +1167,17 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    res.json({
+
+    // Debug logging for /auth/me endpoint
+    console.log('/auth/me - Found user:', {
+      id: user._id || user.id,
+      email: user.email,
+      password: user.password ? 'exists' : 'empty',
+      hasPassword: user.hasPassword,
+      authProvider: user.authProvider
+    });
+
+    return res.json({
       user: {
         id: user._id || user.id,
         fullName: user.fullName,
@@ -1167,12 +1204,14 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         reviewCount: user.reviewCount || 0,
         certificates: user.certificates || [],
         workPhotos: user.workPhotos || [],
-        profileCompleted: user.profileCompleted || false
+        profileCompleted: user.profileCompleted || false,
+        authProvider: user.authProvider || 'email',
+        hasPassword: user.hasPassword || (user.password && user.password.length > 0) || false
       }
     });
   } catch (error) {
     console.error('Error fetching current user:', error);
-    res.status(500).json({ error: 'Failed to fetch user data' });
+    return res.status(500).json({ error: 'Failed to fetch user data' });
   }
 });
 

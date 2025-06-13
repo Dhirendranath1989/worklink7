@@ -1,14 +1,17 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = function(req, res, next) {
+  console.log(`🔐 Auth middleware called for ${req.method} ${req.path}`);
+  
   // Get token from header
   const token = req.header('Authorization')?.replace('Bearer ', '');
+  console.log('🔑 Token received:', token ? 'Present' : 'Missing');
 
   // Check if no token
   if (!token) {
+    console.log('❌ No token provided, returning 401');
     return res.status(401).json({ 
-      success: false, 
-      message: 'No token, authorization denied' 
+      error: 'Access token required'
     });
   }
 

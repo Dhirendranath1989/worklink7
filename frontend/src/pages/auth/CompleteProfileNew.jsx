@@ -321,6 +321,16 @@ const CompleteProfile = () => {
         updatedAt: new Date().toISOString()
       };
       
+      // Save to backend first
+      try {
+        await userService.saveUserProfile(currentUser.uid, minimalProfileData);
+        console.log('✅ Profile skip data saved to backend');
+      } catch (backendError) {
+        console.error('❌ Failed to save skip data to backend:', backendError);
+        // Continue with local updates even if backend fails
+        toast.error('Warning: Profile skip may not be fully saved. Please check your connection.');
+      }
+      
       // Update Redux state
       const updatedUser = {
         ...user,

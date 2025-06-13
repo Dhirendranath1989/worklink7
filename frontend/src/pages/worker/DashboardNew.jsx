@@ -1224,14 +1224,19 @@ const FacebookLikeDashboard = () => {
                         <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                           <div className="flex items-start space-x-4">
                             <img
-                              src={review.reviewer?.profilePhoto ? 
+                            src={review.reviewerProfilePicture ? 
+                                (review.reviewerProfilePicture.startsWith('http') ? 
+                                  review.reviewerProfilePicture : 
+                                  `http://localhost:5000${review.reviewerProfilePicture}`
+                                ) : 
+                                review.reviewer?.profilePhoto ? 
                                 (review.reviewer.profilePhoto.startsWith('http') ? 
                                   review.reviewer.profilePhoto : 
                                   `http://localhost:5000${review.reviewer.profilePhoto}`
                                 ) : 
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(review.reviewer?.fullName || review.reviewer?.firstName || 'User')}&background=3b82f6&color=ffffff`
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(review.reviewerName || review.reviewer?.fullName || review.reviewer?.firstName || 'User')}&background=3b82f6&color=ffffff`
                               }
-                              alt={review.reviewer?.fullName || 'Reviewer'}
+                              alt={review.reviewerName || review.reviewer?.fullName || 'Reviewer'}
                               className="w-12 h-12 rounded-full object-cover"
                               onError={(e) => {
                                 e.target.style.display = 'none';
@@ -1239,12 +1244,12 @@ const FacebookLikeDashboard = () => {
                               }}
                             />
                             <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-lg font-semibold" style={{display: 'none'}}>
-                              {(review.reviewer?.fullName || review.reviewer?.firstName || 'U').charAt(0).toUpperCase()}
+                              {(review.reviewerName || review.reviewer?.fullName || review.reviewer?.firstName || 'U').charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold text-gray-900 dark:text-white">
-                                  {review.reviewer?.fullName || review.reviewer?.firstName || 'Anonymous'}
+                                  {review.reviewerName || review.reviewer?.fullName || review.reviewer?.firstName || 'Anonymous'}
                                 </h4>
                                 <div className="flex items-center space-x-1">
                                   {[...Array(5)].map((_, i) => (

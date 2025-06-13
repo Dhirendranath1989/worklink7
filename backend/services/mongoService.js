@@ -12,7 +12,13 @@ class MongoService {
   // Get user by ID
   async getUserById(userId) {
     try {
-      return await ConsolidatedUser.findById(userId);
+      // Handle both ObjectId and string formats
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        return await ConsolidatedUser.findById(userId);
+      } else {
+        // Try finding by uid field as fallback
+        return await ConsolidatedUser.findOne({ uid: userId });
+      }
     } catch (error) {
       console.error('Error getting user by ID:', error);
       throw error;
@@ -32,7 +38,13 @@ class MongoService {
   // Update user by ID
   async updateUser(userId, updateData) {
     try {
-      return await ConsolidatedUser.findByIdAndUpdate(userId, updateData, { new: true });
+      // Handle both ObjectId and string formats
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        return await ConsolidatedUser.findByIdAndUpdate(userId, updateData, { new: true });
+      } else {
+        // Try finding by uid field as fallback
+        return await ConsolidatedUser.findOneAndUpdate({ uid: userId }, updateData, { new: true });
+      }
     } catch (error) {
       console.error('Error updating user:', error);
       throw error;
@@ -287,7 +299,19 @@ class MongoService {
   // Review operations
   async createReview(reviewData) {
     try {
-      const review = new Review(reviewData);
+      // Get reviewer information to cache in the review
+      const reviewer = await ConsolidatedUser.findOne({
+        $or: [{ uid: reviewData.reviewerId }, { firebaseUid: reviewData.reviewerId }, { _id: reviewData.reviewerId }]
+      });
+      
+      // Enhance review data with cached reviewer info
+      const enhancedReviewData = {
+        ...reviewData,
+        reviewerName: reviewData.reviewerName || (reviewer ? (reviewer.fullName || `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim()) : 'Anonymous'),
+        reviewerProfilePicture: reviewData.reviewerProfilePicture || (reviewer ? reviewer.profilePhoto : null)
+      };
+      
+      const review = new Review(enhancedReviewData);
       const savedReview = await review.save();
       
       // Update worker's rating
@@ -304,7 +328,43 @@ class MongoService {
 
   async getWorkerReviews(workerId) {
     try {
-      return await Review.find({ workerId }).sort({ createdAt: -1 });
+      const reviews = await Review.find({ workerId }).sort({ createdAt: -1 });
+      
+      // Populate reviewer information for each review
+      const populatedReviews = await Promise.all(reviews.map(async (review) => {
+        try {
+          // Find reviewer information
+          const reviewer = await ConsolidatedUser.findOne({
+            $or: [{ uid: review.reviewerId }, { firebaseUid: review.reviewerId }, { _id: review.reviewerId }]
+          });
+          
+          const reviewObj = review.toObject();
+          
+          if (reviewer) {
+            reviewObj.reviewer = {
+              fullName: reviewer.fullName || `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim(),
+              firstName: reviewer.firstName,
+              lastName: reviewer.lastName,
+              profilePhoto: reviewer.profilePhoto
+            };
+            
+            // Update cached reviewer info if missing
+            if (!reviewObj.reviewerName && reviewer.fullName) {
+              reviewObj.reviewerName = reviewer.fullName;
+            }
+            if (!reviewObj.reviewerProfilePicture && reviewer.profilePhoto) {
+              reviewObj.reviewerProfilePicture = reviewer.profilePhoto;
+            }
+          }
+          
+          return reviewObj;
+        } catch (err) {
+          console.error('Error populating reviewer for review:', review._id, err);
+          return review.toObject();
+        }
+      }));
+      
+      return populatedReviews;
     } catch (error) {
       console.error('Error getting worker reviews:', error);
       throw error;

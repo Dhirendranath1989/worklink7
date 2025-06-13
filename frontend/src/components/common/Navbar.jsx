@@ -15,6 +15,7 @@ import {
 import { logout } from '../../features/auth/authSlice';
 import ThemeToggle from './ThemeToggle';
 import NotificationDropdown from './NotificationDropdown';
+import SettingsDropdown from './SettingsDropdown';
 
 
 
@@ -44,15 +45,12 @@ const Navbar = () => {
   };
 
   const navigation = [
-    { name: 'Find Workers', href: '/search-workers', current: location.pathname === '/search-workers' },
+    ...(user?.role !== 'worker' ? [{ name: 'Find Workers', href: '/search-workers', current: location.pathname === '/search-workers' }] : []),
     { name: 'How it Works', href: '/how-it-works', current: location.pathname === '/how-it-works' },
   ];
 
   const userNavigation = [
     { name: 'Dashboard', href: user?.role === 'worker' ? '/worker/dashboard' : '/owner/dashboard', icon: UserCircleIcon },
-
-    { name: 'Profile', href: '/profile', icon: UserCircleIcon },
-    { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   ];
 
   return (
@@ -165,6 +163,7 @@ const Navbar = () => {
                           )}
                         </Menu.Item>
                       ))}
+                      <SettingsDropdown user={user} />
                       <Menu.Item>
                         {({ active }) => (
                           <button

@@ -1202,7 +1202,7 @@ const OwnerDashboard = () => {
                       </div>
                       <input
                         type="text"
-                        placeholder="Enter worker name, skill, or service..."
+                        placeholder="Enter skills like plumber, electrician, etc."
                         value={searchSkill}
                         className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 shadow-sm transition-all duration-200"
                         onChange={(e) => {
@@ -1256,35 +1256,35 @@ const OwnerDashboard = () => {
                       onClick={() => console.log('Filter: Electricians')}
                     >
                       <span>⚡</span>
-                      <span>Electricians</span>
+                      <span>Electrician</span>
                     </button>
                     <button 
                       className="px-4 py-2 text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full hover:bg-green-200 dark:hover:bg-green-800 transition-colors flex items-center space-x-1"
                       onClick={() => console.log('Filter: Plumbers')}
                     >
                       <span>🔧</span>
-                      <span>Plumbers</span>
+                      <span>Plumber</span>
                     </button>
                     <button 
                       className="px-4 py-2 text-sm bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors flex items-center space-x-1"
                       onClick={() => console.log('Filter: Cleaners')}
                     >
                       <span>🧹</span>
-                      <span>Cleaners</span>
+                      <span>Cleaner</span>
                     </button>
                     <button 
                       className="px-4 py-2 text-sm bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors flex items-center space-x-1"
                       onClick={() => console.log('Filter: Carpenters')}
                     >
                       <span>🔨</span>
-                      <span>Carpenters</span>
+                      <span>Carpenter</span>
                     </button>
                     <button 
                       className="px-4 py-2 text-sm bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors flex items-center space-x-1"
                       onClick={() => console.log('Filter: Painters')}
                     >
                       <span>🎨</span>
-                      <span>Painters</span>
+                      <span>Painter</span>
                     </button>
                     <button 
                       className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center space-x-1"

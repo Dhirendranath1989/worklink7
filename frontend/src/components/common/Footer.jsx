@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   MapPinIcon,
   PhoneIcon,
@@ -8,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Footer = () => {
+  const { user } = useSelector((state) => state.auth);
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
@@ -157,23 +159,25 @@ const Footer = () => {
           </div>
 
           {/* For Owners */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">
-              For Owners
-            </h3>
-            <ul className="space-y-2">
-              {footerLinks.forOwners.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-300 hover:text-white transition-colors text-sm"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {user?.role !== 'worker' && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">
+                For Owners
+              </h3>
+              <ul className="space-y-2">
+                {footerLinks.forOwners.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      to={link.href}
+                      className="text-gray-300 hover:text-white transition-colors text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Support */}
           <div>
