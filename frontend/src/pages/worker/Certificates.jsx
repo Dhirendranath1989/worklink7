@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useRef, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
   DocumentIcon,
@@ -9,13 +9,17 @@ import {
   AcademicCapIcon,
   CalendarIcon,
   DocumentTextIcon,
-  EyeIcon
+  EyeIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import ImageViewer from '../../components/ImageViewer';
+import { profileAPI } from '../../services/api';
+import { setCredentials } from '../../features/auth/authSlice';
 
 const Certificates = () => {
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -23,6 +27,8 @@ const Certificates = () => {
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [triggerElement, setTriggerElement] = useState(null);
+  const [deletingIndex, setDeletingIndex] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const certificateRefs = useRef([]);
 
   // Get certificates from profile or user data
@@ -93,6 +99,39 @@ const Certificates = () => {
   const handleIndexChange = (newIndex) => {
     setCurrentCertificateIndex(newIndex);
     setSelectedCertificate(filteredCertificates[newIndex]);
+  };
+
+  const handleDeleteCertificate = async (certIndex) => {
+    try {
+      const userId = user._id || user.id;
+      await profileAPI.deleteCertificate(userId, certIndex);
+      
+      // Update user data in Redux store
+      const updatedCertificates = [...(user.certificates || [])];
+      updatedCertificates.splice(certIndex, 1);
+      
+      dispatch(setCredentials({ 
+        user: { ...user, certificates: updatedCertificates },
+        token 
+      }));
+      
+      toast.success('Certificate deleted successfully');
+      setShowDeleteConfirm(false);
+      setDeletingIndex(null);
+    } catch (error) {
+      console.error('Error deleting certificate:', error);
+      toast.error('Failed to delete certificate');
+    }
+  };
+
+  const confirmDelete = (index) => {
+    setDeletingIndex(index);
+    setShowDeleteConfirm(true);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeletingIndex(null);
   };
 
   return (
@@ -174,7 +213,21 @@ const Certificates = () => {
                          e.preventDefault();
                          openCertificateModal(cert, index, certificateRefs.current[index]);
                        }}>
-                    <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="flex space-x-2">
+                      <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {(user._id === profile?._id || !profile) && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            confirmDelete(index);
+                          }}
+                          className="p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700"
+                        >
+                          <TrashIcon className="h-6 w-6" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="absolute top-2 right-2 z-10">
                     <span className="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
@@ -235,6 +288,34 @@ const Certificates = () => {
           showNavigation={true}
           showDownload={true}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Delete Certificate
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to delete this certificate? This action cannot be undone.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={cancelDelete}
+                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteCertificate(deletingIndex)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

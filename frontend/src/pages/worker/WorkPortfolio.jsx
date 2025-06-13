@@ -1,18 +1,22 @@
-import React, { useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useRef, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
   PhotoIcon,
   PlusIcon,
   ArrowLeftIcon,
   MagnifyingGlassIcon,
-  EyeIcon
+  EyeIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import ImageViewer from '../../components/ImageViewer';
+import { profileAPI } from '../../services/api';
+import { setCredentials } from '../../features/auth/authSlice';
 
 const WorkPortfolio = () => {
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
   const { viewedProfile: profile } = useSelector((state) => state.profiles);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -20,6 +24,8 @@ const WorkPortfolio = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [triggerElement, setTriggerElement] = useState(null);
+  const [deletingIndex, setDeletingIndex] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const imageRefs = useRef([]);
 
   // Get work photos from profile or user data
@@ -88,6 +94,39 @@ const WorkPortfolio = () => {
   const handleIndexChange = (newIndex) => {
     setCurrentImageIndex(newIndex);
     setSelectedImage(filteredPhotos[newIndex]);
+  };
+
+  const handleDeletePhoto = async (photoIndex) => {
+    try {
+      const userId = user._id || user.id;
+      await profileAPI.deleteWorkPhoto(userId, photoIndex);
+      
+      // Update user data in Redux store
+      const updatedWorkPhotos = [...(user.workPhotos || [])];
+      updatedWorkPhotos.splice(photoIndex, 1);
+      
+      dispatch(setCredentials({ 
+        user: { ...user, workPhotos: updatedWorkPhotos },
+        token 
+      }));
+      
+      toast.success('Work photo deleted successfully');
+      setShowDeleteConfirm(false);
+      setDeletingIndex(null);
+    } catch (error) {
+      console.error('Error deleting work photo:', error);
+      toast.error('Failed to delete work photo');
+    }
+  };
+
+  const confirmDelete = (index) => {
+    setDeletingIndex(index);
+    setShowDeleteConfirm(true);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeletingIndex(null);
   };
 
   return (
@@ -169,7 +208,21 @@ const WorkPortfolio = () => {
                          e.preventDefault();
                          openImageModal(photo, index, imageRefs.current[index]);
                        }}>
-                    <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="flex space-x-2">
+                      <EyeIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {(user._id === profile?._id || !profile) && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            confirmDelete(index);
+                          }}
+                          className="p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700"
+                        >
+                          <TrashIcon className="h-6 w-6" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {photo.category !== 'General' && (
                     <div className="absolute top-2 right-2 z-10">
@@ -223,6 +276,34 @@ const WorkPortfolio = () => {
           showNavigation={true}
           showDownload={true}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Delete Work Photo
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to delete this work photo? This action cannot be undone.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={cancelDelete}
+                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeletePhoto(deletingIndex)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

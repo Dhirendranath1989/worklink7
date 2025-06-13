@@ -353,4 +353,46 @@ router.get('/:postId/comments', authenticateToken, async (req, res) => {
   }
 });
 
+// Delete a post
+router.delete('/:postId', authenticateToken, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+    
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    
+    // Check if the user is the author of the post
+    if (post.author._id.toString() !== userId) {
+      return res.status(403).json({ message: 'You can only delete your own posts' });
+    }
+    
+    // Delete associated image files if they exist
+    if (post.images && post.images.length > 0) {
+      const fs = require('fs');
+      const path = require('path');
+      
+      post.images.forEach(image => {
+        if (image.path) {
+          const filePath = path.join(__dirname, '../uploads', path.basename(image.path));
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        }
+      });
+    }
+    
+    // Delete the post
+    await Post.findByIdAndDelete(postId);
+    
+    res.json({ message: 'Post deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

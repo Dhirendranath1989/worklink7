@@ -79,6 +79,8 @@ export const profileAPI = {
   updatePortfolioItem: (itemId, portfolioData) => api.put('/auth/update-profile', portfolioData),
   deletePortfolioItem: (itemId) => api.put('/auth/update-profile', { removePortfolioItem: itemId }),
   updateAvailability: (availability) => api.put('/auth/update-profile', { availability }),
+  deleteWorkPhoto: (userId, photoIndex) => api.delete(`/auth/delete-work-photo/${userId}/${photoIndex}`),
+  deleteCertificate: (userId, certIndex) => api.delete(`/auth/delete-certificate/${userId}/${certIndex}`),
 
   getEarnings: (period) => api.get(`/profiles/earnings?period=${period}`),
 };
@@ -127,6 +129,18 @@ export const workerSearchAPI = {
   searchWorkers: (params) => api.get('/workers/search', { params }),
   getWorkerProfile: (workerId) => api.get(`/workers/${workerId}`),
   getWorkerPosts: (workerId, params) => api.get(`/workers/${workerId}/posts`, { params }),
+};
+
+export const postsAPI = {
+  getPosts: () => api.get('/posts'),
+  getMyPosts: () => api.get('/posts/my-posts'),
+  getUserPosts: (userId) => api.get(`/posts/user/${userId}`),
+  createPost: (postData) => api.post('/posts', postData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deletePost: (postId) => api.delete(`/posts/${postId}`),
+  addComment: (postId, commentData) => api.post(`/posts/${postId}/comments`, commentData),
+  getComments: (postId, params) => api.get(`/posts/${postId}/comments`, { params }),
 };
 
 export const adminAPI = {

@@ -13,6 +13,7 @@ import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import ProtectedRoute from './components/common/ProtectedRouteNew';
 import RealTimeNotifications from './components/RealTimeNotifications';
+import FAQ from './pages/FAQ';
 
 
 // Pages
@@ -95,9 +96,8 @@ function UserInitializer() {
           console.log('Authentication initialized with user data:', userData);
           
           // Redirect authenticated users with completed profiles to their dashboard
-          // Redirect authenticated users with completed profiles to their dashboard
           const currentPath = window.location.pathname;
-          const publicPages = ['/', '/login', '/register', '/how-it-works', '/find-work', '/post-work', '/about', '/search'];
+          const publicPages = ['/', '/login', '/register', '/how-it-works', '/find-work', '/post-work', '/about', '/search', '/faq'];
           
           if (userData && userData.profileCompleted && publicPages.includes(currentPath)) {
             const userRole = userData.userType || userData.role;
@@ -156,6 +156,7 @@ function App() {
               <Route path="/find-work" element={<FindWork />} />
               <Route path="/post-work" element={<PostWork />} />
               <Route path="/about" element={<About />} />
+              <Route path="/faq" element={<FAQ />} />
               
               {/* Protected Routes */}
               <Route path="/worker/dashboard" element={

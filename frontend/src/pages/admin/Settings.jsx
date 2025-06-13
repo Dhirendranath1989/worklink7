@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Plus, Edit, Trash2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { adminAPI } from '../../services/api';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('faq');
@@ -35,12 +36,13 @@ const Settings = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/settings');
-      const data = await response.json();
+      const response = await adminAPI.getSettings();
       
-      if (data.success) {
-        setFaqs(data.settings.faqs || []);
-        setAnnouncements(data.settings.announcements || []);
+      if (response.data.success) {
+        setFaqs(response.data.settings.faqs || []);
+        setAnnouncements(response.data.settings.announcements || []);
+      } else {
+        showMessage('error', response.data.message || 'Failed to load settings');
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -65,25 +67,20 @@ const Settings = () => {
 
     try {
       setSaving(true);
-      const url = editingFaq 
-        ? `/api/admin/settings/faq/${editingFaq._id}`
-        : '/api/admin/settings/faq';
-      const method = editingFaq ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(faqForm)
-      });
+      let response;
+      if (editingFaq) {
+        response = await adminAPI.updateSettings({ type: 'faq', id: editingFaq._id, data: faqForm });
+      } else {
+        response = await adminAPI.updateSettings({ type: 'faq', data: faqForm });
+      }
       
-      if (response.ok) {
+      if (response.data.success) {
         await fetchSettings();
         resetFaqForm();
         showMessage('success', editingFaq ? 'FAQ updated successfully' : 'FAQ added successfully');
       } else {
-        showMessage('error', 'Failed to save FAQ');
+        showMessage('error', response.data.message || 'Failed to save FAQ');
       }
     } catch (error) {
       console.error('Error saving FAQ:', error);
@@ -107,15 +104,13 @@ const Settings = () => {
     if (!window.confirm('Are you sure you want to delete this FAQ?')) return;
     
     try {
-      const response = await fetch(`/api/admin/settings/faq/${faqId}`, {
-        method: 'DELETE'
-      });
+      const response = await adminAPI.updateSettings({ type: 'faq', id: faqId, action: 'delete' });
       
-      if (response.ok) {
+      if (response.data.success) {
         await fetchSettings();
         showMessage('success', 'FAQ deleted successfully');
       } else {
-        showMessage('error', 'Failed to delete FAQ');
+        showMessage('error', response.data.message || 'Failed to delete FAQ');
       }
     } catch (error) {
       console.error('Error deleting FAQ:', error);
@@ -125,15 +120,13 @@ const Settings = () => {
 
   const toggleFaqStatus = async (faqId, currentStatus) => {
     try {
-      const response = await fetch(`/api/admin/settings/faq/${faqId}/toggle`, {
-        method: 'PATCH'
-      });
+      const response = await adminAPI.updateSettings({ type: 'faq', id: faqId, action: 'toggle' });
       
-      if (response.ok) {
+      if (response.data.success) {
         await fetchSettings();
         showMessage('success', `FAQ ${currentStatus ? 'hidden' : 'published'} successfully`);
       } else {
-        showMessage('error', 'Failed to update FAQ status');
+        showMessage('error', response.data.message || 'Failed to update FAQ status');
       }
     } catch (error) {
       console.error('Error toggling FAQ status:', error);
@@ -161,25 +154,20 @@ const Settings = () => {
 
     try {
       setSaving(true);
-      const url = editingAnnouncement 
-        ? `/api/admin/settings/announcement/${editingAnnouncement._id}`
-        : '/api/admin/settings/announcement';
-      const method = editingAnnouncement ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(announcementForm)
-      });
+      let response;
+      if (editingAnnouncement) {
+        response = await adminAPI.updateSettings({ type: 'announcement', id: editingAnnouncement._id, data: announcementForm });
+      } else {
+        response = await adminAPI.updateSettings({ type: 'announcement', data: announcementForm });
+      }
       
-      if (response.ok) {
+      if (response.data.success) {
         await fetchSettings();
         resetAnnouncementForm();
         showMessage('success', editingAnnouncement ? 'Announcement updated successfully' : 'Announcement added successfully');
       } else {
-        showMessage('error', 'Failed to save announcement');
+        showMessage('error', response.data.message || 'Failed to save announcement');
       }
     } catch (error) {
       console.error('Error saving announcement:', error);
@@ -204,15 +192,13 @@ const Settings = () => {
     if (!window.confirm('Are you sure you want to delete this announcement?')) return;
     
     try {
-      const response = await fetch(`/api/admin/settings/announcement/${announcementId}`, {
-        method: 'DELETE'
-      });
+      const response = await adminAPI.updateSettings({ type: 'announcement', id: announcementId, action: 'delete' });
       
-      if (response.ok) {
+      if (response.data.success) {
         await fetchSettings();
         showMessage('success', 'Announcement deleted successfully');
       } else {
-        showMessage('error', 'Failed to delete announcement');
+        showMessage('error', response.data.message || 'Failed to delete announcement');
       }
     } catch (error) {
       console.error('Error deleting announcement:', error);
@@ -222,15 +208,13 @@ const Settings = () => {
 
   const toggleAnnouncementStatus = async (announcementId, currentStatus) => {
     try {
-      const response = await fetch(`/api/admin/settings/announcement/${announcementId}/toggle`, {
-        method: 'PATCH'
-      });
+      const response = await adminAPI.updateSettings({ type: 'announcement', id: announcementId, action: 'toggle' });
       
-      if (response.ok) {
+      if (response.data.success) {
         await fetchSettings();
         showMessage('success', `Announcement ${currentStatus ? 'hidden' : 'published'} successfully`);
       } else {
-        showMessage('error', 'Failed to update announcement status');
+        showMessage('error', response.data.message || 'Failed to update announcement status');
       }
     } catch (error) {
       console.error('Error toggling announcement status:', error);

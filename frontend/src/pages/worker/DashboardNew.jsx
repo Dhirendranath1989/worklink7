@@ -458,7 +458,9 @@ const FacebookLikeDashboard = () => {
       });
       
       if (response.ok) {
+        // Update both posts and userPosts state
         setPosts(prevPosts => prevPosts.filter(post => post._id !== postId));
+        setUserPosts(prevUserPosts => prevUserPosts.filter(post => post._id !== postId));
         toast.success('Post deleted successfully!');
       } else {
         toast.error('Failed to delete post');
@@ -1143,7 +1145,7 @@ const FacebookLikeDashboard = () => {
                     onEdit={handleEditPost}
                     onDelete={handleDeletePost}
                     onLike={handleLikePost}
-                    currentUserId={user?.userId}
+                    currentUserId={user?.id}
                     onImageClick={(image) => handleImageClick(image)}
                   />
                 ))}
@@ -1180,7 +1182,7 @@ const FacebookLikeDashboard = () => {
                     onEdit={handleEditPost}
                     onDelete={handleDeletePost}
                     onLike={handleLikePost}
-                    currentUserId={user?.userId}
+                    currentUserId={user?.id}
                     onImageClick={(image) => handleImageClick(image)}
                   />
                 ))}

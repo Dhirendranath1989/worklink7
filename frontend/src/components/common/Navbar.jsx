@@ -47,6 +47,7 @@ const Navbar = () => {
   const navigation = [
     ...(user?.role !== 'worker' ? [{ name: 'Find Workers', href: '/search-workers', current: location.pathname === '/search-workers' }] : []),
     { name: 'How it Works', href: '/how-it-works', current: location.pathname === '/how-it-works' },
+    { name: 'FAQ', href: '/faq', current: location.pathname === '/faq' },
   ];
 
   const userNavigation = [

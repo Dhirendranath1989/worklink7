@@ -314,48 +314,135 @@ router.get('/users/export/csv', authenticateToken, requireAdmin, async (req, res
 // Get system settings (placeholder)
 router.get('/settings', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    // This is a placeholder - you'll need to implement a proper settings system
-    const settings = {
-      faq: [
-        {
-          id: 1,
-          question: 'How do I create an account?',
-          answer: 'Click on the Sign Up button and fill in your details.'
-        },
-        {
-          id: 2,
-          question: 'How do I post a job?',
-          answer: 'Navigate to the Post Job section and fill in the job details.'
-        }
-      ],
-      announcements: [
-        {
-          id: 1,
-          title: 'Platform Maintenance',
-          content: 'Scheduled maintenance on Sunday 2AM-4AM',
-          active: true,
-          createdAt: new Date()
-        }
-      ]
-    };
+    // Forward to the settings router
+    const [faqs, announcements] = await Promise.all([
+      require('../models/FAQ').find().sort({ createdAt: -1 }),
+      require('../models/Announcement').find().sort({ createdAt: -1 })
+    ]);
 
-    res.json(settings);
+    console.log('📋 Settings API - FAQs found:', faqs.length);
+    console.log('📋 Settings API - Announcements found:', announcements.length);
+    console.log('📋 Settings API - First FAQ:', faqs[0] ? { id: faqs[0]._id, question: faqs[0].question } : 'None');
+
+    res.json({
+      success: true,
+      settings: {
+        faqs,
+        announcements
+      }
+    });
   } catch (error) {
     console.error('Error fetching settings:', error);
-    res.status(500).json({ message: 'Error fetching settings' });
+    res.status(500).json({ success: false, message: 'Error fetching settings' });
   }
 });
 
-// Update system settings (placeholder)
+// Settings routes for FAQ and Announcements
+router.use('/settings', require('./settings'));
+
+// Update system settings - unified endpoint for frontend
 router.put('/settings', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { faq, announcements } = req.body;
+    const { type, id, data, action } = req.body;
     
-    // This is a placeholder - you'll need to implement proper settings storage
-    res.json({ message: 'Settings updated successfully' });
+    if (type === 'faq') {
+      const FAQ = require('../models/FAQ');
+      
+      if (action === 'delete') {
+        await FAQ.findByIdAndDelete(id);
+        return res.json({ success: true, message: 'FAQ deleted successfully' });
+      }
+      
+      if (action === 'toggle') {
+        const faq = await FAQ.findById(id);
+        if (!faq) {
+          return res.status(404).json({ success: false, message: 'FAQ not found' });
+        }
+        faq.isActive = !faq.isActive;
+        faq.updatedAt = Date.now();
+        await faq.save();
+        return res.json({ success: true, message: `FAQ ${faq.isActive ? 'activated' : 'deactivated'} successfully` });
+      }
+      
+      if (id) {
+        // Update existing FAQ
+        const updatedFAQ = await FAQ.findByIdAndUpdate(
+          id,
+          {
+            question: data.question,
+            answer: data.answer,
+            category: data.category || 'general',
+            isActive: data.isActive !== undefined ? data.isActive : true,
+            updatedAt: Date.now()
+          },
+          { new: true }
+        );
+        return res.json({ success: true, message: 'FAQ updated successfully', faq: updatedFAQ });
+      } else {
+        // Create new FAQ
+        const newFAQ = new FAQ({
+          question: data.question,
+          answer: data.answer,
+          category: data.category || 'general',
+          isActive: data.isActive !== undefined ? data.isActive : true
+        });
+        await newFAQ.save();
+        return res.json({ success: true, message: 'FAQ created successfully', faq: newFAQ });
+      }
+    }
+    
+    if (type === 'announcement') {
+      const Announcement = require('../models/Announcement');
+      
+      if (action === 'delete') {
+        await Announcement.findByIdAndDelete(id);
+        return res.json({ success: true, message: 'Announcement deleted successfully' });
+      }
+      
+      if (action === 'toggle') {
+        const announcement = await Announcement.findById(id);
+        if (!announcement) {
+          return res.status(404).json({ success: false, message: 'Announcement not found' });
+        }
+        announcement.isActive = !announcement.isActive;
+        announcement.updatedAt = Date.now();
+        await announcement.save();
+        return res.json({ success: true, message: `Announcement ${announcement.isActive ? 'activated' : 'deactivated'} successfully` });
+      }
+      
+      if (id) {
+        // Update existing announcement
+        const updatedAnnouncement = await Announcement.findByIdAndUpdate(
+          id,
+          {
+            title: data.title,
+            content: data.content,
+            type: data.type || 'info',
+            isActive: data.isActive !== undefined ? data.isActive : true,
+            expiresAt: data.expiresAt || null,
+            updatedAt: Date.now()
+          },
+          { new: true }
+        );
+        return res.json({ success: true, message: 'Announcement updated successfully', announcement: updatedAnnouncement });
+      } else {
+        // Create new announcement
+        const newAnnouncement = new Announcement({
+          title: data.title,
+          content: data.content,
+          type: data.type || 'info',
+          isActive: data.isActive !== undefined ? data.isActive : true,
+          expiresAt: data.expiresAt || null
+        });
+        await newAnnouncement.save();
+        return res.json({ success: true, message: 'Announcement created successfully', announcement: newAnnouncement });
+      }
+    }
+    
+    res.status(400).json({ success: false, message: 'Invalid request type' });
   } catch (error) {
     console.error('Error updating settings:', error);
-    res.status(500).json({ message: 'Error updating settings' });
+    res.status(500).json({ success: false, message: 'Error updating settings' });
   }
 });
 

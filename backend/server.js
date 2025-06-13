@@ -217,6 +217,7 @@ app.use('/api/owner', require('./routes/owner'));
 app.use('/api/saved-workers', require('./routes/saved-workers'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/public', require('./routes/public'));
 
 
 // Test route
@@ -1267,6 +1268,128 @@ app.get('/api/profiles/:userId', async (req, res) => {
 });
 
 
+
+// ============================================================================
+// DELETE ROUTES
+// ============================================================================
+
+// Delete work photo route
+app.delete('/api/auth/delete-work-photo/:userId/:photoIndex', authenticateToken, async (req, res) => {
+  try {
+    const { userId, photoIndex } = req.params;
+    const requestingUserId = req.user.userId;
+    
+    console.log(`Delete work photo request - User: ${requestingUserId}, Target: ${userId}, Photo Index: ${photoIndex}`);
+    
+    // Check if user is trying to delete their own photo
+    if (requestingUserId !== userId) {
+      return res.status(403).json({ error: 'You can only delete your own work photos' });
+    }
+    
+    const photoIndexNum = parseInt(photoIndex);
+    if (isNaN(photoIndexNum) || photoIndexNum < 0) {
+      return res.status(400).json({ error: 'Invalid photo index' });
+    }
+    
+    let user;
+    if (isMongoConnected) {
+      user = await ConsolidatedUser.findById(userId);
+    } else {
+      user = inMemoryUsers.find(u => u._id === userId);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    if (!user.workPhotos || photoIndexNum >= user.workPhotos.length) {
+      return res.status(404).json({ error: 'Work photo not found' });
+    }
+    
+    // Remove the photo from the array
+    const updatedWorkPhotos = [...user.workPhotos];
+    updatedWorkPhotos.splice(photoIndexNum, 1);
+    
+    if (isMongoConnected) {
+      await ConsolidatedUser.findByIdAndUpdate(userId, {
+        workPhotos: updatedWorkPhotos
+      });
+    } else {
+      const userIndex = inMemoryUsers.findIndex(u => u._id === userId);
+      if (userIndex !== -1) {
+        inMemoryUsers[userIndex].workPhotos = updatedWorkPhotos;
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Work photo deleted successfully',
+      workPhotos: updatedWorkPhotos
+    });
+  } catch (error) {
+    console.error('Error deleting work photo:', error);
+    res.status(500).json({ error: 'Failed to delete work photo' });
+  }
+});
+
+// Delete certificate route
+app.delete('/api/auth/delete-certificate/:userId/:certIndex', authenticateToken, async (req, res) => {
+  try {
+    const { userId, certIndex } = req.params;
+    const requestingUserId = req.user.userId;
+    
+    console.log(`Delete certificate request - User: ${requestingUserId}, Target: ${userId}, Cert Index: ${certIndex}`);
+    
+    // Check if user is trying to delete their own certificate
+    if (requestingUserId !== userId) {
+      return res.status(403).json({ error: 'You can only delete your own certificates' });
+    }
+    
+    const certIndexNum = parseInt(certIndex);
+    if (isNaN(certIndexNum) || certIndexNum < 0) {
+      return res.status(400).json({ error: 'Invalid certificate index' });
+    }
+    
+    let user;
+    if (isMongoConnected) {
+      user = await ConsolidatedUser.findById(userId);
+    } else {
+      user = inMemoryUsers.find(u => u._id === userId);
+    }
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    if (!user.certificates || certIndexNum >= user.certificates.length) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+    
+    // Remove the certificate from the array
+    const updatedCertificates = [...user.certificates];
+    updatedCertificates.splice(certIndexNum, 1);
+    
+    if (isMongoConnected) {
+      await ConsolidatedUser.findByIdAndUpdate(userId, {
+        certificates: updatedCertificates
+      });
+    } else {
+      const userIndex = inMemoryUsers.findIndex(u => u._id === userId);
+      if (userIndex !== -1) {
+        inMemoryUsers[userIndex].certificates = updatedCertificates;
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Certificate deleted successfully',
+      certificates: updatedCertificates
+    });
+  } catch (error) {
+    console.error('Error deleting certificate:', error);
+    res.status(500).json({ error: 'Failed to delete certificate' });
+  }
+});
 
 // ============================================================================
 // REVIEW ROUTES
