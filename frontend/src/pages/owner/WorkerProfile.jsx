@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { 
   FaStar, 
   FaMapMarkerAlt, 
@@ -39,11 +39,12 @@ import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
 import { workerSearchAPI, reviewAPI } from '../../services/api';
+import { saveWorker, removeSavedWorker, fetchSavedWorkers } from '../../features/savedWorkers/savedWorkersSlice';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 const WorkerProfile = () => {
-  const { workerId } = useParams();
+  const { id: workerId } = useParams();
   const navigate = useNavigate();
   
   // Helper functions for worker data
@@ -152,12 +153,26 @@ const WorkerProfile = () => {
   
   // Get current user from Redux store
   const { user } = useSelector((state) => state.auth);
+  const { savedWorkers } = useSelector((state) => state.savedWorkers);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (workerId) {
       fetchWorkerProfile();
     }
-  }, [workerId]);
+    // Fetch saved workers when component mounts
+    dispatch(fetchSavedWorkers());
+  }, [workerId, dispatch]);
+
+  // Check if current worker is bookmarked
+  useEffect(() => {
+    if (workerId && savedWorkers) {
+      const isWorkerSaved = savedWorkers.some(worker => 
+        worker._id === workerId || worker.id === workerId
+      );
+      setIsBookmarked(isWorkerSaved);
+    }
+  }, [workerId, savedWorkers]);
 
   useEffect(() => {
     if (activeTab === 'posts' && workerId) {
@@ -395,6 +410,11 @@ const WorkerProfile = () => {
 
   const handleSaveToggle = async () => {
     try {
+      if (isSaved) {
+        await dispatch(removeSavedWorker(workerId)).unwrap();
+      } else {
+        await dispatch(saveWorker(workerId)).unwrap();
+      }
       setIsSaved(!isSaved);
       toast.success(isSaved ? 'Worker removed from favorites' : 'Worker saved to favorites');
     } catch (error) {
@@ -405,6 +425,11 @@ const WorkerProfile = () => {
 
   const handleBookmarkToggle = async () => {
     try {
+      if (isBookmarked) {
+        await dispatch(removeSavedWorker(workerId)).unwrap();
+      } else {
+        await dispatch(saveWorker(workerId)).unwrap();
+      }
       setIsBookmarked(!isBookmarked);
       toast.success(isBookmarked ? 'Bookmark removed' : 'Worker bookmarked');
     } catch (error) {

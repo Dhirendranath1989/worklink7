@@ -782,21 +782,36 @@ const OwnerDashboard = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
           {savedWorkers.map((worker) => (
-            <div key={worker.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md dark:hover:shadow-lg transition-shadow bg-white dark:bg-gray-700">
+            <div 
+              key={worker._id || worker.id} 
+              className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md dark:hover:shadow-lg transition-shadow bg-white dark:bg-gray-700 cursor-pointer"
+              onClick={() => navigate(`/worker/${worker._id || worker.id}`)}
+            >
               <div className="flex items-center space-x-4 mb-4">
                 <img
                   className="h-12 w-12 rounded-full object-cover"
-                  src={worker.profilePhoto || worker.photo || '/default-avatar.png'}
-                  alt={worker.name}
+                  src={worker.profilePhoto 
+                    ? (worker.profilePhoto.startsWith('http') 
+                        ? worker.profilePhoto 
+                        : `http://localhost:5000${worker.profilePhoto}`)
+                    : DEFAULT_AVATAR_128
+                  }
+                  alt={worker.fullName || worker.name || 'Worker'}
                   onError={(e) => {
-                    e.target.src = '/default-avatar.png';
+                    e.target.src = DEFAULT_AVATAR_128;
                   }}
                 />
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{worker.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{worker.profession}</p>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{worker.fullName || worker.name || 'Unknown Worker'}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{worker.skills && worker.skills.length > 0 ? worker.skills.join(', ') : 'No skills listed'}</p>
                 </div>
-                <button className="text-red-500 hover:text-red-400">
+                <button 
+                  className="text-red-500 hover:text-red-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Handle unsave action here
+                  }}
+                >
                   <HeartIconSolid className="h-6 w-6" />
                 </button>
               </div>
@@ -804,37 +819,48 @@ const OwnerDashboard = () => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                    worker.isAvailable ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                    worker.availabilityStatus === 'available' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                   }`}>
-                    {worker.isAvailable ? 'Available' : 'Busy'}
+                    {worker.availabilityStatus === 'available' ? 'Available' : 'Busy'}
                   </span>
                 </div>
                 
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                   <MapPinIcon className="h-4 w-4 mr-1" />
-                  {worker.location}
+                  {worker.location?.city || worker.location?.state || 'Location not specified'}
                 </div>
                 
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                   <ClockIcon className="h-4 w-4 mr-1" />
-                  Last active: {worker.lastActive}
+                  Rate: ${worker.hourlyRate || 'Not specified'}/hr
                 </div>
               </div>
               
               <div className="flex flex-wrap gap-1 mb-4">
-                {worker.tags.map((tag, index) => (
+                {worker.skills && worker.skills.length > 0 ? worker.skills.slice(0, 3).map((skill, index) => (
                   <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                    {tag}
+                    {skill}
                   </span>
-                ))}
+                )) : (
+                  <span className="text-xs text-gray-500">No skills listed</span>
+                )}
               </div>
               
               <div className="flex space-x-2">
-                <button className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-700">
-                  Send Job Request
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/worker/${worker._id || worker.id}`);
+                  }}
+                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-700"
+                >
+                  View Profile
                 </button>
 
-                <button className="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm hover:bg-gray-200">
+                <button 
+                  className="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm hover:bg-gray-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <PhoneIcon className="h-4 w-4" />
                 </button>
               </div>
@@ -1094,25 +1120,25 @@ const OwnerDashboard = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {savedWorkers.map((worker) => (
-            <div key={worker.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-200">
+            <div key={worker._id || worker.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-200">
               <div className="text-center">
                 <img
                   className="h-20 w-20 rounded-full mx-auto mb-4 object-cover"
-                  src={worker.profilePicture 
-                    ? (worker.profilePicture.startsWith('http') 
-                        ? worker.profilePicture 
-                        : `http://localhost:5000${worker.profilePicture}`)
-                    : '/default-avatar.png'
+                  src={worker.profilePhoto 
+                    ? (worker.profilePhoto.startsWith('http') 
+                        ? worker.profilePhoto 
+                        : `http://localhost:5000${worker.profilePhoto}`)
+                    : DEFAULT_AVATAR_128
                   }
-                  alt={worker.name}
+                  alt={worker.fullName || worker.name || 'Worker'}
                   onError={(e) => {
                     console.log('Bookmarked worker image failed to load:', e.target.src);
                     console.log('Worker data:', worker);
-                    e.target.src = '/default-avatar.png';
+                    e.target.src = DEFAULT_AVATAR_128;
                   }}
                 />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{worker.name}</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-3">{worker.profession}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{worker.fullName || worker.name || 'Unknown Worker'}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3">{worker.skills && worker.skills.length > 0 ? worker.skills.join(', ') : 'No skills listed'}</p>
 
                 <div className="flex space-x-2">
                   <button 
