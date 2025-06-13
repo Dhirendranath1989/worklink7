@@ -216,6 +216,7 @@ app.use('/api/workers', workersRouter);
 app.use('/api/owner', require('./routes/owner'));
 app.use('/api/saved-workers', require('./routes/saved-workers'));
 app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/admin', require('./routes/admin'));
 
 
 // Test route
@@ -368,6 +369,7 @@ app.post('/api/auth/login', async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         userType: user.userType,
+        role: user.role,
         profilePhoto: user.profilePhoto,
         workPhotos: user.workPhotos,
         certificates: user.certificates,

@@ -27,6 +27,10 @@ import OwnerDashboard from './pages/owner/Dashboard';
 import SearchWorkers from './pages/owner/SearchWorkers';
 import WorkerProfile from './pages/owner/WorkerProfile';
 import AdminDashboard from './pages/admin/Dashboard';
+import UserManagement from './pages/admin/UserManagement';
+import Reports from './pages/admin/Reports';
+import Analytics from './pages/admin/Analytics';
+import Settings from './pages/admin/Settings';
 import PostJob from './pages/PostJob';
 
 
@@ -193,6 +197,30 @@ function App() {
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/user-management" element={
+                <ProtectedRoute requiredRole="admin">
+                  <UserManagement />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/reports" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Reports />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/analytics" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Analytics />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin/settings" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Settings />
                 </ProtectedRoute>
               } />
               

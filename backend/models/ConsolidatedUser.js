@@ -10,8 +10,8 @@ const consolidatedUserSchema = new mongoose.Schema({
   firebaseUid: { type: String, unique: true, sparse: true },
   
   // User type and role
-  userType: { type: String, enum: ['owner', 'worker'], default: 'worker' },
-  role: { type: String, enum: ['owner', 'worker'], default: 'worker' },
+  userType: { type: String, enum: ['owner', 'worker', 'admin'], default: 'worker' },
+  role: { type: String, enum: ['owner', 'worker', 'admin'], default: 'worker' },
   
   // Verification status
   isEmailVerified: { type: Boolean, default: false },

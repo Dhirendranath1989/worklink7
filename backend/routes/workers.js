@@ -183,7 +183,14 @@ router.get('/:id', async (req, res) => {
       hourlyRate: worker.hourlyRate,
       minimumRate: worker.minimumRate,
       projectRate: worker.projectRate,
-      location: worker.location,
+      location: {
+        address: worker.address || worker.location?.address || '',
+        city: worker.city || worker.location?.city || '',
+        district: worker.district || worker.location?.district || '',
+        block: worker.block || worker.location?.block || '',
+        state: worker.state || worker.location?.state || '',
+        pincode: worker.pincode || worker.location?.zipCode || ''
+      },
       availability: worker.availability,
       availabilityStatus: worker.availabilityStatus,
       workPhotos: worker.workPhotos ? worker.workPhotos.map(photo => {

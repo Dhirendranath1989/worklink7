@@ -130,16 +130,35 @@ export const workerSearchAPI = {
 };
 
 export const adminAPI = {
+  // Dashboard stats
+  getDashboardStats: () => api.get('/admin/dashboard/stats'),
+  
+  // User management
   getUsers: (filters = {}) => {
     const params = new URLSearchParams(filters).toString();
     return api.get(`/admin/users?${params}`);
   },
+  getUserById: (userId) => api.get(`/admin/users/${userId}`),
   updateUser: (userId, userData) => api.put(`/admin/users/${userId}`, userData),
+  toggleUserStatus: (userId) => api.put(`/admin/users/${userId}/toggle-status`),
   deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
-  getReports: () => api.get('/admin/reports'),
-
-  getAnalytics: (period) => api.get(`/admin/analytics?period=${period}`),
-  getSystemStats: () => api.get('/admin/stats'),
+  exportUsers: (filters = {}) => {
+    const params = new URLSearchParams(filters).toString();
+    return api.get(`/admin/users/export/csv?${params}`);
+  },
+  
+  // Reports management
+  getReports: (filters = {}) => {
+    const params = new URLSearchParams(filters).toString();
+    return api.get(`/admin/reports?${params}`);
+  },
+  
+  // Analytics
+  getAnalytics: (timeRange = '7d') => api.get(`/admin/analytics?timeRange=${timeRange}`),
+  
+  // Settings
+  getSettings: () => api.get('/admin/settings'),
+  updateSettings: (settings) => api.put('/admin/settings', settings),
 };
 
 export default api;
