@@ -11,6 +11,7 @@ import {
   EyeIcon,
   CameraIcon,
   DocumentIcon,
+  DocumentTextIcon,
   CalendarIcon,
   BellIcon,
   CogIcon,
@@ -110,6 +111,34 @@ const FacebookLikeDashboard = () => {
     }
   };
 
+  // Fetch user's own posts from backend
+  const fetchUserPosts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      console.log('Fetching user posts with token:', token ? 'Token exists' : 'No token');
+      
+      const response = await fetch('http://localhost:5000/api/posts/my-posts', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log('User posts response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('User posts data received:', data);
+        setUserPosts(data.posts || []);
+        console.log('User posts set to state:', data.posts?.length || 0, 'posts');
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch user posts:', response.status, errorText);
+      }
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    }
+  };
+
   // Fetch reviews from backend with enhanced error handling
   const fetchReviews = useCallback(async () => {
     try {
@@ -149,6 +178,7 @@ const FacebookLikeDashboard = () => {
       dispatch(fetchEarnings());
     }
     fetchPosts();
+    fetchUserPosts();
     fetchReviews();
     
     // Refresh user data from backend to ensure we have the latest profile information
@@ -168,6 +198,10 @@ const FacebookLikeDashboard = () => {
               // Update Redux state with fresh user data
               dispatch(setCredentials({ user: data.user, token }));
               localStorage.setItem('user', JSON.stringify(data.user));
+              
+              // Refresh posts and user posts
+              fetchPosts();
+              fetchUserPosts();
             }
           }
         }
@@ -1077,6 +1111,16 @@ const FacebookLikeDashboard = () => {
                   Feed
                 </button>
                 <button
+                  onClick={() => setActiveTab('my-posts')}
+                  className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'my-posts'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                >
+                  My Posts ({userPosts.length})
+                </button>
+                <button
                   onClick={() => setActiveTab('reviews')}
                   className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === 'reviews'
@@ -1106,6 +1150,43 @@ const FacebookLikeDashboard = () => {
                 {posts.length === 0 && (
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-8 text-center">
                     <p className="text-gray-500 dark:text-gray-400">No posts yet. Create your first post to get started!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'my-posts' && (
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                      <DocumentTextIcon className="h-6 w-6 text-blue-500 mr-2" />
+                      My Posts
+                    </h2>
+                    <button
+                      onClick={fetchUserPosts}
+                      className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
+                    >
+                      <ArrowUpIcon className="h-4 w-4" />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
+                </div>
+                
+                {userPosts.map((post) => (
+                  <PostCard
+                    key={post._id}
+                    post={post}
+                    onEdit={handleEditPost}
+                    onDelete={handleDeletePost}
+                    onLike={handleLikePost}
+                    currentUserId={user?.userId}
+                    onImageClick={(image) => handleImageClick(image)}
+                  />
+                ))}
+                {userPosts.length === 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-8 text-center">
+                    <p className="text-gray-500 dark:text-gray-400">You haven't created any posts yet. Create your first post to get started!</p>
                   </div>
                 )}
               </div>

@@ -49,6 +49,36 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Get posts by user
+router.get('/user/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Fetch posts by specific user, sorted by creation date (newest first)
+    const posts = await Post.find({ 'author._id': userId }).sort({ createdAt: -1 });
+    
+    res.json({ posts });
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get current user's posts
+router.get('/my-posts', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Fetch posts by current user, sorted by creation date (newest first)
+    const posts = await Post.find({ 'author._id': userId }).sort({ createdAt: -1 });
+    
+    res.json({ posts });
+  } catch (error) {
+    console.error('Error fetching my posts:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Create a new post
 router.post('/', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
