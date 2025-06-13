@@ -42,16 +42,17 @@ router.get('/search', async (req, res) => {
       const trimmedLocation = location.trim();
       console.log('Location search term:', trimmedLocation);
       
-      // Search across individual address fields (state, city, district, block, address)
+      // Search across individual address fields (state, city, district, block, address, pincode)
       const locationRegex = new RegExp(trimmedLocation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
       
       const locationConditions = {
         $or: [
-          { 'location.state': { $regex: locationRegex } },
-          { 'location.city': { $regex: locationRegex } },
-          { 'location.district': { $regex: locationRegex } },
-          { 'location.block': { $regex: locationRegex } },
-          { 'location.address': { $regex: locationRegex } }
+          { 'state': { $regex: locationRegex } },
+          { 'city': { $regex: locationRegex } },
+          { 'district': { $regex: locationRegex } },
+          { 'block': { $regex: locationRegex } },
+          { 'address': { $regex: locationRegex } },
+          { 'pincode': { $regex: locationRegex } }
         ]
       };
       searchConditions.push(locationConditions);
@@ -90,7 +91,7 @@ router.get('/search', async (req, res) => {
     // Execute search with pagination
     console.log('Executing search...');
     const workers = await ConsolidatedUser.find(searchQuery)
-      .select('firstName lastName fullName email profilePhoto bio skills location averageRating totalReviews hourlyRate isVerified userType role')
+      .select('firstName lastName fullName email profilePhoto bio skills location address state city district block pincode averageRating totalReviews hourlyRate isVerified userType role')
       .sort({ averageRating: -1, totalReviews: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -114,12 +115,12 @@ router.get('/search', async (req, res) => {
       bio: worker.bio,
       skills: worker.skills,
       location: {
-        address: worker.location?.address,
-        city: worker.location?.city,
-        district: worker.location?.district,
-        block: worker.location?.block,
-        state: worker.location?.state,
-        zipCode: worker.location?.zipCode
+        address: worker.address,
+        city: worker.city,
+        district: worker.district,
+        block: worker.block,
+        state: worker.state,
+        zipCode: worker.pincode
       },
       rating: worker.averageRating || 0,
       reviewCount: worker.totalReviews || 0,

@@ -106,7 +106,7 @@ export const registerWithEmail = createAsyncThunk(
           password, 
           firstName, 
           lastName, 
-          role,
+          userType: role,
           firebaseUid: firebaseUser.uid 
         }),
       });
@@ -121,7 +121,7 @@ export const registerWithEmail = createAsyncThunk(
       
       console.log('Backend registration successful:', data.user);
       
-      return response.data;
+      return data;
     } catch (error) {
       console.error('Email registration error:', error);
       

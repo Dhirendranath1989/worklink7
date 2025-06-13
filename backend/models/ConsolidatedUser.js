@@ -131,24 +131,27 @@ consolidatedUserSchema.pre('save', function(next) {
     this.fullName = `${this.firstName} ${this.lastName}`;
   }
   
-  // Construct location object from individual address fields
-  if (this.address || this.state || this.district || this.city || this.block || this.pincode) {
-    // Initialize location object if it doesn't exist
-    if (!this.location) {
-      this.location = {};
-    }
-    
-    // Map individual fields to location object
-    if (this.address) this.location.address = this.address;
-    if (this.state) this.location.state = this.state;
-    if (this.district) this.location.district = this.district;
-    if (this.city) this.location.city = this.city;
-    if (this.block) this.location.block = this.block;
-    if (this.pincode) this.location.zipCode = this.pincode;
-    
-    // Mark the location field as modified for MongoDB
-    this.markModified('location');
+  // Always construct/update location object from individual address fields
+  // This ensures synchronization for all future account creations and updates
+  if (!this.location) {
+    this.location = {};
   }
+  
+  // Always map individual fields to location object (including empty/null values)
+  this.location.address = this.address || '';
+  this.location.state = this.state || '';
+  this.location.district = this.district || '';
+  this.location.city = this.city || '';
+  this.location.block = this.block || '';
+  this.location.zipCode = this.pincode || '';
+  
+  // Preserve existing coordinates if they exist
+  if (!this.location.coordinates && this.coordinates) {
+    this.location.coordinates = this.coordinates;
+  }
+  
+  // Always mark the location field as modified for MongoDB
+  this.markModified('location');
   
   next();
 });

@@ -226,14 +226,18 @@ app.get('/api/test', (req, res) => {
 // Register endpoint
 app.post('/api/auth/register', async (req, res) => {
   try {
+    console.log('Registration request body:', req.body);
     const { fullName, firstName, lastName, email, password, userType, role, firebaseUid } = req.body;
 
     // Handle both fullName and firstName/lastName formats
     const finalFullName = fullName || (firstName && lastName ? `${firstName} ${lastName}` : '');
     const finalUserType = userType || role;
 
+    console.log('Processed values:', { finalFullName, email, password: '***', finalUserType });
+
     // Validate required fields
     if (!finalFullName || !email || !password || !finalUserType) {
+      console.log('Validation failed:', { finalFullName: !!finalFullName, email: !!email, password: !!password, finalUserType: !!finalUserType });
       return res.status(400).json({ error: 'All fields are required' });
     }
 
