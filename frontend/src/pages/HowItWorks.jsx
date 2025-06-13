@@ -59,19 +59,19 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <Link to="/" className="text-2xl font-bold text-blue-600">
+            <Link to="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               WorkLink
             </Link>
             <div className="flex space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-blue-600">
+              <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                 Login
               </Link>
-              <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <Link to="/register" className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
                 Sign Up
               </Link>
             </div>
@@ -92,13 +92,13 @@ const HowItWorks = () => {
       </div>
 
       {/* Steps Section */}
-      <div className="py-16">
+      <div className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Simple Process, Amazing Results
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Our platform makes it easy to find work or hire skilled professionals
             </p>
           </div>
@@ -110,21 +110,21 @@ const HowItWorks = () => {
                 <div key={step.id} className="relative">
                   {/* Connection Line */}
                   {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gray-300 z-0" />
+                    <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gray-300 dark:bg-gray-600 z-0" />
                   )}
                   
-                  <div className="relative bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="relative bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg hover:shadow-xl dark:shadow-gray-900/20 transition-all duration-300">
                     <div className={`${step.color} w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto`}>
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-semibold text-gray-500 mb-2">
+                      <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
                         STEP {step.id}
                       </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-3">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
                         {step.title}
                       </h3>
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 dark:text-gray-300">
                         {step.description}
                       </p>
                     </div>
@@ -137,13 +137,13 @@ const HowItWorks = () => {
       </div>
 
       {/* Features Section */}
-      <div className="bg-white py-16">
+      <div className="bg-white dark:bg-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Why Choose WorkLink?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               We provide a safe, reliable, and efficient platform for all your work needs
             </p>
           </div>
@@ -153,13 +153,13 @@ const HowItWorks = () => {
               const Icon = feature.icon;
               return (
                 <div key={index} className="text-center">
-                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
-                    <Icon className="w-8 h-8 text-blue-600" />
+                  <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <Icon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-300">
                     {feature.description}
                   </p>
                 </div>
@@ -181,13 +181,13 @@ const HowItWorks = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               to="/register" 
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 dark:bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
             >
               Sign Up as Worker
             </Link>
             <Link 
               to="/register" 
-              className="bg-white text-gray-900 px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+              className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-8 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
             >
               Post a Job
             </Link>
@@ -196,9 +196,9 @@ const HowItWorks = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600">
+          <div className="text-center text-gray-600 dark:text-gray-300">
             <p>&copy; 2024 WorkLink. All rights reserved.</p>
           </div>
         </div>
