@@ -26,19 +26,7 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Simple server is running!' });
 });
 
-// Test change-password route
-app.put('/api/users/change-password', (req, res) => {
-  console.log('Change password route hit');
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) {
-    return res.status(401).json({ message: 'No authorization header' });
-  }
-  
-  res.json({ message: 'Password change endpoint working' });
-});
+// Change password functionality has been removed
 
 // Error handling
 process.on('uncaughtException', (err) => {

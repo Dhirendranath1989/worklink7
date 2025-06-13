@@ -7,10 +7,7 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Minimal server working' });
 });
 
-app.put('/api/users/change-password', (req, res) => {
-  console.log('Change password endpoint hit');
-  res.status(401).json({ message: 'Unauthorized - no token' });
-});
+// Change password functionality has been removed
 
 const server = app.listen(3001, () => {
   console.log('Minimal server running on port 3001');
