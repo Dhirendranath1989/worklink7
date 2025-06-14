@@ -36,14 +36,29 @@ router.put('/change-password', authenticateToken, async (req, res) => {
     }
 
     // Find user
+    console.log('🔍 Looking for user with ID:', userId);
+    console.log('📊 MongoDB connected:', isMongoConnected);
+    
     let user;
     if (isMongoConnected) {
+      console.log('🗄️ Searching in MongoDB...');
       user = await ConsolidatedUser.findById(userId);
+      console.log('👤 User found in MongoDB:', !!user);
+      if (user) {
+        console.log('📋 User details:', { id: user._id, email: user.email, hasPassword: user.hasPassword, passwordLength: user.password ? user.password.length : 0 });
+      }
     } else {
+      console.log('💾 Searching in memory...');
+      console.log('📊 Total users in memory:', inMemoryUsers.length);
       user = inMemoryUsers.find(u => u._id === userId || u.id === userId);
+      console.log('👤 User found in memory:', !!user);
+      if (user) {
+        console.log('📋 User details:', { id: user._id || user.id, email: user.email, hasPassword: user.hasPassword, passwordLength: user.password ? user.password.length : 0 });
+      }
     }
 
     if (!user) {
+      console.log('❌ User not found!');
       return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
@@ -99,8 +114,15 @@ router.put('/change-password', authenticateToken, async (req, res) => {
 // Set password endpoint (for users who don't have a password yet)
 router.put('/set-password', authenticateToken, async (req, res) => {
   try {
+    console.log('🔧 Set password endpoint called');
+    console.log('📝 Request body:', req.body);
+    console.log('👤 User from token:', req.user);
+    
     const { newPassword } = req.body;
     const userId = req.user.userId;
+    
+    console.log('🆔 User ID:', userId);
+    console.log('🔒 New password provided:', !!newPassword);
 
     // Validation
     if (!newPassword) {
@@ -132,13 +154,23 @@ router.put('/set-password', authenticateToken, async (req, res) => {
       });
     }
 
-    // Check if user already has a password
-    if (user.password && user.password.length > 0) {
+    // Check if user already has a password (exclude 'empty' placeholder)
+    console.log('🔐 Current password status:', { 
+      hasPassword: !!user.password, 
+      passwordValue: user.password, 
+      passwordLength: user.password ? user.password.length : 0,
+      isEmpty: user.password === 'empty'
+    });
+    
+    if (user.password && user.password.length > 0 && user.password !== 'empty') {
+      console.log('❌ User already has a password');
       return res.status(400).json({ 
         success: false, 
         message: 'User already has a password. Use change password instead.' 
       });
     }
+    
+    console.log('✅ User can set password - proceeding...');
 
     // Hash new password
     const saltRounds = 10;

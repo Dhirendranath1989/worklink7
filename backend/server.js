@@ -1241,8 +1241,11 @@ app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
 // Set password endpoint (for users who don't have a password yet)
 app.put('/api/auth/set-password', authenticateToken, async (req, res) => {
   try {
+    console.log('🔧 Set password endpoint called');
     const { newPassword } = req.body;
     const userId = req.user.userId;
+    console.log('🔧 Set password - userId:', userId);
+    console.log('🔧 Set password - newPassword provided:', !!newPassword);
 
     // Validation
     if (!newPassword) {
@@ -1260,22 +1263,28 @@ app.put('/api/auth/set-password', authenticateToken, async (req, res) => {
     }
 
     // Find user
+    console.log('🔧 Set password - Finding user...');
     let user;
     if (isMongoConnected) {
       user = await ConsolidatedUser.findById(userId);
     } else {
       user = inMemoryUsers.find(u => u._id === userId || u.id === userId);
     }
+    console.log('🔧 Set password - User found:', !!user);
 
     if (!user) {
+      console.log('🔧 Set password - User not found, returning 404');
       return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
       });
     }
 
-    // Check if user already has a password
-    if (user.password && user.password.length > 0) {
+    // Check if user already has a password (exclude 'empty' placeholder)
+    console.log('🔧 Set password - Current user password:', user.password);
+    console.log('🔧 Set password - User hasPassword:', user.hasPassword);
+    if (user.password && user.password.length > 0 && user.password !== 'empty') {
+      console.log('🔧 Set password - User already has password, returning 400');
       return res.status(400).json({ 
         success: false, 
         message: 'User already has a password. Use change password instead.' 
@@ -1283,10 +1292,13 @@ app.put('/api/auth/set-password', authenticateToken, async (req, res) => {
     }
 
     // Hash new password
+    console.log('🔧 Set password - Hashing new password...');
     const saltRounds = 10;
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+    console.log('🔧 Set password - Password hashed successfully');
 
     // Set password
+    console.log('🔧 Set password - Updating user in database...');
     if (isMongoConnected) {
       await mongoService.updateUser(userId, { password: hashedNewPassword, hasPassword: true });
     } else {
@@ -1296,7 +1308,9 @@ app.put('/api/auth/set-password', authenticateToken, async (req, res) => {
         inMemoryUsers[userIndex].hasPassword = true;
       }
     }
+    console.log('🔧 Set password - User updated successfully');
 
+    console.log('🔧 Set password - Sending success response');
     res.json({ 
       success: true, 
       message: 'Password set successfully' 
