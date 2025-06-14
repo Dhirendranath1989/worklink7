@@ -1,5 +1,6 @@
 import { auth } from '../../services/firebase';
 import { getRedirectResult } from 'firebase/auth';
+import { getApiBaseUrl } from '../../utils/apiUtils';
 
 // Handle Google redirect result on page load
 export const handleGoogleRedirectResult = async () => {
@@ -23,7 +24,7 @@ export const handleGoogleRedirectResult = async () => {
       };
       
       // Send to backend
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/auth/google`, {
+      const response = await fetch(`${getApiBaseUrl()}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

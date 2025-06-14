@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaStar, FaMapMarkerAlt, FaHeart, FaRegHeart, FaCheckCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { getProfilePhotoUrl } from '../utils/apiUtils';
 
 const WorkerCard = ({ worker, onClick, onSave, onUnsave, isSaved = false }) => {
   const [isLiked, setIsLiked] = useState(isSaved);
@@ -80,7 +81,7 @@ const WorkerCard = ({ worker, onClick, onSave, onUnsave, isSaved = false }) => {
         <div className="aspect-w-16 aspect-h-12 bg-gray-200 rounded-t-lg overflow-hidden">
           {worker.profilePhoto ? (
             <img
-              src={worker.profilePhoto.startsWith('http') ? worker.profilePhoto : `${process.env.REACT_APP_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${worker.profilePhoto}`}
+              src={getProfilePhotoUrl(worker.profilePhoto)}
               alt={worker.name}
               className="w-full h-48 object-cover"
               onError={(e) => {

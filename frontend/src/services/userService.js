@@ -1,6 +1,9 @@
 // User service now uses backend API instead of direct Firebase operations
 // User service for backend API operations (replaces direct Firestore)
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+import axios from 'axios';
+import { getApiBaseUrl } from '../utils/apiUtils';
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to get auth token
 const getAuthToken = () => {

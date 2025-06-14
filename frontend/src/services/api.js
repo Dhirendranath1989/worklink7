@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { store } from '../store/store';
 import { logout } from '../features/auth/authSlice';
+import { getApiBaseUrl } from '../utils/apiUtils';
 
 // Create axios instance
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: getApiBaseUrl(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

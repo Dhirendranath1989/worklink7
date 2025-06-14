@@ -615,31 +615,7 @@ const FacebookLikeDashboard = () => {
     setSelectedCertificate({ url: certUrl, name: typeof cert === 'string' ? cert.split('/').pop() : (cert.originalName || cert.path?.split('/').pop() || 'Certificate') });
   };
 
-  // Stats data
-  const stats = [
-    {
-      title: 'Completed Jobs',
-      value: userProfile.completedJobs,
-      icon: BriefcaseIcon,
-      color: 'bg-blue-500',
-      change: '+12%'
-    },
-    {
-      title: 'Total Earnings',
-      value: `$${earnings?.total || 0}`,
-      icon: CurrencyDollarIcon,
-      color: 'bg-green-500',
-      change: '+8%'
-    },
-
-    {
-      title: 'Active Projects',
-      value: '3',
-      icon: ClockIcon,
-      color: 'bg-purple-500',
-      change: '+1'
-    }
-  ];
+  // Stats data removed - was unused
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 pt-16">
