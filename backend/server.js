@@ -200,10 +200,16 @@ const ConsolidatedUser = require('./models/ConsolidatedUser');
 const postsRouter = require('./routes/posts');
 const usersRouter = require('./routes/users');
 const workersRouter = require('./routes/workers');
+const authRouter = require('./routes/auth');
 
 
 // Set global references for routes
 usersRouter.setGlobalReferences({
+  isMongoConnected,
+  inMemoryUsers
+});
+
+authRouter.setGlobalReferences({
   isMongoConnected,
   inMemoryUsers
 });
@@ -213,6 +219,7 @@ usersRouter.setGlobalReferences({
 app.use('/api/posts', postsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/workers', workersRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/owner', require('./routes/owner'));
 app.use('/api/saved-workers', require('./routes/saved-workers'));
 app.use('/api/jobs', require('./routes/jobs'));

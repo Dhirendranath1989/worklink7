@@ -1,9 +1,8 @@
-const ConsolidatedUser = require('../models/ConsolidatedUser');
 const mongoose = require('mongoose');
 const Job = require('../models/Job');
 const Review = require('../models/Review');
-
 const Notification = require('../models/Notification');
+const ConsolidatedUser = require('../models/ConsolidatedUser');
 
 // MongoDB service to replace Firebase Firestore operations
 class MongoService {

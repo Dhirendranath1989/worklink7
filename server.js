@@ -298,4 +298,4 @@ app.delete('/api/auth/delete-certificate/:userId/:certIndex', authenticateToken,
     console.error('Error deleting certificate:', error);
     res.status(500).json({ error: 'Failed to delete certificate' });
   }
-});}]}}
+});

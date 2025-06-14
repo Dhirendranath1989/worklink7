@@ -41,6 +41,30 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await api.put('/auth/change-password', { currentPassword, newPassword });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Password change failed');
+    }
+  }
+);
+
+export const setPassword = createAsyncThunk(
+  'auth/setPassword',
+  async ({ newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await api.put('/auth/set-password', { newPassword });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Set password failed');
+    }
+  }
+);
+
 export const verifyPhone = createAsyncThunk(
   'auth/verifyPhone',
   async ({ phone, recaptchaVerifier }, { rejectWithValue }) => {
@@ -658,6 +682,40 @@ const authSlice = createSlice({
         // Redirect is in progress, actual login will be handled on page reload
       })
       .addCase(loginWithGoogleRedirect.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      // Change Password
+      .addCase(changePassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        // Ensure user has password flag set to true after changing password
+        if (state.user) {
+          state.user.hasPassword = true;
+        }
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      // Set Password
+      .addCase(setPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(setPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        // Update user to indicate they now have a password
+        if (state.user) {
+          state.user.hasPassword = true;
+        }
+      })
+      .addCase(setPassword.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

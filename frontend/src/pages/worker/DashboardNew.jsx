@@ -37,7 +37,8 @@ import {
   UserCircleIcon,
   UserIcon,
   ChevronRightIcon,
-  StarIcon
+  StarIcon,
+  KeyIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { fetchProfile, fetchEarnings } from '../../features/profiles/profilesSlice';
@@ -1052,6 +1053,13 @@ const FacebookLikeDashboard = () => {
                   <span>Edit Profile</span>
                 </button>
                 
+                <Link
+                  to="/change-password"
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <KeyIcon className="h-4 w-4" />
+                  <span>Change Password</span>
+                </Link>
 
               </div>
             </div>

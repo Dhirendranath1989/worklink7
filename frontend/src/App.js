@@ -33,6 +33,7 @@ import Reports from './pages/admin/Reports';
 import Analytics from './pages/admin/Analytics';
 import Settings from './pages/admin/Settings';
 import PostJob from './pages/PostJob';
+import ChangePasswordPage from './pages/ChangePassword';
 
 
 import NotFound from './pages/NotFound';
@@ -231,7 +232,12 @@ function App() {
                 </ProtectedRoute>
               } />
               
-
+              {/* Change Password - Available to all authenticated users */}
+              <Route path="/change-password" element={
+                <ProtectedRoute>
+                  <ChangePasswordPage />
+                </ProtectedRoute>
+              } />
               
               {/* Catch all route */}
               <Route path="*" element={<NotFound />} />

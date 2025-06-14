@@ -6,6 +6,7 @@ const consolidatedUserSchema = new mongoose.Schema({
   uid: { type: String, unique: true, sparse: true }, // Firebase UID
   email: { type: String, unique: true, sparse: true },
   password: { type: String },
+  hasPassword: { type: Boolean, default: false },
   phone: { type: String, unique: true, sparse: true },
   firebaseUid: { type: String, unique: true, sparse: true },
   

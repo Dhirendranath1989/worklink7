@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Plus, Edit, Trash2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Save, Plus, Edit, Trash2, Eye, EyeOff, AlertCircle, CheckCircle, KeyIcon } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 
 const Settings = () => {
@@ -305,6 +306,16 @@ const Settings = () => {
               }`}
             >
               Announcements
+            </button>
+            <button
+              onClick={() => setActiveTab('account')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'account'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            >
+              Account Settings
             </button>
           </nav>
         </div>
@@ -632,6 +643,36 @@ const Settings = () => {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Account Settings Tab */}
+      {activeTab === 'account' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Account Management
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                    Password Settings
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Change your account password for security
+                  </p>
+                </div>
+                <Link
+                  to="/change-password"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <KeyIcon className="w-4 h-4" />
+                  Change Password
+                </Link>
+              </div>
             </div>
           </div>
         </div>

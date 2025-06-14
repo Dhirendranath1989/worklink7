@@ -17,6 +17,7 @@ import {
   CameraIcon,
   PencilIcon,
   BookmarkIcon,
+  KeyIcon,
 
   MagnifyingGlassIcon,
   BellIcon,
@@ -688,6 +689,18 @@ const OwnerDashboard = () => {
               </div>
             </div>
 
+            {/* Profile Actions */}
+            <div className="md:col-span-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/change-password"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                  <KeyIcon className="h-4 w-4 mr-2" />
+                  Change Password
+                </Link>
+              </div>
+            </div>
 
           </div>
         </div>
@@ -1071,10 +1084,6 @@ const OwnerDashboard = () => {
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Account Management</h3>
             <div className="space-y-4">
-              <button className="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                <p className="text-sm font-medium text-gray-900">Change Password</p>
-                <p className="text-sm text-gray-600">Update your account password</p>
-              </button>
               <button className="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                 <p className="text-sm font-medium text-gray-900">Update Mobile Number</p>
                 <p className="text-sm text-gray-600">Change your registered mobile number</p>

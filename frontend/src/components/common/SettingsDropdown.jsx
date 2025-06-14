@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Transition } from '@headlessui/react';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, KeyIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 
 const SettingsDropdown = ({ isScrolled }) => {
 
@@ -24,9 +25,17 @@ const SettingsDropdown = ({ isScrolled }) => {
         leaveTo="transform opacity-0 scale-95"
       >
         <Menu.Items className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-600 focus:outline-none">
-          <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-            No settings available
-          </div>
+          <Menu.Item>
+            {({ active }) => (
+              <Link
+                to="/change-password"
+                className={`${active ? 'bg-gray-50 dark:bg-gray-700' : ''} flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`}
+              >
+                <KeyIcon className="mr-3 h-4 w-4" />
+                Change Password
+              </Link>
+            )}
+          </Menu.Item>
         </Menu.Items>
       </Transition>
     </Menu>
