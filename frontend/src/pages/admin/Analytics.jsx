@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Briefcase, TrendingUp, AlertCircle, RefreshCw, Calendar, BarChart3, PieChart } from 'lucide-react';
+import { Users, Briefcase, TrendingUp, AlertCircle, RefreshCw, Calendar, BarChart3, PieChart, UserCheck, Activity, Star, Eye, AlertTriangle } from 'lucide-react';
 
 const Analytics = () => {
   const [stats, setStats] = useState(null);
@@ -71,8 +71,8 @@ const Analytics = () => {
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
-            <p className="text-gray-600">Platform insights and key metrics</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Analytics Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-300">Platform insights and key metrics</p>
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <select
@@ -99,11 +99,11 @@ const Analytics = () => {
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Users</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatNumber(stats?.totalUsers || 0)}
               </p>
               {stats?.userGrowth !== undefined && (
@@ -112,17 +112,17 @@ const Analytics = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Users</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatNumber(stats?.activeUsers || 0)}
               </p>
               {stats?.activeUserGrowth !== undefined && (
@@ -131,17 +131,17 @@ const Analytics = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+              <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Jobs</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Jobs</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatNumber(stats?.totalJobs || 0)}
               </p>
               {stats?.jobGrowth !== undefined && (
@@ -150,17 +150,17 @@ const Analytics = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Briefcase className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+              <Briefcase className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Pending Reports</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending Reports</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatNumber(stats?.pendingReports || 0)}
               </p>
               {stats?.reportGrowth !== undefined && (
@@ -169,8 +169,8 @@ const Analytics = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 bg-red-100 rounded-full">
-              <AlertCircle className="w-6 h-6 text-red-600" />
+            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+              <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
         </div>
@@ -179,24 +179,24 @@ const Analytics = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* User Registration Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">User Registrations</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">User Registrations</h3>
             <BarChart3 className="w-5 h-5 text-gray-400" />
           </div>
-          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div className="text-center">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500">Chart visualization would go here</p>
+              <p className="text-gray-500 dark:text-gray-400">Chart visualization would go here</p>
               <p className="text-sm text-gray-400">Integration with charting library needed</p>
             </div>
           </div>
         </div>
 
         {/* User Types Distribution */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">User Distribution</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">User Distribution</h3>
             <PieChart className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-4">
@@ -263,8 +263,8 @@ const Analytics = () => {
       {/* Popular Skills and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Popular Skills */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Skills</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Popular Skills</h3>
           <div className="space-y-3">
             {stats?.popularSkills?.slice(0, 10).map((skill, index) => (
               <div key={skill._id} className="flex items-center justify-between">
@@ -295,8 +295,8 @@ const Analytics = () => {
         </div>
 
         {/* Recent Activity Summary */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <div>
@@ -343,31 +343,31 @@ const Analytics = () => {
 
       {/* System Health Indicators */}
       <div className="mt-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">System Health</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Health</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <div className="w-8 h-8 bg-green-500 rounded-full"></div>
               </div>
-              <p className="text-sm font-medium text-gray-900">Database</p>
-              <p className="text-xs text-green-600">Operational</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Database</p>
+              <p className="text-xs text-green-600 dark:text-green-400">Operational</p>
             </div>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
                 <div className="w-8 h-8 bg-green-500 rounded-full"></div>
               </div>
-              <p className="text-sm font-medium text-gray-900">API</p>
-              <p className="text-xs text-green-600">Operational</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">API</p>
+              <p className="text-xs text-green-600 dark:text-green-400">Operational</p>
             </div>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
                 <div className="w-8 h-8 bg-green-500 rounded-full"></div>
               </div>
-              <p className="text-sm font-medium text-gray-900">Storage</p>
-              <p className="text-xs text-green-600">Operational</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Storage</p>
+              <p className="text-xs text-green-600 dark:text-green-400">Operational</p>
             </div>
           </div>
         </div>

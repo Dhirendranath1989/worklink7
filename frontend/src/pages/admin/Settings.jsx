@@ -264,8 +264,8 @@ const Settings = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">System Settings</h1>
-        <p className="text-gray-600">Manage FAQ and announcements</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">System Settings</h1>
+        <p className="text-gray-600 dark:text-gray-300">Manage FAQ and announcements</p>
       </div>
 
       {/* Message Alert */}
@@ -284,14 +284,14 @@ const Settings = () => {
 
       {/* Tabs */}
       <div className="mb-6">
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('faq')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'faq'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               FAQ Management
@@ -300,8 +300,8 @@ const Settings = () => {
               onClick={() => setActiveTab('announcements')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'announcements'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               Announcements
@@ -314,20 +314,20 @@ const Settings = () => {
       {activeTab === 'faq' && (
         <div className="space-y-6">
           {/* FAQ Form */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {editingFaq ? 'Edit FAQ' : 'Add New FAQ'}
             </h3>
             <form onSubmit={handleFaqSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Category
                   </label>
                   <select
                     value={faqForm.category}
                     onChange={(e) => setFaqForm(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="general">General</option>
                     <option value="workers">For Workers</option>
@@ -344,34 +344,34 @@ const Settings = () => {
                       onChange={(e) => setFaqForm(prev => ({ ...prev, isActive: e.target.checked }))}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
                   </label>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Question *
                 </label>
                 <input
                   type="text"
                   value={faqForm.question}
                   onChange={(e) => setFaqForm(prev => ({ ...prev, question: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="Enter the question..."
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Answer *
                 </label>
                 <textarea
                   value={faqForm.answer}
                   onChange={(e) => setFaqForm(prev => ({ ...prev, answer: e.target.value }))}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="Enter the answer..."
                   required
                 />
@@ -390,7 +390,7 @@ const Settings = () => {
                   <button
                     type="button"
                     onClick={resetFaqForm}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -400,13 +400,13 @@ const Settings = () => {
           </div>
 
           {/* FAQ List */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Existing FAQs</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Existing FAQs</h3>
             </div>
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {faqs.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">
+                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
                   No FAQs found. Add your first FAQ above.
                 </div>
               ) : (
@@ -415,19 +415,19 @@ const Settings = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                             {faq.category}
                           </span>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            faq.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            faq.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                           }`}>
                             {faq.isActive ? 'Active' : 'Hidden'}
                           </span>
                         </div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                           {faq.question}
                         </h4>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           {faq.answer}
                         </p>
                       </div>
@@ -435,7 +435,7 @@ const Settings = () => {
                         <button
                           onClick={() => toggleFaqStatus(faq._id, faq.isActive)}
                           className={`p-1 rounded ${
-                            faq.isActive ? 'text-gray-600 hover:text-gray-900' : 'text-green-600 hover:text-green-900'
+                            faq.isActive ? 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200' : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
                           }`}
                           title={faq.isActive ? 'Hide FAQ' : 'Show FAQ'}
                         >
@@ -443,14 +443,14 @@ const Settings = () => {
                         </button>
                         <button
                           onClick={() => editFaq(faq)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded"
                           title="Edit FAQ"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteFaq(faq._id)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded"
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded"
                           title="Delete FAQ"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -469,20 +469,20 @@ const Settings = () => {
       {activeTab === 'announcements' && (
         <div className="space-y-6">
           {/* Announcement Form */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {editingAnnouncement ? 'Edit Announcement' : 'Add New Announcement'}
             </h3>
             <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Type
                   </label>
                   <select
                     value={announcementForm.type}
                     onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="info">Info</option>
                     <option value="success">Success</option>
@@ -491,14 +491,14 @@ const Settings = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Expires On (Optional)
                   </label>
                   <input
                     type="date"
                     value={announcementForm.expiresAt}
                     onChange={(e) => setAnnouncementForm(prev => ({ ...prev, expiresAt: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div className="flex items-center">
@@ -509,34 +509,34 @@ const Settings = () => {
                       onChange={(e) => setAnnouncementForm(prev => ({ ...prev, isActive: e.target.checked }))}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
                   </label>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Title *
                 </label>
                 <input
                   type="text"
                   value={announcementForm.title}
                   onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="Enter announcement title..."
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Content *
                 </label>
                 <textarea
                   value={announcementForm.content}
                   onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="Enter announcement content..."
                   required
                 />
@@ -555,7 +555,7 @@ const Settings = () => {
                   <button
                     type="button"
                     onClick={resetAnnouncementForm}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -565,13 +565,13 @@ const Settings = () => {
           </div>
 
           {/* Announcements List */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Existing Announcements</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Existing Announcements</h3>
             </div>
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {announcements.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">
+                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
                   No announcements found. Add your first announcement above.
                 </div>
               ) : (
@@ -586,20 +586,20 @@ const Settings = () => {
                             {announcement.type}
                           </span>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            announcement.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            announcement.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                           }`}>
                             {announcement.isActive ? 'Active' : 'Hidden'}
                           </span>
                           {announcement.expiresAt && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               Expires: {formatDate(announcement.expiresAt)}
                             </span>
                           )}
                         </div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                           {announcement.title}
                         </h4>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           {announcement.content}
                         </p>
                       </div>
@@ -607,7 +607,7 @@ const Settings = () => {
                         <button
                           onClick={() => toggleAnnouncementStatus(announcement._id, announcement.isActive)}
                           className={`p-1 rounded ${
-                            announcement.isActive ? 'text-gray-600 hover:text-gray-900' : 'text-green-600 hover:text-green-900'
+                            announcement.isActive ? 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200' : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
                           }`}
                           title={announcement.isActive ? 'Hide Announcement' : 'Show Announcement'}
                         >
@@ -615,14 +615,14 @@ const Settings = () => {
                         </button>
                         <button
                           onClick={() => editAnnouncement(announcement)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded"
                           title="Edit Announcement"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteAnnouncement(announcement._id)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded"
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded"
                           title="Delete Announcement"
                         >
                           <Trash2 className="w-4 h-4" />
