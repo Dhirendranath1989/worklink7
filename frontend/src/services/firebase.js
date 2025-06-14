@@ -6,12 +6,12 @@ import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyDbV5BSPuKsMovojw5EssNl9vcqFIQAGys",
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "workrklink6.firebaseapp.com",
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "workrklink6",
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "workrklink6.firebasestorage.app",
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "85255551610",
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:85255551610:web:fd0610bfbdd59365cdd9c3"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDbV5BSPuKsMovojw5EssNl9vcqFIQAGys",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "workrklink6.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "workrklink6",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "workrklink6.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "85255551610",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:85255551610:web:fd0610bfbdd59365cdd9c3"
 };
 
 // Validate Firebase configuration
@@ -121,7 +121,7 @@ export const requestNotificationPermission = async () => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       const token = await getToken(messaging, {
-        vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
+        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY
       });
       return token;
     } else {

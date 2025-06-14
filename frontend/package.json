@@ -2,6 +2,7 @@
   "name": "worklink-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
@@ -55,8 +56,10 @@
   },
   "proxy": "http://localhost:5000",
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.2",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
-    "tailwindcss": "^3.3.5"
+    "tailwindcss": "^3.3.5",
+    "vite": "^6.3.5"
   }
 }

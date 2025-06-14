@@ -24,17 +24,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          redux: ['@reduxjs/toolkit', 'react-redux', 'redux-persist'],
-          firebase: ['firebase'],
-          ui: ['@headlessui/react', '@heroicons/react'],
-        },
-      },
-    },
   },
   define: {
     global: 'globalThis',
