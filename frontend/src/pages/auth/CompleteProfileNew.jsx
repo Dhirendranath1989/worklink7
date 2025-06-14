@@ -57,9 +57,9 @@ const CompleteProfile = () => {
   
   // Predefined options
   const skillOptions = [
-    'Electrician', 'Plumber', 'Painter', 'Carpenter', 'Mason', 'Welder',
-    'AC Technician', 'Appliance Repair', 'Cleaning', 'Gardening',
-    'Home Renovation', 'Interior Design', 'Pest Control', 'Security',
+    'Electrician', 'Plumber', 'Painter', 'Carpenter','Driver', 'Mechanic', 'Mistri','Civil Worker',
+    'AC Technician','Tent House', 'Appliance Repair', 'Cleaning', 'Gardening',
+    'Home Renovation', 'Interior Design', 'Ceiling Designer', 'Security',
     'Roofing', 'Flooring', 'Tiling', 'Glass Work', 'Locksmith'
   ];
   

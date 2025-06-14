@@ -46,25 +46,25 @@ const About = () => {
 
   const team = [
     {
-      name: 'Rajesh Kumar',
-      role: 'Founder & CEO',
+      name: 'Tanaya Kara',
+      role: 'Founder',
       image: '/api/placeholder/150/150',
       description: 'Former tech executive with 15+ years in building scalable platforms.'
     },
     {
-      name: 'Priya Sharma',
+      name: 'Dhirendranath Thakur',
       role: 'Head of Operations',
       image: '/api/placeholder/150/150',
       description: 'Expert in service operations and quality management with 12+ years experience.'
     },
     {
-      name: 'Amit Patel',
+      name: 'Jaydev Kara',
       role: 'Head of Technology',
       image: '/api/placeholder/150/150',
       description: 'Full-stack developer and architect passionate about solving real-world problems.'
     },
     {
-      name: 'Sneha Reddy',
+      name: 'Jayanti Thakur',
       role: 'Head of Customer Success',
       image: '/api/placeholder/150/150',
       description: 'Customer experience specialist focused on building lasting relationships.'
@@ -400,7 +400,7 @@ const About = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; 2024 WorkLink. All rights reserved.</p>
+            <p>&copy; 2025 WorkLink. All rights reserved.</p>
           </div>
         </div>
       </footer>

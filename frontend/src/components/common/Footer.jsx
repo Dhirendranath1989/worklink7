@@ -107,7 +107,7 @@ const Footer = () => {
             <div className="space-y-2">
               <div className="flex items-center space-x-2 text-gray-300">
                 <MapPinIcon className="h-4 w-4" />
-                <span className="text-sm">Available across India</span>
+                <span className="text-sm">Naktiguda, Bhawanipatna, Odisha</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-300">
                 <PhoneIcon className="h-4 w-4" />
