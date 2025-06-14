@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import SEOMetaTags from '../components/common/SEOMetaTags';
+import { generateSEOConfig } from '../utils/seoConfig';
 import {
   MagnifyingGlassIcon,
   MapPinIcon,
@@ -149,8 +151,11 @@ const FindWork = () => {
     return matchesSearch && matchesLocation && matchesCategory;
   });
 
+  const seoConfig = generateSEOConfig('job-search');
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      <SEOMetaTags {...seoConfig} />
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

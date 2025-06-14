@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SEOMetaTags from '../components/common/SEOMetaTags';
+import { generateSEOConfig } from '../utils/seoConfig';
 import {
   MagnifyingGlassIcon,
   UserGroupIcon,
@@ -74,8 +76,11 @@ const Home = () => {
     },
   ];
 
+  const seoConfig = generateSEOConfig('home');
+
   return (
     <div className="min-h-screen">
+      <SEOMetaTags {...seoConfig} />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 overflow-hidden">
         {/* Background Pattern */}

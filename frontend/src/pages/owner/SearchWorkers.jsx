@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SEOMetaTags from '../../components/common/SEOMetaTags';
+import { generateSEOConfig } from '../../utils/seoConfig';
 import { FaSearch, FaMapMarkerAlt, FaStar, FaHeart, FaRegHeart, FaArrowLeft } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { workerSearchAPI } from '../../services/api';
@@ -157,8 +159,11 @@ const SearchWorkers = () => {
     }
   };
 
+  const seoConfig = generateSEOConfig('worker-search');
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <SEOMetaTags {...seoConfig} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
         <div className="mt-8 mb-6">

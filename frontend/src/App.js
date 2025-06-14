@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { Toaster } from 'react-hot-toast';
+import { HelmetProvider } from 'react-helmet-async';
 import { handleGoogleRedirectResult } from './features/auth/googleRedirectHandler';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials, initializeAuth } from './features/auth/authSlice';
@@ -130,8 +131,9 @@ function UserInitializer() {
 
 function App() {
   return (
-    <Provider store={store}>
-        <ThemeProvider>
+    <HelmetProvider>
+      <Provider store={store}>
+          <ThemeProvider>
           <Router future={{
             v7_startTransition: true,
             v7_relativeSplatPath: true
@@ -260,7 +262,8 @@ function App() {
           />
           </Router>
         </ThemeProvider>
-    </Provider>
+      </Provider>
+    </HelmetProvider>
   );
 }
 
