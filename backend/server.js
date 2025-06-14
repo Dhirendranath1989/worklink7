@@ -235,6 +235,20 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/public', require('./routes/public'));
 
 
+// Root route handler
+app.get('/', (req, res) => {
+  res.json({
+    message: 'WorkLink Backend API Server',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/api/health',
+      ping: '/api/ping',
+      test: '/api/test'
+    }
+  });
+});
+
 // Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is running!' });
