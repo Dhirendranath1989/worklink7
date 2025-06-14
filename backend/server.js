@@ -1792,10 +1792,48 @@ app.get('/api/reviews/received', authenticateToken, async (req, res) => {
   }
 });
 
+// Health check and confirmation endpoint for Pi testing
+app.get('/api/health', (req, res) => {
+  const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
+    (req.connection.socket ? req.connection.socket.remoteAddress : null);
+  
+  const serverInfo = {
+    status: 'OK',
+    message: 'WorkLink Backend Server is running successfully',
+    timestamp: new Date().toISOString(),
+    server: {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      mongoConnected: isMongoConnected
+    },
+    client: {
+      ip: clientIP,
+      userAgent: req.get('User-Agent')
+    },
+    confirmation: 'Backend server is accessible and ready for Pi testing'
+  };
+  
+  console.log(`Health check accessed from IP: ${clientIP}`);
+  res.json(serverInfo);
+});
+
+// Simple ping endpoint
+app.get('/api/ping', (req, res) => {
+  res.json({ 
+    message: 'Pong! Server is alive', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Export inMemoryUsers for use in other modules
 module.exports = { inMemoryUsers };
 
 // Start server
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 WorkLink Backend Server running on port ${PORT}`);
+  console.log(`📡 Server accessible at http://localhost:${PORT}`);
+  console.log(`🔍 Health check available at http://localhost:${PORT}/api/health`);
+  console.log(`🏓 Ping endpoint available at http://localhost:${PORT}/api/ping`);
+  console.log(`🌐 Server listening on all interfaces (0.0.0.0) for Pi testing`);
 });
