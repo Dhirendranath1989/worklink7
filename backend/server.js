@@ -12,8 +12,16 @@ const http = require('http');
 
 const mongoService = require('./services/mongoService');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config();
+}
+
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Using MongoDB: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
+console.log(`Server will run on port: ${process.env.PORT || 5000}`);
 
 // Initialize Firebase Admin SDK - TEMPORARILY DISABLED FOR TESTING
 // if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
