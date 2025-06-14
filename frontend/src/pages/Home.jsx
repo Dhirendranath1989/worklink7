@@ -143,7 +143,7 @@ const Home = () => {
                 <div className="absolute -top-4 -left-4 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">500+ Workers Online</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">1.6 Lakh Workers Registered</span>
                   </div>
                 </div>
                 <div className="absolute -bottom-4 -right-4 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-200 dark:border-gray-700">
