@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const admin = require('firebase-admin');
+// const admin = require('firebase-admin'); // Temporarily disabled to avoid dependency issues
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -49,13 +49,20 @@ let isMongoConnected = false;
 
 // Configure CORS for production
 const corsOrigins = process.env.NODE_ENV === 'production' 
-  ? (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://worklinkindia.com', 'https://www.worklinkindia.com'])
+  ? (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [
+      'https://worklinkindia.com', 
+      'https://www.worklinkindia.com',
+      'http://worklinkindia.com',
+      'http://www.worklinkindia.com'
+    ])
   : [
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:3001',
       'https://www.worklinkindia.com',
       'https://worklinkindia.com',
+      'http://www.worklinkindia.com',
+      'http://worklinkindia.com',
       'https://accounts.google.com',
       'https://googleapis.com'
     ];
