@@ -5,7 +5,7 @@ export const seoConfig = {
   // Default/Global SEO settings
   default: {
     siteName: 'WorkLink',
-    siteUrl: 'https://worklink.com',
+    siteUrl: 'https://www.worklinkindia.com',
     twitterHandle: '@worklink_in',
     locale: 'en_IN',
     author: 'WorkLink',
@@ -19,16 +19,16 @@ export const seoConfig = {
       title: 'WorkLink - India\'s #1 Local Services Platform | Find Skilled Workers & Jobs',
       description: 'Connect with 50,000+ verified skilled workers across 500+ cities in India. Find electricians, plumbers, carpenters & more. Join India\'s fastest-growing local services marketplace with 4.8★ rating.',
       keywords: 'local workers India, skilled workers, home services, electrician near me, plumber near me, carpenter, painter, AC repair, appliance repair, local jobs, worker marketplace, verified professionals, home maintenance',
-      canonicalUrl: 'https://worklink.com',
+      canonicalUrl: 'https://www.worklinkindia.com',
       structuredData: {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "WorkLink",
-        "url": "https://worklink.com",
+        "url": "https://www.worklinkindia.com",
         "description": "India's fastest-growing platform connecting skilled local workers with opportunities",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "https://worklink.com/search?q={search_term_string}",
+          "target": "https://www.worklinkindia.com/search?q={search_term_string}",
           "query-input": "required name=search_term_string"
         },
         "sameAs": [
@@ -44,7 +44,7 @@ export const seoConfig = {
       title: 'Find Skilled Workers Near You | Verified Professionals | WorkLink',
       description: 'Browse 50,000+ verified skilled workers in your area. Compare ratings, reviews & prices. Book electricians, plumbers, carpenters & more. Instant quotes available.',
       keywords: 'find workers, skilled professionals, local workers, verified workers, electrician, plumber, carpenter, painter, home services, worker search, professional services',
-      canonicalUrl: 'https://worklink.com/workers'
+      canonicalUrl: 'https://www.worklinkindia.com/workers'
     },
 
     workerProfile: {
@@ -57,21 +57,21 @@ export const seoConfig = {
       title: 'Find Local Jobs & Opportunities | Work Near You | WorkLink',
       description: 'Discover local job opportunities for skilled workers. Browse jobs in construction, home services, maintenance & more. Apply instantly and grow your career.',
       keywords: 'local jobs, skilled worker jobs, construction jobs, home service jobs, maintenance jobs, worker opportunities, apply jobs, career growth',
-      canonicalUrl: 'https://worklink.com/jobs'
+      canonicalUrl: 'https://www.worklinkindia.com/jobs'
     },
 
     workerRegistration: {
       title: 'Join as Skilled Worker | Start Earning Today | WorkLink',
       description: 'Register as a skilled worker on WorkLink. Get verified, showcase your skills & start earning. Join 50,000+ workers already earning through our platform.',
       keywords: 'worker registration, skilled worker signup, earn money, freelance work, local jobs, worker verification, professional profile',
-      canonicalUrl: 'https://worklink.com/register?type=worker'
+      canonicalUrl: 'https://www.worklinkindia.com/register?type=worker'
     },
 
     ownerRegistration: {
       title: 'Hire Skilled Workers | Post Jobs | WorkLink for Owners',
       description: 'Find and hire verified skilled workers for your projects. Post jobs, get instant quotes, compare profiles. Trusted by thousands of property owners.',
       keywords: 'hire workers, post jobs, find professionals, home services, property maintenance, skilled labor, verified workers, instant quotes',
-      canonicalUrl: 'https://worklink.com/register?type=owner'
+      canonicalUrl: 'https://www.worklinkindia.com/register?type=owner'
     },
 
     workerDashboard: {
@@ -92,28 +92,28 @@ export const seoConfig = {
       title: 'About WorkLink | India\'s Leading Local Services Platform',
       description: 'Learn about WorkLink\'s mission to connect skilled workers with opportunities across India. Our story, values & commitment to quality local services.',
       keywords: 'about worklink, company story, mission, local services platform, skilled workers, India, quality services',
-      canonicalUrl: 'https://worklink.com/about'
+      canonicalUrl: 'https://www.worklinkindia.com/about'
     },
 
     contact: {
       title: 'Contact WorkLink | Customer Support & Help',
       description: 'Get in touch with WorkLink support team. Contact us for help with your account, technical issues, or business inquiries. 24/7 customer support.',
       keywords: 'contact worklink, customer support, help, technical support, business inquiries, contact information',
-      canonicalUrl: 'https://worklink.com/contact'
+      canonicalUrl: 'https://www.worklinkindia.com/contact'
     },
 
     privacy: {
       title: 'Privacy Policy | WorkLink',
       description: 'Read WorkLink\'s privacy policy. Learn how we collect, use & protect your personal information on our platform.',
       keywords: 'privacy policy, data protection, personal information, user privacy',
-      canonicalUrl: 'https://worklink.com/privacy'
+      canonicalUrl: 'https://www.worklinkindia.com/privacy'
     },
 
     terms: {
       title: 'Terms of Service | WorkLink',
       description: 'Read WorkLink\'s terms of service. Understand the rules and guidelines for using our platform.',
       keywords: 'terms of service, user agreement, platform rules, guidelines',
-      canonicalUrl: 'https://worklink.com/terms'
+      canonicalUrl: 'https://www.worklinkindia.com/terms'
     },
 
     // Location-based pages
@@ -135,7 +135,7 @@ export const seoConfig = {
       title: 'WorkLink Blog | Tips, Guides & Industry Insights',
       description: 'Expert tips, guides & insights for skilled workers and property owners. Learn about home maintenance, career growth & industry trends.',
       keywords: 'home maintenance tips, worker guides, industry insights, career advice, property maintenance, skilled worker tips',
-      canonicalUrl: 'https://worklink.com/blog'
+      canonicalUrl: 'https://www.worklinkindia.com/blog'
     },
 
     blogPost: {

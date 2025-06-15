@@ -74,7 +74,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
       if (user.profilePhoto) {
         const photoUrl = user.profilePhoto.startsWith('http') 
           ? user.profilePhoto 
-          : `http://localhost:5000${user.profilePhoto}`;
+          : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`;
         setPreviewProfilePhoto(photoUrl);
       } else {
         setPreviewProfilePhoto('');
@@ -84,7 +84,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
         const workPhotoUrls = user.workPhotos
           .filter(photo => photo && typeof photo === 'string')
           .map(photo => 
-            photo.startsWith('http') ? photo : `http://localhost:5000${photo}`
+            photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo}`
           );
         setPreviewWorkPhotos(workPhotoUrls);
       } else {
@@ -248,7 +248,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
         });
       }
 
-      const response = await fetch('http://localhost:5000/api/auth/update-profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/update-profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -293,7 +293,7 @@ const EditProfile = ({ isOpen, onClose, userType }) => {
     console.log('Token:', token ? 'Present' : 'Missing');
     
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

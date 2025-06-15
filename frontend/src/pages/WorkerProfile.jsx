@@ -216,7 +216,7 @@ const WorkerProfile = () => {
         })
       );
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -259,7 +259,7 @@ const WorkerProfile = () => {
       // Clear input immediately for better UX
       setNewComment(prev => ({ ...prev, [postId]: '' }));
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -439,7 +439,7 @@ const WorkerProfile = () => {
               src={formattedWorker.profilePicture 
                 ? (formattedWorker.profilePicture.startsWith('http') 
                     ? formattedWorker.profilePicture 
-                    : `http://localhost:5000${formattedWorker.profilePicture}`)
+                    : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${formattedWorker.profilePicture}`)
                 : '/default-avatar.png'
               }
               alt={formattedWorker.name}
@@ -752,14 +752,14 @@ const WorkerProfile = () => {
                           {item.image && (
                             <div className="mb-3">
                               <img
-                                src={item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
+                                src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${item.image}`}
                                 alt={item.title || `Project ${index + 1}`}
                                 className="w-full h-40 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                 onClick={(e) => {
                               e.stopPropagation();
                               const images = formattedWorker.workPhotos.map((photo, idx) => ({
                                 id: idx,
-                                src: photo.startsWith('http') ? photo : `http://localhost:5000${photo}`,
+                                src: photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo}`,
                                 name: `Work Photo ${idx + 1}`,
                                 uploadDate: new Date().toLocaleDateString(),
                                 isImage: true,
@@ -787,7 +787,7 @@ const WorkerProfile = () => {
                                  e.stopPropagation();
                                  const images = formattedWorker.portfolio.map((item, idx) => ({
                                    id: idx,
-                                   src: item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`,
+                                   src: item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${item.image}`,
                                    name: item.title || `Project ${idx + 1}`,
                                    uploadDate: item.date || new Date().toLocaleDateString(),
                                    isImage: true,
@@ -988,7 +988,7 @@ const WorkerProfile = () => {
                               src={review.reviewerProfilePicture 
                                 ? (review.reviewerProfilePicture.startsWith('http') 
                                     ? review.reviewerProfilePicture 
-                                    : `http://localhost:5000${review.reviewerProfilePicture}`)
+                                    : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${review.reviewerProfilePicture}`)
                                 : '/default-avatar.png'
                               }
                               alt={review.reviewerName}
@@ -1064,7 +1064,7 @@ const WorkerProfile = () => {
                             src={formattedWorker.profilePicture 
                               ? (formattedWorker.profilePicture.startsWith('http') 
                                   ? formattedWorker.profilePicture 
-                                  : `http://localhost:5000${formattedWorker.profilePicture}`)
+                                  : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${formattedWorker.profilePicture}`)
                               : '/default-avatar.png'
                             }
                             alt={formattedWorker.name}
@@ -1096,14 +1096,14 @@ const WorkerProfile = () => {
                               {post.images.map((image, imgIndex) => (
                                 <img
                                   key={imgIndex}
-                                  src={image.startsWith('http') ? image : `http://localhost:5000${image}`}
+                                  src={image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${image}`}
                                   alt={`Post image ${imgIndex + 1}`}
                                   className="w-full h-48 object-cover rounded-lg border dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     const images = post.images.map((img, idx) => ({
                                       id: idx,
-                                      src: img.startsWith('http') ? img : `http://localhost:5000${img}`,
+                                      src: img.startsWith('http') ? img : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${img}`,
                                       name: `Post Image ${idx + 1}`,
                                       uploadDate: new Date(post.createdAt).toLocaleDateString(),
                                       isImage: true,
@@ -1176,7 +1176,7 @@ const WorkerProfile = () => {
                                 src={user?.profilePhoto 
                                   ? (user.profilePhoto.startsWith('http') 
                                       ? user.profilePhoto 
-                                      : `http://localhost:5000${user.profilePhoto}`)
+                                      : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`)
                                   : '/default-avatar.png'
                                 }
                                 alt="Your profile"
@@ -1220,7 +1220,7 @@ const WorkerProfile = () => {
                                       src={comment.author?.profilePhoto 
                                         ? (comment.author.profilePhoto.startsWith('http') 
                                             ? comment.author.profilePhoto 
-                                            : `http://localhost:5000${comment.author.profilePhoto}`)
+                                            : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${comment.author.profilePhoto}`)
                                         : '/default-avatar.png'
                                       }
                                       alt={comment.author?.fullName || 'User'}

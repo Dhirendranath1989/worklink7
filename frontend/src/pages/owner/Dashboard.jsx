@@ -73,7 +73,7 @@ const OwnerDashboard = () => {
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/posts', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -131,7 +131,7 @@ const OwnerDashboard = () => {
   const handleDeletePost = async (postId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -174,7 +174,7 @@ const OwnerDashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -245,7 +245,7 @@ const OwnerDashboard = () => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await fetch('http://localhost:5000/api/auth/me', {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -283,7 +283,7 @@ const OwnerDashboard = () => {
         try {
           const token = localStorage.getItem('token');
           if (token) {
-            const response = await fetch('http://localhost:5000/api/auth/me', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/me`, {
               headers: {
                 'Authorization': `Bearer ${token}`
               }
@@ -591,7 +591,7 @@ const OwnerDashboard = () => {
                     user?.profilePhoto 
                       ? (user.profilePhoto.startsWith('http') 
                           ? user.profilePhoto 
-                          : `http://localhost:5000${user.profilePhoto}`)
+                          : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`)
                       : DEFAULT_AVATAR_128
                   }
                   alt="Profile"
@@ -792,7 +792,7 @@ const OwnerDashboard = () => {
                   src={worker.profilePhoto 
                     ? (worker.profilePhoto.startsWith('http') 
                         ? worker.profilePhoto 
-                        : `http://localhost:5000${worker.profilePhoto}`)
+                        : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${worker.profilePhoto}`)
                     : DEFAULT_AVATAR_128
                   }
                   alt={worker.fullName || worker.name || 'Worker'}
@@ -981,7 +981,7 @@ const OwnerDashboard = () => {
                   src={worker.profilePhoto 
                     ? (worker.profilePhoto.startsWith('http') 
                         ? worker.profilePhoto 
-                        : `http://localhost:5000${worker.profilePhoto}`)
+                        : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${worker.profilePhoto}`)
                     : DEFAULT_AVATAR_128
                   }
                   alt={worker.fullName || worker.name || 'Worker'}
@@ -1125,7 +1125,7 @@ const OwnerDashboard = () => {
                   src={user?.profilePhoto 
                     ? (user.profilePhoto.startsWith('http') 
                         ? user.profilePhoto 
-                        : `http://localhost:5000${user.profilePhoto}`)
+                        : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`)
                     : '/default-avatar.png'
                   }
                   alt={user?.name || 'Owner'}

@@ -41,19 +41,19 @@ const Certificates = () => {
     
     if (typeof cert === 'object' && cert.path) {
       // New structure with path, originalName, etc.
-      certSrc = cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`;
+      certSrc = cert.path.startsWith('http') ? cert.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert.path}`;
       certName = cert.originalName || cert.name || certName;
     } else if (typeof cert === 'object' && cert.filename) {
       // Legacy structure with filename
-      certSrc = `http://localhost:5000/uploads/${cert.filename}`;
+      certSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${cert.filename}`;
       certName = cert.originalName || cert.name || certName;
     } else if (typeof cert === 'string') {
       // Simple string path
-      certSrc = cert.startsWith('http') ? cert : `http://localhost:5000${cert}`;
+      certSrc = cert.startsWith('http') ? cert : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert}`;
       certName = cert.split('/').pop() || certName;
     } else {
       // Fallback
-      certSrc = `http://localhost:5000/uploads/${cert.name || cert}`;
+      certSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${cert.name || cert}`;
       certName = cert.originalName || cert.name || certName;
     }
     

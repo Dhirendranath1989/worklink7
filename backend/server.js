@@ -51,30 +51,17 @@ const PORT = process.env.PORT || 5000;
 let inMemoryUsers = [];
 let isMongoConnected = false;
 
-// Configure CORS with better Google OAuth support
+// Configure CORS for production
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Allow localhost for development
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return callback(null, true);
-    }
-    
-    // Allow Google OAuth domains
-    if (origin.includes('accounts.google.com') || origin.includes('googleapis.com')) {
-      return callback(null, true);
-    }
-    
-    // For production, add your domain here
-    // if (origin === 'https://yourdomain.com') {
-    //   return callback(null, true);
-    // }
-    
-    // Allow all origins for testing (remove in production)
-    return callback(null, true);
-  },
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://168.231.121.216:5000',
+    'https://www.worklinkindia.com',
+    'https://worklinkindia.com',
+    'https://accounts.google.com',
+    'https://googleapis.com'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

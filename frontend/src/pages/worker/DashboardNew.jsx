@@ -95,7 +95,7 @@ const FacebookLikeDashboard = () => {
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/posts', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -118,7 +118,7 @@ const FacebookLikeDashboard = () => {
       const token = localStorage.getItem('token');
       console.log('Fetching user posts with token:', token ? 'Token exists' : 'No token');
       
-      const response = await fetch('http://localhost:5000/api/posts/my-posts', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/my-posts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -187,7 +187,7 @@ const FacebookLikeDashboard = () => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await fetch('http://localhost:5000/api/auth/me', {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -229,7 +229,7 @@ const FacebookLikeDashboard = () => {
         try {
           const token = localStorage.getItem('token');
           if (token) {
-            const response = await fetch('http://localhost:5000/api/auth/me', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/me`, {
               headers: {
                 'Authorization': `Bearer ${token}`
               }
@@ -288,7 +288,7 @@ const FacebookLikeDashboard = () => {
       }
       
       console.log('📡 Fetching user data from /api/auth/me...');
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -352,7 +352,7 @@ const FacebookLikeDashboard = () => {
   const userProfile = {
     name: user?.fullName || (user?.firstName && user?.lastName ? `${String(user.firstName)} ${String(user.lastName)}` : (user?.firstName ? String(user.firstName) : (user?.lastName ? String(user.lastName) : 'User'))),
     profilePhoto: user?.profilePhoto ? 
-      (user.profilePhoto.startsWith('http') ? user.profilePhoto : `http://localhost:5000${user.profilePhoto}`) : 
+      (user.profilePhoto.startsWith('http') ? user.profilePhoto : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`) : 
       'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9Ijc1IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBQaG90bzwvdGV4dD4KPC9zdmc+',
     email: String(user?.email || ''),
     // Map backend fields correctly: mobile -> mobile, phoneNumber -> mobile
@@ -400,7 +400,7 @@ const FacebookLikeDashboard = () => {
       formData.append('profilePhoto', file);
       
       try {
-        const response = await fetch('http://localhost:5000/api/auth/complete-profile', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/complete-profile`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -451,7 +451,7 @@ const FacebookLikeDashboard = () => {
   const handleDeletePost = async (postId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -476,7 +476,7 @@ const FacebookLikeDashboard = () => {
   const handleLikePost = async (postId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -520,7 +520,7 @@ const FacebookLikeDashboard = () => {
         formData.append('workPhotos', file);
       });
       
-      const response = await fetch('http://localhost:5000/api/auth/upload-work-photos', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/upload-work-photos`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -565,7 +565,7 @@ const FacebookLikeDashboard = () => {
         formData.append('certificates', file);
       });
       
-      const response = await fetch('http://localhost:5000/api/auth/upload-certificates', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/upload-certificates`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -602,16 +602,16 @@ const FacebookLikeDashboard = () => {
   // Handle work photo selection for full screen view
   const handleWorkPhotoView = (photo) => {
     const photoSrc = typeof photo === 'string' 
-      ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
-      : (photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`);
+      ? (photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo}`)
+      : (photo.path.startsWith('http') ? photo.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo.path}`);
     setSelectedWorkPhoto(photoSrc);
   };
 
   // Handle certificate view
   const handleCertificateView = (cert) => {
     const certUrl = typeof cert === 'string'
-      ? (cert.startsWith('http') ? cert : `http://localhost:5000${cert}`)
-      : (cert.path ? (cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`) : '#');
+      ? (cert.startsWith('http') ? cert : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert}`)
+      : (cert.path ? (cert.path.startsWith('http') ? cert.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert.path}`) : '#');
     setSelectedCertificate({ url: certUrl, name: typeof cert === 'string' ? cert.split('/').pop() : (cert.originalName || cert.path?.split('/').pop() || 'Certificate') });
   };
 
@@ -863,8 +863,8 @@ const FacebookLikeDashboard = () => {
                       .slice(0, 4)
                       .map((photo, index) => {
                         const photoSrc = typeof photo === 'string' 
-                          ? (photo.startsWith('http') ? photo : `http://localhost:5000${photo}`)
-                          : (photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`);
+                          ? (photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo}`)
+                          : (photo.path.startsWith('http') ? photo.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo.path}`);
                         return (
                           <div key={index} className="relative group">
                             <img
@@ -957,19 +957,19 @@ const FacebookLikeDashboard = () => {
                         
                         if (typeof cert === 'object' && cert.path) {
                           // New structure with path, originalName, etc.
-                          certSrc = cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`;
+                          certSrc = cert.path.startsWith('http') ? cert.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert.path}`;
                           certName = cert.originalName || cert.name || certName;
                         } else if (typeof cert === 'object' && cert.filename) {
                           // Legacy structure with filename
-                          certSrc = `http://localhost:5000/uploads/${cert.filename}`;
+                          certSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${cert.filename}`;
                           certName = cert.originalName || cert.name || certName;
                         } else if (typeof cert === 'string') {
                           // Simple string path
-                          certSrc = cert.startsWith('http') ? cert : `http://localhost:5000${cert}`;
+                          certSrc = cert.startsWith('http') ? cert : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert}`;
                           certName = cert.split('/').pop() || certName;
                         } else {
                           // Fallback
-                          certSrc = `http://localhost:5000/uploads/${cert.name || cert}`;
+                          certSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${cert.name || cert}`;
                           certName = cert.originalName || cert.name || certName;
                         }
                         
@@ -1213,12 +1213,12 @@ const FacebookLikeDashboard = () => {
                             src={review.reviewerProfilePicture ? 
                                 (review.reviewerProfilePicture.startsWith('http') ? 
                                   review.reviewerProfilePicture : 
-                                  `http://localhost:5000${review.reviewerProfilePicture}`
+                                  `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${review.reviewerProfilePicture}`
                                 ) : 
                                 review.reviewer?.profilePhoto ? 
                                 (review.reviewer.profilePhoto.startsWith('http') ? 
                                   review.reviewer.profilePhoto : 
-                                  `http://localhost:5000${review.reviewer.profilePhoto}`
+                                  `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${review.reviewer.profilePhoto}`
                                 ) : 
                                 `https://ui-avatars.com/api/?name=${encodeURIComponent(review.reviewerName || review.reviewer?.fullName || review.reviewer?.firstName || 'User')}&background=3b82f6&color=ffffff`
                               }
@@ -1397,7 +1397,7 @@ const FacebookLikeDashboard = () => {
                               review.reviewerProfilePicture
                                 ? (review.reviewerProfilePicture.startsWith('http')
                                   ? review.reviewerProfilePicture
-                                  : `http://localhost:5000${review.reviewerProfilePicture}`)
+                                  : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${review.reviewerProfilePicture}`)
                                 : review.reviewerAvatar || review.reviewer?.profilePhoto || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5VPC90ZXh0Pgo8L3N2Zz4='
                             }
                             alt={review.reviewerName || review.reviewer?.fullName || 'Reviewer'}
@@ -1591,7 +1591,7 @@ const FacebookLikeDashboard = () => {
                      selectedReview.reviewerProfilePicture
                        ? (selectedReview.reviewerProfilePicture.startsWith('http')
                          ? selectedReview.reviewerProfilePicture
-                         : `http://localhost:5000${selectedReview.reviewerProfilePicture}`)
+                         : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${selectedReview.reviewerProfilePicture}`)
                        : selectedReview.reviewerAvatar || selectedReview.reviewer?.profilePhoto || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjY2NjY2NjIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2NjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5VPC90ZXh0Pgo8L3N2Zz4='
                    }
                    alt={selectedReview.reviewerName || selectedReview.reviewer?.fullName || 'Reviewer'}

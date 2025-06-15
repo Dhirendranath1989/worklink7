@@ -82,8 +82,8 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, editPost = null }) =>
       }
 
       const url = editPost 
-        ? `http://localhost:5000/api/posts/${editPost._id}`
-        : 'http://localhost:5000/api/posts';
+        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${editPost._id}`
+        : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts`;
       
       const method = editPost ? 'PUT' : 'POST';
 
@@ -139,7 +139,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, editPost = null }) =>
               src={user?.profilePhoto 
                 ? (user.profilePhoto.startsWith('http') 
                     ? user.profilePhoto 
-                    : `http://localhost:5000${user.profilePhoto}`)
+                    : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`)
                 : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMjAiLz4KPHRleHQgeD0iMjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'
               }
               alt="Profile"
@@ -261,7 +261,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
     setLikesCount(isLiked ? likesCount - 1 : likesCount + 1);
     
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${post._id}/like`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${post._id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -296,7 +296,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${post._id}/comments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${post._id}/comments`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -323,7 +323,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
     setNewComment(''); // Clear immediately for better UX
     
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${post._id}/comments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${post._id}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -413,7 +413,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
             src={post.author?.profilePhoto 
               ? (post.author.profilePhoto.startsWith('http') 
                   ? post.author.profilePhoto 
-                  : `http://localhost:5000${post.author.profilePhoto}`)
+                  : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${post.author.profilePhoto}`)
               : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMjAiLz4KPHRleHQgeD0iMjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'
             }
             alt={post.author?.fullName || 'User'}
@@ -484,10 +484,10 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
             {post.images.map((image, index) => (
               <img
                 key={index}
-                src={image.startsWith('http') ? image : `http://localhost:5000${image}`}
+                src={image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${image}`}
                 alt={`Post image ${index + 1}`}
                 className="w-full h-64 object-contain bg-gray-100 dark:bg-gray-700 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => onImageClick && onImageClick(image.startsWith('http') ? image : `http://localhost:5000${image}`)}
+                onClick={() => onImageClick && onImageClick(image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${image}`)}
               />
             ))}
           </div>
@@ -576,7 +576,7 @@ const PostCard = ({ post, onEdit, onDelete, onLike, currentUserId, onImageClick 
                   src={comment.author?.profilePhoto 
                     ? (comment.author.profilePhoto.startsWith('http') 
                         ? comment.author.profilePhoto 
-                        : `http://localhost:5000${comment.author.profilePhoto}`)
+                        : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${comment.author.profilePhoto}`)
                     : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjQ0NDQ0NDIiByeD0iMTYiLz4KPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIj5VPC90ZXh0Pgo8L3N2Zz4K'
                   }
                   alt={comment.author?.fullName || 'User'}

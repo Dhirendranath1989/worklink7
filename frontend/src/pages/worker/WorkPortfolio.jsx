@@ -38,19 +38,19 @@ const WorkPortfolio = () => {
     
     if (typeof photo === 'object' && photo.path) {
       // New structure with path, originalName, etc.
-      photoSrc = photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`;
+      photoSrc = photo.path.startsWith('http') ? photo.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo.path}`;
       photoName = photo.originalName || photo.name || photoName;
     } else if (typeof photo === 'object' && photo.filename) {
       // Legacy structure with filename
-      photoSrc = `http://localhost:5000/uploads/${photo.filename}`;
+      photoSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${photo.filename}`;
       photoName = photo.originalName || photo.name || photoName;
     } else if (typeof photo === 'string') {
       // Simple string path
-      photoSrc = photo.startsWith('http') ? photo : `http://localhost:5000${photo}`;
+      photoSrc = photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo}`;
       photoName = photo.split('/').pop() || photoName;
     } else {
       // Fallback
-      photoSrc = `http://localhost:5000/uploads/${photo.name || photo}`;
+      photoSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${photo.name || photo}`;
       photoName = photo.originalName || photo.name || photoName;
     }
     

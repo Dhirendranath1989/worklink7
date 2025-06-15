@@ -115,7 +115,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2 text-gray-300">
                 <EnvelopeIcon className="h-4 w-4" />
-                <span className="text-sm">support@worklink.com</span>
+                <span className="text-sm">support@worklinkindia.com</span>
               </div>
             </div>
           </div>

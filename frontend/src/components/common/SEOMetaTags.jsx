@@ -32,9 +32,9 @@ const SEOMetaTags = ({
     "@type": "LocalBusiness",
     "name": "WorkLink",
     "description": "India's fastest-growing platform connecting skilled local workers with opportunities",
-    "url": "https://worklinkindia.com",
-    "logo": "https://worklinkindia.com/logo.png",
-    "image": "https://worklinkindia.com/og-image.jpg",
+    "url": "https://www.worklinkindia.com",
+    "logo": "https://www.worklinkindia.com/logo.png",
+    "image": "https://www.worklinkindia.com/og-image.jpg",
     "telephone": "+91-9938545805",
     "address": {
       "@type": "LocalBusiness",

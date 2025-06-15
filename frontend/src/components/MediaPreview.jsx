@@ -25,16 +25,16 @@ const MediaPreview = ({
     let photoName = `Work Photo ${index + 1}`;
     
     if (typeof photo === 'object' && photo.path) {
-      photoSrc = photo.path.startsWith('http') ? photo.path : `http://localhost:5000${photo.path}`;
+      photoSrc = photo.path.startsWith('http') ? photo.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo.path}`;
       photoName = photo.originalName || photo.name || photoName;
     } else if (typeof photo === 'object' && photo.filename) {
-      photoSrc = `http://localhost:5000/uploads/${photo.filename}`;
+      photoSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${photo.filename}`;
       photoName = photo.originalName || photo.name || photoName;
     } else if (typeof photo === 'string') {
-      photoSrc = photo.startsWith('http') ? photo : `http://localhost:5000${photo}`;
+      photoSrc = photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${photo}`;
       photoName = photo.split('/').pop() || photoName;
     } else {
-      photoSrc = `http://localhost:5000/uploads/${photo.name || photo}`;
+      photoSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${photo.name || photo}`;
       photoName = photo.originalName || photo.name || photoName;
     }
     
@@ -53,19 +53,19 @@ const MediaPreview = ({
     let certSrc, certName, certType;
     
     if (typeof cert === 'object' && cert.path) {
-      certSrc = cert.path.startsWith('http') ? cert.path : `http://localhost:5000${cert.path}`;
+      certSrc = cert.path.startsWith('http') ? cert.path : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert.path}`;
       certName = cert.originalName || cert.name || `Certificate ${index + 1}`;
       certType = cert.type || 'Certificate';
     } else if (typeof cert === 'object' && cert.filename) {
-      certSrc = `http://localhost:5000/uploads/${cert.filename}`;
+      certSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${cert.filename}`;
       certName = cert.originalName || cert.originalname || cert.name || `Certificate ${index + 1}`;
       certType = cert.type || 'Certificate';
     } else if (typeof cert === 'string') {
-      certSrc = cert.startsWith('http') ? cert : `http://localhost:5000${cert}`;
+      certSrc = cert.startsWith('http') ? cert : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cert}`;
       certName = cert.split('/').pop() || `Certificate ${index + 1}`;
       certType = 'Certificate';
     } else {
-      certSrc = `http://localhost:5000/uploads/${cert.name || cert}`;
+      certSrc = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${cert.name || cert}`;
       certName = cert.originalName || cert.name || `Certificate ${index + 1}`;
       certType = cert.type || 'Certificate';
     }

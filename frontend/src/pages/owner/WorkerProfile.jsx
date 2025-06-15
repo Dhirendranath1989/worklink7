@@ -116,7 +116,7 @@ const WorkerProfile = () => {
     
     // Otherwise, prepend the backend URL with proper path handling
     const cleanPath = photoPath.startsWith('/') ? photoPath : `/${photoPath}`;
-    return `http://localhost:5000${cleanPath}`;
+    return `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${cleanPath}`;
   };
   
   // Core state
@@ -286,7 +286,7 @@ const WorkerProfile = () => {
         })
       );
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -329,7 +329,7 @@ const WorkerProfile = () => {
       // Clear input immediately for better UX
       setNewComment(prev => ({ ...prev, [postId]: '' }));
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -392,7 +392,7 @@ const WorkerProfile = () => {
   // Handle image click for full-screen view
   const handlePostImageClick = (image, index, postImages = []) => {
     // Set the selected image for the simple modal
-    const imageUrl = image.startsWith('http') ? image : `http://localhost:5000${image}`;
+    const imageUrl = image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${image}`;
     setSelectedImage(imageUrl);
     setShowImageModal(true);
   };
@@ -824,7 +824,7 @@ const WorkerProfile = () => {
               worker={worker} 
               onImageClick={(image) => {
                 // Ensure we have the full URL for the image
-                const fullImageUrl = image.startsWith('http') ? image : `http://localhost:5000${image}`;
+                const fullImageUrl = image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${image}`;
                 setSelectedImage(fullImageUrl);
                 setShowImageModal(true);
               }}
@@ -1415,7 +1415,7 @@ const PostsTab = ({ posts, loading, user, showComments, newComment, isSubmitting
                 <img
                   src={post.author.profilePhoto.startsWith('http') 
                     ? post.author.profilePhoto 
-                    : `http://localhost:5000${post.author.profilePhoto}`}
+                    : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${post.author.profilePhoto}`}
                   alt={post.author.fullName || post.authorName}
                   className="w-full h-full rounded-full object-cover"
                   onError={(e) => {
@@ -1453,7 +1453,7 @@ const PostsTab = ({ posts, loading, user, showComments, newComment, isSubmitting
                     {post.images.map((image, imgIndex) => (
                       <img
                         key={imgIndex}
-                        src={image.startsWith('http') ? image : `http://localhost:5000${image}`}
+                        src={image.startsWith('http') ? image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${image}`}
                         alt={`Post image ${imgIndex + 1}`}
                         className="w-full h-48 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => onImageClick && onImageClick(image, imgIndex, post.images)}
@@ -1465,7 +1465,7 @@ const PostsTab = ({ posts, loading, user, showComments, newComment, isSubmitting
                 {post.image && (
                   <div className="mb-4">
                     <img
-                      src={post.image.startsWith('http') ? post.image : `http://localhost:5000${post.image}`}
+                      src={post.image.startsWith('http') ? post.image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${post.image}`}
                       alt="Post image"
                       className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => onImageClick && onImageClick(post.image, 0, [post.image])}
@@ -1526,7 +1526,7 @@ const PostsTab = ({ posts, loading, user, showComments, newComment, isSubmitting
                       src={user?.profilePhoto 
                         ? (user.profilePhoto.startsWith('http') 
                             ? user.profilePhoto 
-                            : `http://localhost:5000${user.profilePhoto}`)
+                            : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`)
                         : '/default-avatar.png'
                       }
                       alt="Your profile"
@@ -1568,7 +1568,7 @@ const PostsTab = ({ posts, loading, user, showComments, newComment, isSubmitting
                             src={comment.author?.profilePhoto 
                               ? (comment.author.profilePhoto.startsWith('http') 
                                   ? comment.author.profilePhoto 
-                                  : `http://localhost:5000${comment.author.profilePhoto}`)
+                                  : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${comment.author.profilePhoto}`)
                               : '/default-avatar.png'
                             }
                             alt={comment.author?.fullName || 'User'}
@@ -1666,7 +1666,7 @@ const ReviewsTab = ({ reviews, loading, totalReviews, onWriteReview }) => {
                         review.reviewerPhoto || review.reviewerProfilePicture
                           ? (review.reviewerPhoto || review.reviewerProfilePicture).startsWith('http')
                             ? (review.reviewerPhoto || review.reviewerProfilePicture)
-                            : `http://localhost:5000${review.reviewerPhoto || review.reviewerProfilePicture}`
+                            : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${review.reviewerPhoto || review.reviewerProfilePicture}`
                           : null
                       }
                       alt={review.reviewerName}

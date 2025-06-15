@@ -129,7 +129,7 @@ const Navbar = () => {
                     {user?.profilePhoto ? (
                       <img
                         className="h-8 w-8 rounded-full object-cover"
-                        src={user.profilePhoto.startsWith('http') ? user.profilePhoto : `http://localhost:5000${user.profilePhoto}`}
+                        src={user.profilePhoto.startsWith('http') ? user.profilePhoto : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${user.profilePhoto}`}
                         alt={user.name}
                       />
                     ) : (

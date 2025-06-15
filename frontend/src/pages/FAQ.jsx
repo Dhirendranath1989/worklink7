@@ -22,8 +22,8 @@ const FAQ = () => {
   const fetchFaqs = async () => {
     try {
       setLoading(true);
-      // Update the URL to use port 5000 for the backend
-      const response = await fetch('http://localhost:5000/api/public/faq');
+      // Use the API utility to build the correct URL
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/public/faq`);
       const data = await response.json();
       
       if (data.success) {
