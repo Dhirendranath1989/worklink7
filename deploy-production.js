@@ -3,26 +3,23 @@
 /**
  * Production Deployment Script for WorkLink
  * Domain: worklinkindia.com
- * IP: 168.231.121.216
- * Backend Port: 5000
- * MongoDB: mongodb://127.0.0.1:27017
+ * 
+ * This script automates the deployment process to production server
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-console.log('🚀 Starting WorkLink Production Deployment...');
-console.log('📋 Target Configuration:');
+console.log('🚀 WorkLink Production Deployment');
 console.log('   Domain: worklinkindia.com');
-console.log('   IP: 168.231.121.216');
-console.log('   Backend Port: 5000');
-console.log('   MongoDB: mongodb://127.0.0.1:27017');
+console.log('   Port: 5000');
+console.log('   Environment: Production');
+console.log('');
 
 // Configuration
 const config = {
   domain: 'worklinkindia.com',
-  ip: '168.231.121.216',
   port: '5000',
   mongoUri: 'mongodb://127.0.0.1:27017/worklink'
 };
@@ -164,7 +161,7 @@ console.log('   - Node.js 16+ installed');
 console.log('   - MongoDB running on localhost:27017');
 console.log('   - Nginx installed and configured');
 console.log('   - SSL certificate for worklinkindia.com');
-console.log('   - Domain DNS pointing to 168.231.121.216');
+console.log('   - Domain DNS properly configured');
 
 console.log('\n✅ Deployment preparation complete!');
 console.log('\n🚀 Ready for server deployment!');

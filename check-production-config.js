@@ -237,7 +237,7 @@ if (hasErrors) {
 }
 
 console.log('\n📋 Production deployment checklist:');
-console.log('   □ DNS configured (worklinkindia.com → 168.231.121.216)');
+console.log('   □ DNS configured (worklinkindia.com)');
 console.log('   □ SSL certificate installed');
 console.log('   □ Web server configured (nginx/apache)');
 console.log('   □ MongoDB accessible from server');

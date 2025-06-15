@@ -1,10 +1,11 @@
 {
   "timestamp": "2025-06-15T09:03:46.426Z",
   "domain": "worklinkindia.com",
-  "ip": "168.231.121.216",
   "port": "5000",
   "mongoUri": "mongodb://127.0.0.1:27017/worklink",
   "buildPath": "D:\\worklink7\\worklink7\\frontend\\dist",
   "backendPath": "D:\\worklink7\\worklink7\\backend",
-  "nginxConfig": "D:\\worklink7\\worklink7\\nginx-worklinkindia.conf"
+  "nginxConfig": "D:\\worklink7\\worklink7\\nginx-worklinkindia.conf",
+  "environment": "production",
+  "lastDeployed": null
 }
