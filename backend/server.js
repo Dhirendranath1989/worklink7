@@ -54,7 +54,6 @@ const corsOrigins = process.env.NODE_ENV === 'production'
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:3001',
-      'http://168.231.121.216:5000',
       'https://www.worklinkindia.com',
       'https://worklinkindia.com',
       'https://accounts.google.com',
