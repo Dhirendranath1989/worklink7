@@ -1,344 +1,359 @@
 # WorkLink Production Deployment Guide
 
-This guide provides step-by-step instructions for deploying WorkLink to production using the domain `www.worklinkindia.com` and IP address `168.231.121.216`.
+This guide provides complete instructions for deploying WorkLink to production on your VPS with domain `worklinkindia.com` and IP `168.231.121.216`.
 
-## 🚀 Quick Start
+## 🎯 Deployment Overview
 
-```bash
-# Run the automated deployment script
-node deploy-production.js
+- **Domain**: worklinkindia.com
+- **IP Address**: 168.231.121.216
+- **Backend Port**: 5000
+- **MongoDB**: mongodb://127.0.0.1:27017
+- **Frontend**: Served via Nginx
+- **Backend**: Node.js API with reverse proxy
+
+## 🚀 Quick Deployment
+
+### Local Preparation
+
+1. **Prepare the build**:
+   ```bash
+   node deploy-production.js
+   ```
+
+2. **Upload files to server**:
+   ```bash
+   # Upload backend
+   scp -r backend/ root@168.231.121.216:/var/www/worklinkindia.com/
+   
+   # Upload frontend build
+   scp -r frontend/dist/ root@168.231.121.216:/var/www/worklinkindia.com/frontend/
+   
+   # Upload nginx config
+   scp nginx-worklinkindia.conf root@168.231.121.216:/etc/nginx/sites-available/worklinkindia.com
+   ```
+
+3. **Setup server** (run on VPS):
+   ```bash
+   # Upload and run server setup script
+   scp server-setup.sh root@168.231.121.216:/root/
+   ssh root@168.231.121.216 "chmod +x /root/server-setup.sh && /root/server-setup.sh"
+   ```
+
+4. **Configure and start services**:
+   ```bash
+   ssh root@168.231.121.216
+   
+   # Enable nginx site
+   ln -s /etc/nginx/sites-available/worklinkindia.com /etc/nginx/sites-enabled/
+   nginx -t
+   systemctl reload nginx
+   
+   # Start backend service
+   systemctl start worklink-backend
+   systemctl enable worklink-backend
+   ```
+
+## 📋 Detailed Setup Instructions
+
+### Phase 1: Local Build Preparation
+
+#### 1.1 Environment Configuration
+
+The project is already configured with production environment files:
+
+**Frontend (.env.production)**:
+```env
+VITE_API_BASE_URL=https://worklinkindia.com/api
+VITE_SOCKET_URL=wss://worklinkindia.com
+# ... other config
 ```
 
-## 📋 Prerequisites
-
-- Server with IP: `168.231.121.216`
-- Domain: `www.worklinkindia.com` (DNS configured to point to the server)
-- Node.js 16+ installed on the server
-- MongoDB database (local or cloud)
-- SSL certificate for HTTPS
-- Web server (nginx/apache) for serving frontend
-
-## 🔧 Environment Configuration
-
-### Backend Environment (`.env.production`)
-
+**Backend (.env.production)**:
 ```env
 NODE_ENV=production
 PORT=5000
-JWT_SECRET=your_super_secure_jwt_secret_key_here_change_this_in_production
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/worklink?retryWrites=true&w=majority
-CORS_ORIGIN=https://www.worklinkindia.com,http://168.231.121.216:5000
-MAX_FILE_SIZE=10485760
-UPLOAD_PATH=./uploads
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+MONGODB_URI=mongodb://127.0.0.1:27017/worklink
+CORS_ORIGIN=https://worklinkindia.com,https://www.worklinkindia.com,http://168.231.121.216
+# ... other config
 ```
 
-### Frontend Environment (`.env.production`)
+#### 1.2 Build Process
 
-```env
-VITE_API_BASE_URL=https://www.worklinkindia.com/api
-VITE_SOCKET_URL=wss://www.worklinkindia.com
-VITE_FIREBASE_API_KEY=AIzaSyDbV5BSPuKsMovojw5EssNl9vcqFIQAGys
-VITE_FIREBASE_AUTH_DOMAIN=workrklink6.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=workrklink6
-VITE_FIREBASE_STORAGE_BUCKET=workrklink6.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=85255551610
-VITE_FIREBASE_APP_ID=1:85255551610:web:fd0610bfbdd59365cdd9c3
-VITE_APP_NAME=WorkLink
-VITE_APP_VERSION=1.0.0
-VITE_APP_ENVIRONMENT=production
+Run the automated build script:
+```bash
+node deploy-production.js
 ```
 
-## 🏗️ Build Process
+This script will:
+- ✅ Verify environment configurations
+- 🧹 Clean previous builds
+- 📦 Install dependencies
+- 🏗️ Build frontend for production
+- 🔍 Verify build output
+- 📦 Create deployment package
 
-### 1. Install Dependencies
+### Phase 2: Server Setup
+
+#### 2.1 Server Requirements
+
+- Ubuntu 20.04+ or similar Linux distribution
+- Root access via SSH
+- Domain DNS configured to point to server IP
+
+#### 2.2 Automated Server Setup
+
+Upload and run the server setup script:
+```bash
+# Upload script
+scp server-setup.sh root@168.231.121.216:/root/
+
+# Run setup
+ssh root@168.231.121.216 "chmod +x /root/server-setup.sh && /root/server-setup.sh"
+```
+
+The script installs:
+- Node.js 18.x
+- MongoDB 6.0
+- Nginx
+- PM2 process manager
+- Firewall configuration
+- System services
+
+### Phase 3: Application Deployment
+
+#### 3.1 Upload Application Files
 
 ```bash
-# Frontend
-cd frontend
-npm install
+# Backend application
+scp -r backend/ root@168.231.121.216:/var/www/worklinkindia.com/
 
-# Backend
-cd ../backend
-npm install
+# Frontend build
+scp -r frontend/dist/ root@168.231.121.216:/var/www/worklinkindia.com/frontend/
+
+# Nginx configuration
+scp nginx-worklinkindia.conf root@168.231.121.216:/etc/nginx/sites-available/worklinkindia.com
 ```
 
-### 2. Build Frontend
+#### 3.2 Configure Services
+
+SSH into your server:
+```bash
+ssh root@168.231.121.216
+```
+
+Enable Nginx site:
+```bash
+# Create symbolic link
+ln -s /etc/nginx/sites-available/worklinkindia.com /etc/nginx/sites-enabled/
+
+# Test configuration
+nginx -t
+
+# Reload nginx
+systemctl reload nginx
+```
+
+Start backend service:
+```bash
+# Start the service
+systemctl start worklink-backend
+
+# Enable auto-start on boot
+systemctl enable worklink-backend
+
+# Check status
+systemctl status worklink-backend
+```
+
+### Phase 4: SSL Certificate Setup
+
+#### 4.1 Using Let's Encrypt (Recommended)
 
 ```bash
-cd frontend
-npm run build
+# Install certbot
+apt install certbot python3-certbot-nginx
+
+# Get certificate
+certbot --nginx -d worklinkindia.com -d www.worklinkindia.com
+
+# Test auto-renewal
+certbot renew --dry-run
 ```
 
-### 3. Verify Build
+#### 4.2 Using Custom Certificate
 
-Ensure the `frontend/dist` folder contains:
-- `index.html`
-- `assets/` folder with CSS and JS files
-- Other static assets
+If you have your own SSL certificate:
+```bash
+# Copy certificate files
+cp your-certificate.crt /etc/ssl/certs/worklinkindia.com.crt
+cp your-private-key.key /etc/ssl/private/worklinkindia.com.key
 
-## 🌐 Server Configuration
+# Set proper permissions
+chmod 644 /etc/ssl/certs/worklinkindia.com.crt
+chmod 600 /etc/ssl/private/worklinkindia.com.key
+```
+
+## 🔧 Configuration Details
 
 ### Nginx Configuration
 
-Create `/etc/nginx/sites-available/worklinkindia.com`:
+The nginx configuration (`nginx-worklinkindia.conf`) provides:
+- HTTP to HTTPS redirect
+- Frontend static file serving
+- API proxy to backend (port 5000)
+- WebSocket support for Socket.IO
+- File upload handling
+- Security headers
+- Gzip compression
+- Static asset caching
 
-```nginx
-server {
-    listen 80;
-    server_name www.worklinkindia.com worklinkindia.com;
-    return 301 https://$server_name$request_uri;
-}
+### Backend Configuration
 
-server {
-    listen 443 ssl http2;
-    server_name www.worklinkindia.com worklinkindia.com;
+The backend is configured to:
+- Run on port 5000
+- Connect to local MongoDB
+- Handle CORS for the domain
+- Serve file uploads
+- Provide WebSocket support
 
-    ssl_certificate /path/to/your/certificate.crt;
-    ssl_certificate_key /path/to/your/private.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
+### Database Setup
 
-    # Frontend static files
-    location / {
-        root /var/www/worklink/frontend/dist;
-        try_files $uri $uri/ /index.html;
-        
-        # Cache static assets
-        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-        }
-    }
+MongoDB is configured to:
+- Run locally on port 27017
+- Use database name: `worklink`
+- Auto-start on system boot
 
-    # Backend API
-    location /api {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
+## 🔍 Verification & Testing
 
-    # WebSocket support
-    location /socket.io/ {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # File uploads
-    location /uploads {
-        proxy_pass http://localhost:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### Enable the site:
+### Check Services Status
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/worklinkindia.com /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+# Check all services
+systemctl status worklink-backend
+systemctl status mongod
+systemctl status nginx
+
+# Check logs
+journalctl -u worklink-backend -f
+journalctl -u mongod -f
+journalctl -u nginx -f
 ```
 
-## 🚀 Deployment Steps
-
-### 1. Upload Files to Server
+### Test Endpoints
 
 ```bash
-# Upload backend
-scp -r backend/ user@168.231.121.216:/var/www/worklink/
+# Test backend health
+curl https://worklinkindia.com/health
 
-# Upload frontend build
-scp -r frontend/dist/ user@168.231.121.216:/var/www/worklink/frontend/
+# Test API endpoint
+curl https://worklinkindia.com/api/health
+
+# Test frontend
+curl https://worklinkindia.com/
 ```
 
-### 2. Install Dependencies on Server
+### Browser Testing
+
+1. Visit `https://worklinkindia.com`
+2. Test user registration/login
+3. Test file uploads
+4. Check browser console for errors
+5. Verify WebSocket connections
+
+## 🛠️ Maintenance & Monitoring
+
+### Log Files
+
+- Backend logs: `journalctl -u worklink-backend`
+- Nginx logs: `/var/log/nginx/access.log`, `/var/log/nginx/error.log`
+- MongoDB logs: `journalctl -u mongod`
+
+### Backup Strategy
 
 ```bash
-ssh user@168.231.121.216
-cd /var/www/worklink/backend
-npm install --production
+# Database backup
+mongodump --db worklink --out /backup/mongodb/$(date +%Y%m%d)
+
+# Application backup
+tar -czf /backup/worklink-$(date +%Y%m%d).tar.gz /var/www/worklinkindia.com
 ```
 
-### 3. Start Backend Service
+### Updates
 
-#### Using PM2 (Recommended)
+To update the application:
+1. Build new version locally
+2. Stop backend service: `systemctl stop worklink-backend`
+3. Upload new files
+4. Start backend service: `systemctl start worklink-backend`
+5. Reload nginx if needed: `systemctl reload nginx`
 
-```bash
-# Install PM2 globally
-npm install -g pm2
-
-# Start the application
-cd /var/www/worklink/backend
-NODE_ENV=production pm2 start server.js --name "worklink-backend"
-
-# Save PM2 configuration
-pm2 save
-pm2 startup
-```
-
-#### Using systemd
-
-Create `/etc/systemd/system/worklink.service`:
-
-```ini
-[Unit]
-Description=WorkLink Backend
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/worklink/backend
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/node server.js
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-
-```bash
-sudo systemctl enable worklink
-sudo systemctl start worklink
-sudo systemctl status worklink
-```
-
-## 🔒 Security Configuration
-
-### 1. Firewall Setup
-
-```bash
-# Allow SSH, HTTP, HTTPS, and backend port
-sudo ufw allow 22
-sudo ufw allow 80
-sudo ufw allow 443
-sudo ufw allow 5000
-sudo ufw enable
-```
-
-### 2. SSL Certificate
-
-Using Let's Encrypt:
-
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d www.worklinkindia.com -d worklinkindia.com
-```
-
-### 3. Environment Variables Security
-
-- Change default JWT secret
-- Use strong MongoDB credentials
-- Configure Firebase security rules
-- Set up proper CORS origins
-
-## 📊 Monitoring and Maintenance
-
-### 1. Log Monitoring
-
-```bash
-# PM2 logs
-pm2 logs worklink-backend
-
-# Nginx logs
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
-
-# System logs
-sudo journalctl -u worklink -f
-```
-
-### 2. Health Checks
-
-```bash
-# Check backend status
-curl https://www.worklinkindia.com/api/test
-
-# Check frontend
-curl https://www.worklinkindia.com
-
-# Check PM2 status
-pm2 status
-```
-
-### 3. Backup Strategy
-
-- Database backups (MongoDB)
-- File uploads backup
-- Configuration files backup
-- SSL certificates backup
-
-## 🔧 Troubleshooting
+## 🚨 Troubleshooting
 
 ### Common Issues
 
-1. **CORS Errors**: Check CORS_ORIGIN in backend .env.production
-2. **API Not Found**: Verify nginx proxy configuration
-3. **File Upload Issues**: Check upload directory permissions
-4. **Database Connection**: Verify MongoDB URI and network access
-5. **SSL Issues**: Check certificate validity and nginx SSL configuration
+1. **502 Bad Gateway**
+   - Check if backend service is running
+   - Verify port 5000 is accessible
+   - Check backend logs
 
-### Debug Commands
+2. **Database Connection Error**
+   - Ensure MongoDB is running
+   - Check MongoDB logs
+   - Verify connection string
+
+3. **SSL Certificate Issues**
+   - Verify certificate files exist
+   - Check certificate expiration
+   - Test with `openssl s_client -connect worklinkindia.com:443`
+
+4. **CORS Errors**
+   - Verify CORS_ORIGIN in backend .env.production
+   - Check browser network tab
+   - Ensure domain matches exactly
+
+### Emergency Commands
 
 ```bash
-# Check nginx configuration
-sudo nginx -t
-
-# Check port usage
-sudo netstat -tlnp | grep :5000
-
-# Check process status
-ps aux | grep node
+# Restart all services
+systemctl restart worklink-backend
+systemctl restart nginx
+systemctl restart mongod
 
 # Check disk space
 df -h
 
 # Check memory usage
 free -h
+
+# Check process status
+ps aux | grep node
+ps aux | grep nginx
+ps aux | grep mongod
 ```
 
-## 📝 Post-Deployment Checklist
+## ✅ Success Checklist
 
-- [ ] Frontend loads at https://www.worklinkindia.com
+- [ ] Domain resolves to correct IP
+- [ ] SSL certificate is valid
+- [ ] Frontend loads at https://worklinkindia.com
 - [ ] API endpoints respond correctly
 - [ ] User registration/login works
 - [ ] File uploads function properly
-- [ ] Google OAuth integration works
-- [ ] Mobile responsiveness verified
-- [ ] SSL certificate is valid
-- [ ] Database connections are stable
-- [ ] Monitoring and logging are active
-- [ ] Backup systems are configured
+- [ ] WebSocket connections establish
+- [ ] All services auto-start on reboot
+- [ ] Logs are being written correctly
+- [ ] Backup strategy is in place
 
-## 🆘 Support
+## 🎉 Deployment Complete!
 
-For deployment issues:
-1. Check the logs first
-2. Verify environment configuration
-3. Test individual components
-4. Review nginx and firewall settings
-5. Check DNS configuration
+Your WorkLink application is now running in production at:
+**https://worklinkindia.com**
 
----
+The system is configured for:
+- ✅ High availability
+- ✅ Security best practices
+- ✅ Performance optimization
+- ✅ Easy maintenance
+- ✅ Monitoring and logging
 
-**Note**: Replace placeholder values (MongoDB URI, JWT secret, etc.) with actual production values before deployment.
+For support or questions, refer to the troubleshooting section or check the application logs.

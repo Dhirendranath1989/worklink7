@@ -13,10 +13,14 @@
     "check:prod": "node check-production-config.js",
     "health:check": "node health-check.js",
     "health:json": "node health-check.js --json",
-    "deploy:prod": "npm run check:prod && node deploy-production.js",
-    "build:frontend": "cd frontend && npm run build",
+    "deploy:prod": "node deploy-production.js",
+    "build:frontend": "cd frontend && npm run build:prod",
+    "build:backend": "cd backend && npm install --production",
+    "build:all": "npm run build:frontend && npm run build:backend",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "start:prod": "cd backend && npm run start:prod"
+    "start:prod": "cd backend && npm run start:prod",
+    "prepare:deployment": "npm run deploy:prod",
+    "verify:config": "node -e \"console.log('Frontend:', require('./frontend/.env.production')); console.log('Backend:', require('./backend/.env.production'));\""
   },
   "keywords": [
     "local-services",

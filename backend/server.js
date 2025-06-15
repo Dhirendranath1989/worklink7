@@ -52,16 +52,20 @@ let inMemoryUsers = [];
 let isMongoConnected = false;
 
 // Configure CORS for production
+const corsOrigins = process.env.NODE_ENV === 'production' 
+  ? (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://worklinkindia.com', 'https://www.worklinkindia.com'])
+  : [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://168.231.121.216:5000',
+      'https://www.worklinkindia.com',
+      'https://worklinkindia.com',
+      'https://accounts.google.com',
+      'https://googleapis.com'
+    ];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://168.231.121.216:5000',
-    'https://www.worklinkindia.com',
-    'https://worklinkindia.com',
-    'https://accounts.google.com',
-    'https://googleapis.com'
-  ],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
