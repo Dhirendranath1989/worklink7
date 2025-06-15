@@ -336,4 +336,4 @@ coverage/
 !LICENSE
 !CHANGELOG.md
 !PRODUCTION_SETUP.md
-!deploy-production.js
+!deploy-production.jsnode_modules/
