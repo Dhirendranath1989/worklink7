@@ -13,11 +13,7 @@ const http = require('http');
 const mongoService = require('./services/mongoService');
 
 // Load environment variables based on NODE_ENV
-if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.production' });
-} else {
-  dotenv.config();
-}
+dotenv.config();
 
 console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`Using MongoDB: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
