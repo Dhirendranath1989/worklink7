@@ -7,6 +7,61 @@ const ConsolidatedUser = require('../models/ConsolidatedUser');
 
 // MongoDB service to replace Firebase Firestore operations
 class MongoService {
+  constructor() {
+    this.isConnected = false;
+    this.retryCount = 0;
+    this.maxRetries = 5;
+  }
+
+  async connect() {
+    try {
+      await mongoose.connect(config.mongodb.uri, config.mongodb.options);
+      this.isConnected = true;
+      this.retryCount = 0;
+      console.log('✅ MongoDB connected successfully');
+      
+      // Handle connection events
+      mongoose.connection.on('error', this.handleError.bind(this));
+      mongoose.connection.on('disconnected', this.handleDisconnect.bind(this));
+      
+    } catch (error) {
+      await this.handleConnectionError(error);
+    }
+  }
+
+  async handleConnectionError(error) {
+    console.error(`❌ MongoDB connection failed (attempt ${this.retryCount + 1}):`, error.message);
+    
+    if (this.retryCount < this.maxRetries) {
+      this.retryCount++;
+      const delay = Math.pow(2, this.retryCount) * 1000; // Exponential backoff
+      console.log(`🔄 Retrying connection in ${delay/1000} seconds...`);
+      setTimeout(() => this.connect(), delay);
+    } else {
+      console.error('💥 Max retry attempts reached. Running in fallback mode.');
+      this.isConnected = false;
+    }
+  }
+
+  handleError(error) {
+    console.error('🚨 MongoDB error:', error);
+    this.isConnected = false;
+  }
+
+  handleDisconnect() {
+    console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+    this.isConnected = false;
+    this.connect();
+  }
+
+  getStatus() {
+    return {
+      connected: this.isConnected,
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host,
+      name: mongoose.connection.name
+    };
+  }
   
   // User operations
   // Get user by ID
@@ -429,64 +484,6 @@ class MongoService {
       console.error('Error marking notification as read:', error);
       throw error;
     }
-  }
-}
-
-class MongoService {
-  constructor() {
-    this.isConnected = false;
-    this.retryCount = 0;
-    this.maxRetries = 5;
-  }
-
-  async connect() {
-    try {
-      await mongoose.connect(config.mongodb.uri, config.mongodb.options);
-      this.isConnected = true;
-      this.retryCount = 0;
-      console.log('✅ MongoDB connected successfully');
-      
-      // Handle connection events
-      mongoose.connection.on('error', this.handleError.bind(this));
-      mongoose.connection.on('disconnected', this.handleDisconnect.bind(this));
-      
-    } catch (error) {
-      await this.handleConnectionError(error);
-    }
-  }
-
-  async handleConnectionError(error) {
-    console.error(`❌ MongoDB connection failed (attempt ${this.retryCount + 1}):`, error.message);
-    
-    if (this.retryCount < this.maxRetries) {
-      this.retryCount++;
-      const delay = Math.pow(2, this.retryCount) * 1000; // Exponential backoff
-      console.log(`🔄 Retrying connection in ${delay/1000} seconds...`);
-      setTimeout(() => this.connect(), delay);
-    } else {
-      console.error('💥 Max retry attempts reached. Running in fallback mode.');
-      this.isConnected = false;
-    }
-  }
-
-  handleError(error) {
-    console.error('🚨 MongoDB error:', error);
-    this.isConnected = false;
-  }
-
-  handleDisconnect() {
-    console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
-    this.isConnected = false;
-    this.connect();
-  }
-
-  getStatus() {
-    return {
-      connected: this.isConnected,
-      readyState: mongoose.connection.readyState,
-      host: mongoose.connection.host,
-      name: mongoose.connection.name
-    };
   }
 }
 
